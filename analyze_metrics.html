@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <title>Ridecell Intelligence</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEV5Cc-vgKHI1NuYVxwk8K2HNFvx_a7fs"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .header {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .header .highlight {
+      font-weight: bold;
+      color: #3d76e9;
+    }
+    .summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: #d4f5d1;
+      color: #4caf50;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+    .summary span.unusual {
+      background-color: #ffe6e6;
+      color: #f44336;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 0px 20px;
+    }
+    .metric-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .metric-header {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .metric-header .normal {
+      background-color: #3d76e9;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      float: right;
+    }
+    .metric-header .unusual {
+      background-color: #f44336;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      float: right;
+    }
+    .metric-value {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 5px;
+      color: #22aaff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .metric-change {
+      color: #4caf50;
+      margin-bottom: 15px;
+    }
+    .chart-container {
+      width: 100%;
+      height: 200px;
+    }
+    .metric-info {
+      font-size: 15px;
+      color: #777;
+    }
+    .map-container {
+      grid-column: span 3;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    #map {
+      width: 100%;
+      height: 400px;
+      border-radius: 10px;
+      background-color: lightgray;
+      position: relative;
+    }
+
+    .navbar-container {
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+        z-index: 4;
+        position: relative;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px); /* Adjust height */
+    }
+
+    #tabs {
+        width: 66px;
+        flex-shrink: 0; /* Fix width */
+        box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+        z-index: 3;
+    }
+
+    #content-container {
+        flex-grow: 1; /* Take the remaining width */
+        display: inline-block;
+    }
+
+    #link-navigate {
+        position: absolute;
+        height: 100px;
+        width: 91px;
+        left: 175px;
+        top: 60px;
+        background: red;
+        opacity: 0.5;
+    }
+
+    #link-optimize {
+        position: absolute;
+        height: 100px;
+        width: 100px;
+        left: 350px;
+        top: 60px;
+        background: red;
+        opacity: 0.5;
+    }
+
+    #link-graph {
+        position: absolute;
+        height: 100px;
+        width: 150px;
+        right: 120px;
+        top: 60px;
+        background: green;
+        opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar-container">
+        <img id="navbar" src="navbar.png" style="width:100%; display: block;">
+    </div>
+
+  <div class="container">
+    <div id="tabs">
+        <img src="tabs.png" style="width: 66px;">
+    </div>
+    <div id="content-container">
+      <a id="link-navigate" href="index.html"></a>
+      <a id="link-optimize" href="optimize.html"></a>
+      <a id="link-graph" href="analyze_graph.html"></a>
+      <img src="subnav_analyze_metrics.png" style="width:100%; display: block; border-bottom: 2px solid #eaeaea;">
+
+
+      <div class="summary">
+        <span class="unusual">Unusual 4</span>
+        <span>Normal 6</span>
+      </div>
+
+      <div class="metrics">
+        <!-- Unusual Tile 1 - Idle Days -->
+        <div class="metric-card">
+          <div class="metric-header">
+            Idle Days
+            <span class="unusual">Unusual</span>
+          </div>
+          <div class="metric-value">
+            28 Days →
+          </div>
+          <div class="metric-change" style="color: #f44336;">
+            +5 Days (Idle days increasing)
+          </div>
+          <div class="chart-container">
+            <canvas id="idleDaysChart"></canvas>
+          </div>
+          <div class="metric-info">
+            Idle days for the fleet have risen by 5 days on average. 
+            <strong>Future prediction: Likely to increase by 10% over the next quarter.</strong>
+          </div>
+        </div>
+
+        <!-- Unusual Tile 2 - Cost Per Vehicle -->
+        <div class="metric-card">
+          <div class="metric-header">
+            Cost Per Vehicle
+            <span class="unusual">Unusual</span>
+          </div>
+          <div class="metric-value">
+            $5,500 →
+          </div>
+          <div class="metric-change" style="color: #f44336;">
+            +$500 (+10% increase)
+          </div>
+          <div class="chart-container">
+            <canvas id="costPerVehicleChart"></canvas>
+          </div>
+          <div class="metric-info">
+            The average cost per vehicle has increased by $500. 
+            <strong>Future prediction: Projected to increase by another $200 next quarter.</strong>
+          </div>
+        </div>
+
+        <!-- New Unusual Tile 3 - Maintenance Overheads -->
+        <div class="metric-card">
+          <div class="metric-header">
+            Maintenance Overheads
+            <span class="unusual">Unusual</span>
+          </div>
+          <div class="metric-value">
+            $2,000 →
+          </div>
+          <div class="metric-change" style="color: #f44336;">
+            +$300 (Maintenance costs increasing)
+          </div>
+          <div class="chart-container">
+            <canvas id="maintenanceOverheadsChart"></canvas>
+          </div>
+          <div class="metric-info">
+            Maintenance overheads have risen by $300. 
+            <strong>Future prediction: Expected to rise by 5% next quarter.</strong>
+          </div>
+        </div>
+
+        <!-- Unusual Tile 4 - Profitability (Region Map) -->
+        <div class="map-container">
+          <div class="metric-header">
+            Profitability by Region
+            <span class="unusual">Unusual</span>
+          </div>
+          <div id="map"></div>
+        </div>
+
+        <!-- Normal Tile 1 - Fleet Turnover -->
+        <div class="metric-card">
+          <div class="metric-header">
+            Fleet Turnover
+            <span class="normal">Normal</span>
+          </div>
+          <div class="metric-value">
+            60,000 units →
+          </div>
+          <div class="metric-change">
+            +10,000 units (+20% compared to last year)
+          </div>
+          <div class="chart-container">
+            <canvas id="fleetTurnoverChart"></canvas>
+          </div>
+          <div class="metric-info">
+            Fleet turnover has increased by 20% compared to last year. 
+            <strong>Future prediction: Expected to reach 70,000 units next quarter.</strong>
+          </div>
+        </div>
+
+        <!-- Normal Tile 2 - SLA Performance -->
+        <div class="metric-card">
+          <div class="metric-header">
+            SLA Performance
+            <span class="normal">Normal</span>
+          </div>
+          <div class="metric-value">
+            89% →
+          </div>
+          <div class="metric-change">
+            +2% increase
+          </div>
+          <div class="chart-container">
+            <canvas id="slaPerformanceChart"></canvas>
+          </div>
+          <div class="metric-info">
+            SLA performance has improved by 2%. 
+            <strong>Future prediction: Expected to rise to 91% next quarter.</strong>
+          </div>
+        </div>
+
+        <!-- Normal Tile 3 - Delivery Efficiency -->
+        <div class="metric-card">
+          <div class="metric-header">
+            Delivery Efficiency
+            <span class="normal">Normal</span>
+          </div>
+          <div class="metric-value">
+            95% →
+          </div>
+          <div class="metric-change">
+            +3% (Improved delivery efficiency)
+          </div>
+          <div class="chart-container">
+            <canvas id="deliveryEfficiencyChart"></canvas>
+          </div>
+          <div class="metric-info">
+            Delivery efficiency has improved by 3%. 
+            <strong>Future prediction: Likely to increase by another 2% next quarter.</strong>
+          </div>
+        </div>
+
+        <!-- Normal Tile 4 - Vehicle Repairs -->
+        <div class="metric-card">
+          <div class="metric-header">
+            Vehicle Repairs
+            <span class="normal">Normal</span>
+          </div>
+          <div class="metric-value">
+            $1,200 →
+          </div>
+          <div class="metric-change">
+            +$100 (Repairs costs rising slightly)
+          </div>
+          <div class="chart-container">
+            <canvas id="vehicleRepairsChart"></canvas>
+          </div>
+          <div class="metric-info">
+            Vehicle repair costs have risen by $100. 
+            <strong>Future prediction: Costs expected to rise by another $150 next quarter.</strong>
+          </div>
+        </div>
+
+        <!-- Normal Tile 5 - Contract Renewals -->
+        <div class="metric-card">
+          <div class="metric-header">
+            Contract Renewals
+            <span class="normal">Normal</span>
+          </div>
+          <div class="metric-value">
+            50% →
+          </div>
+          <div class="metric-change">
+            Steady (No change)
+          </div>
+          <div class="chart-container">
+            <canvas id="contractRenewalsChart"></canvas>
+          </div>
+          <div class="metric-info">
+            Contract renewals remain steady at 50%. 
+            <strong>Future prediction: Expected to rise to 55% in the next cycle.</strong>
+          </div>
+        </div>
+
+        <!-- Normal Tile 6 - Customer Satisfaction -->
+        <div class="metric-card">
+          <div class="metric-header">
+            Customer Satisfaction
+            <span class="normal">Normal</span>
+          </div>
+          <div class="metric-value">
+            88% →
+          </div>
+          <div class="metric-change">
+            +1% (Small improvement)
+          </div>
+          <div class="chart-container">
+            <canvas id="customerSatisfactionChart"></canvas>
+          </div>
+          <div class="metric-info">
+            Customer satisfaction has improved slightly. 
+            <strong>Future prediction: Expected to reach 90% next quarter.</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Google Maps API Integration for Profitability by Region
+    function initMap() {
+      const map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 6,
+        center: { lat: 40.4168, lng: -3.7038 }
+      });
+
+      const locations = [
+        { name: "Madrid", position: { lat: 40.4168, lng: -3.7038 }, profitability: "$1.5M" },
+        { name: "Barcelona", position: { lat: 41.3851, lng: 2.1734 }, profitability: "$1.2M" },
+        { name: "Valencia", position: { lat: 39.4699, lng: -0.3763 }, profitability: "$900K" }
+      ];
+
+      locations.forEach(location => {
+        const marker = new google.maps.Marker({
+          position: location.position,
+          map: map,
+          title: `${location.name}: Profitability ${location.profitability}`
+        });
+      });
+    }
+
+    // Initialize the map
+    initMap();
+
+    // Idle Days Chart
+    const idleDaysCtx = document.getElementById('idleDaysChart').getContext('2d');
+    new Chart(idleDaysCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Idle Days (Avg)',
+          data: [10, 12, 15, 28],
+          backgroundColor: 'red'
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Cost Per Vehicle Chart
+    const costPerVehicleCtx = document.getElementById('costPerVehicleChart').getContext('2d');
+    new Chart(costPerVehicleCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Cost Per Vehicle ($)',
+          data: [5000, 5200, 5300, 5500],
+          borderColor: 'red',
+          fill: false
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Maintenance Overheads Chart
+    const maintenanceOverheadsCtx = document.getElementById('maintenanceOverheadsChart').getContext('2d');
+    new Chart(maintenanceOverheadsCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Maintenance Overheads ($)',
+          data: [1700, 1800, 1900, 2000],
+          backgroundColor: 'blue'
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Fleet Turnover Chart
+    const fleetTurnoverCtx = document.getElementById('fleetTurnoverChart').getContext('2d');
+    new Chart(fleetTurnoverCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Fleet Turnover (in 000s)',
+          data: [50, 55, 58, 60],
+          borderColor: 'green',
+          fill: false
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // SLA Performance Chart
+    const slaPerformanceCtx = document.getElementById('slaPerformanceChart').getContext('2d');
+    new Chart(slaPerformanceCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Achieved', 'Missed'],
+        datasets: [{
+          label: 'SLA Performance',
+          data: [89, 11],
+          backgroundColor: ['blue', 'lightgrey']
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Delivery Efficiency Chart
+    const deliveryEfficiencyCtx = document.getElementById('deliveryEfficiencyChart').getContext('2d');
+    new Chart(deliveryEfficiencyCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Delivery Efficiency (%)',
+          data: [92, 93, 94, 95],
+          backgroundColor: 'purple'
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Vehicle Repairs Chart
+    const vehicleRepairsCtx = document.getElementById('vehicleRepairsChart').getContext('2d');
+    new Chart(vehicleRepairsCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Repair Costs ($)',
+          data: [1000, 1050, 1100, 1200],
+          borderColor: 'orange',
+          fill: false
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Contract Renewals Chart
+    const contractRenewalsCtx = document.getElementById('contractRenewalsChart').getContext('2d');
+    new Chart(contractRenewalsCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Renewed', 'Not Renewed'],
+        datasets: [{
+          label: 'Contract Renewals',
+          data: [50, 50],
+          backgroundColor: ['green', 'lightgrey']
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Customer Satisfaction Chart
+    const customerSatisfactionCtx = document.getElementById('customerSatisfactionChart').getContext('2d');
+    new Chart(customerSatisfactionCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Customer Satisfaction (%)',
+          data: [85, 86, 87, 88],
+          backgroundColor: 'lightblue'
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
