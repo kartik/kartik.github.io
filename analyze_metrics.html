@@ -44,6 +44,7 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
       padding: 0px 20px;
+      padding-bottom: 20px;
     }
     .metric-card {
       background-color: white;
@@ -245,7 +246,7 @@
         <!-- Unusual Tile 4 - Profitability (Region Map) -->
         <div class="map-container">
           <div class="metric-header">
-            Profitability by Region
+            Profitability by State
             <span class="unusual">Unusual</span>
           </div>
           <div id="map"></div>
@@ -384,21 +385,97 @@
     // Google Maps API Integration for Profitability by Region
     function initMap() {
       const map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 6,
-        center: { lat: 40.4168, lng: -3.7038 }
+        zoom: 4,
+        center: { lat: 39.8283, lng: -98.5795 } // Center of the US
       });
 
-      const locations = [
-        { name: "Madrid", position: { lat: 40.4168, lng: -3.7038 }, profitability: "$1.5M" },
-        { name: "Barcelona", position: { lat: 41.3851, lng: 2.1734 }, profitability: "$1.2M" },
-        { name: "Valencia", position: { lat: 39.4699, lng: -0.3763 }, profitability: "$900K" }
+      // Define profitability data and positions for states
+      const stateData = [
+        { name: 'Alabama', position: { lat: 32.806671, lng: -86.791130 }, profitability: 'poor' },
+        { name: 'Alaska', position: { lat: 61.370716, lng: -152.404419 }, profitability: 'great' },
+        { name: 'Arizona', position: { lat: 33.729759, lng: -111.431221 }, profitability: 'about to be poor' },
+        { name: 'Arkansas', position: { lat: 34.969704, lng: -92.373123 }, profitability: 'poor' },
+        { name: 'California', position: { lat: 36.116203, lng: -119.681564 }, profitability: 'great' },
+        { name: 'Colorado', position: { lat: 39.059811, lng: -105.311104 }, profitability: 'great' },
+        { name: 'Connecticut', position: { lat: 41.597782, lng: -72.755371 }, profitability: 'about to be poor' },
+        { name: 'Delaware', position: { lat: 39.318523, lng: -75.507141 }, profitability: 'poor' },
+        { name: 'Florida', position: { lat: 27.766279, lng: -81.686783 }, profitability: 'great' },
+        { name: 'Georgia', position: { lat: 33.040619, lng: -83.643074 }, profitability: 'poor' },
+        { name: 'Hawaii', position: { lat: 21.094318, lng: -157.498337 }, profitability: 'great' },
+        { name: 'Idaho', position: { lat: 44.240459, lng: -114.478828 }, profitability: 'about to be poor' },
+        { name: 'Illinois', position: { lat: 40.349457, lng: -88.986137 }, profitability: 'poor' },
+        { name: 'Indiana', position: { lat: 39.849426, lng: -86.258278 }, profitability: 'poor' },
+        { name: 'Iowa', position: { lat: 42.011539, lng: -93.210526 }, profitability: 'great' },
+        { name: 'Kansas', position: { lat: 38.526600, lng: -96.726486 }, profitability: 'poor' },
+        { name: 'Kentucky', position: { lat: 37.668140, lng: -84.670067 }, profitability: 'about to be poor' },
+        { name: 'Louisiana', position: { lat: 31.169546, lng: -91.867805 }, profitability: 'poor' },
+        { name: 'Maine', position: { lat: 44.693947, lng: -69.381927 }, profitability: 'great' },
+        { name: 'Maryland', position: { lat: 39.063946, lng: -76.802101 }, profitability: 'about to be poor' },
+        { name: 'Massachusetts', position: { lat: 42.230171, lng: -71.530106 }, profitability: 'great' },
+        { name: 'Michigan', position: { lat: 43.326618, lng: -84.536095 }, profitability: 'poor' },
+        { name: 'Minnesota', position: { lat: 45.694454, lng: -93.900192 }, profitability: 'great' },
+        { name: 'Mississippi', position: { lat: 32.741646, lng: -89.678696 }, profitability: 'poor' },
+        { name: 'Missouri', position: { lat: 38.456085, lng: -92.288368 }, profitability: 'about to be poor' },
+        { name: 'Montana', position: { lat: 46.921925, lng: -110.454353 }, profitability: 'great' },
+        { name: 'Nebraska', position: { lat: 41.125370, lng: -98.268082 }, profitability: 'poor' },
+        { name: 'Nevada', position: { lat: 38.313515, lng: -117.055374 }, profitability: 'great' },
+        { name: 'New Hampshire', position: { lat: 43.452492, lng: -71.563896 }, profitability: 'about to be poor' },
+        { name: 'New Jersey', position: { lat: 40.298904, lng: -74.521011 }, profitability: 'poor' },
+        { name: 'New Mexico', position: { lat: 34.840515, lng: -106.248482 }, profitability: 'about to be poor' },
+        { name: 'New York', position: { lat: 42.165726, lng: -74.948051 }, profitability: 'great' },
+        { name: 'North Carolina', position: { lat: 35.630066, lng: -79.806419 }, profitability: 'poor' },
+        { name: 'North Dakota', position: { lat: 47.528912, lng: -99.784012 }, profitability: 'great' },
+        { name: 'Ohio', position: { lat: 40.388783, lng: -82.764915 }, profitability: 'poor' },
+        { name: 'Oklahoma', position: { lat: 35.565342, lng: -96.928917 }, profitability: 'about to be poor' },
+        { name: 'Oregon', position: { lat: 44.572021, lng: -122.070938 }, profitability: 'great' },
+        { name: 'Pennsylvania', position: { lat: 40.590752, lng: -77.209755 }, profitability: 'about to be poor' },
+        { name: 'Rhode Island', position: { lat: 41.680893, lng: -71.511780 }, profitability: 'poor' },
+        { name: 'South Carolina', position: { lat: 33.856892, lng: -80.945007 }, profitability: 'poor' },
+        { name: 'South Dakota', position: { lat: 44.299782, lng: -99.438828 }, profitability: 'great' },
+        { name: 'Tennessee', position: { lat: 35.747845, lng: -86.692345 }, profitability: 'poor' },
+        { name: 'Texas', position: { lat: 31.054487, lng: -97.563461 }, profitability: 'about to be poor' },
+        { name: 'Utah', position: { lat: 40.150032, lng: -111.862434 }, profitability: 'great' },
+        { name: 'Vermont', position: { lat: 44.045876, lng: -72.710686 }, profitability: 'great' },
+        { name: 'Virginia', position: { lat: 37.769337, lng: -78.169968 }, profitability: 'about to be poor' },
+        { name: 'Washington', position: { lat: 47.400902, lng: -121.490494 }, profitability: 'great' },
+        { name: 'West Virginia', position: { lat: 38.491226, lng: -80.954453 }, profitability: 'poor' },
+        { name: 'Wisconsin', position: { lat: 44.268543, lng: -89.616508 }, profitability: 'great' },
+        { name: 'Wyoming', position: { lat: 42.755966, lng: -107.302490 }, profitability: 'great' },
+        { name: 'District of Columbia', position: { lat: 38.897438, lng: -77.026817 }, profitability: 'about to be poor' }
       ];
 
-      locations.forEach(location => {
-        const marker = new google.maps.Marker({
-          position: location.position,
+      // Now, loop over the stateData array and add circles
+      stateData.forEach(state => {
+        let color = 'gray';
+        if (state.profitability === 'great') {
+          color = 'green';
+        } else if (state.profitability === 'poor') {
+          color = 'red';
+        } else if (state.profitability === 'about to be poor') {
+          color = 'yellow';
+        }
+
+        const circle = new google.maps.Circle({
+          strokeColor: color,
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: color,
+          fillOpacity: 0.35,
           map: map,
-          title: `${location.name}: Profitability ${location.profitability}`
+          center: state.position,
+          radius: 50000 // Adjust radius as needed
+        });
+
+        // Add click listener to the circle
+        google.maps.event.addListener(circle, 'click', function(event) {
+          const contentString = '<div><strong>' + state.name + '</strong><br>' +
+                                'Profitability: ' + state.profitability + '</div>';
+
+          const infowindow = new google.maps.InfoWindow({
+            content: contentString,
+            position: event.latLng
+          });
+          infowindow.open(map);
         });
       });
     }
