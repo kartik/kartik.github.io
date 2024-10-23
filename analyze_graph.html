@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.min.js"></script>
     <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
     <title>Ridecell Intelligence</title>
     <style>
@@ -111,6 +112,14 @@
 /*            background: green;
             opacity: 0.5;*/
         }
+
+        .d3-tip {
+            background: white;
+            border: 1px solid silver;
+            border-radius: 10px;
+            padding: 10px;
+            font-family: sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -150,47 +159,50 @@
         // Data for all Use Cases with expanded players
         var nodes = [
             // Entities (Players)
-            {id: 'OEM', type: 'Entity', impact: 20},
-            {id: 'Transportation Vendors', type: 'Entity', impact: 20},
-            {id: 'Storage Vendors', type: 'Entity', impact: 20},
-            {id: 'Upfit Vendors', type: 'Entity', impact: 15},
-            {id: 'Repair Vendors', type: 'Entity', impact: 25},
-            {id: 'Internal Staff', type: 'Entity', impact: 20},
-            {id: 'Maintenance Staff', type: 'Entity', impact: 15},
-            {id: 'Service Staff', type: 'Entity', impact: 15},
-            {id: 'Accounts Payable Staff', type: 'Entity', impact: 20},
-            {id: 'Clients', type: 'Entity', impact: 25},
+            {id: 'OEM', type: 'Entity', impact: 20, cause: 'Supplier delays', effect: 'Slowed production', impactDesc: 'Moderate impact on timelines'},
+            {id: 'Transportation Vendors', type: 'Entity', impact: 20, cause: 'Limited capacity', effect: 'Delivery delays', impactDesc: 'Moderate delay in vehicle transportation'},
+            {id: 'Storage Vendors', type: 'Entity', impact: 20, cause: 'Capacity constraints', effect: 'Backlog in vehicle storage', impactDesc: 'Moderate impact on storage efficiency'},
+            {id: 'Upfit Vendors', type: 'Entity', impact: 15, cause: 'Increased costs', effect: 'Higher vehicle modification fees', impactDesc: 'Low impact on budget'},
+            {id: 'Repair Vendors', type: 'Entity', impact: 25, cause: 'Increased damages', effect: 'Higher repair needs', impactDesc: 'High impact on operational costs'},
+            {id: 'Internal Staff', type: 'Entity', impact: 20, cause: 'Overworked personnel', effect: 'Operational inefficiencies', impactDesc: 'Moderate impact on service delivery'},
+            {id: 'Maintenance Staff', type: 'Entity', impact: 15, cause: 'Insufficient resources', effect: 'Delays in maintenance', impactDesc: 'Low impact on operations'},
+            {id: 'Service Staff', type: 'Entity', impact: 15, cause: 'Staff shortages', effect: 'Reduced service quality', impactDesc: 'Low impact on customer service'},
+            {id: 'Accounts Payable Staff', type: 'Entity', impact: 20, cause: 'Processing delays', effect: 'Delayed vendor payments', impactDesc: 'Moderate impact on vendor relations'},
+            {id: 'Clients', type: 'Entity', impact: 25, cause: 'Service delays', effect: 'Increased complaints', impactDesc: 'High impact on customer satisfaction'},
+            
             // Activities
-            {id: 'Delivering 3,000 vehicles/week', type: 'Activity', impact: 25},
-            {id: 'Allocations for 1,000 vehicles/week', type: 'Activity', impact: 20},
-            {id: 'Provide Storage Services', type: 'Activity', impact: 20},
-            {id: 'Unapproved Installation of Premium Packages', type: 'Activity', impact: 15},
-            {id: 'Maintenance Activities', type: 'Activity', impact: 20},
-            {id: 'Service Activities', type: 'Activity', impact: 15},
-            {id: 'Damage Repairs', type: 'Activity', impact: 15},
-            {id: 'Spike in Claims and Damages', type: 'Outcome', impact: 20},
-            {id: 'Delivery Delays', type: 'Outcome', impact: 25},
-            {id: 'Customer Inquiries and Complaints', type: 'Outcome', impact: 45},
-            {id: 'OEM Discount Rate Not Enforced ', type: 'Activity', impact: 29},
-            {id: 'Excess Payment for Parts', type: 'Outcome', impact: 25},
-            {id: 'Rising Upfit Costs', type: 'Outcome', impact: 23},
+            {id: 'Delivering 3,000 vehicles/week', type: 'Activity', impact: 25, cause: 'Capacity strain', effect: 'Delayed deliveries', impactDesc: 'High impact on delivery timelines'},
+            {id: 'Allocations for 1,000 vehicles/week', type: 'Activity', impact: 20, cause: 'Vehicle surplus', effect: 'Excess inventory', impactDesc: 'Moderate impact on stock levels'},
+            {id: 'Provide Storage Services', type: 'Activity', impact: 20, cause: 'Storage overflow', effect: 'Storage capacity issues', impactDesc: 'Moderate impact on storage efficiency'},
+            {id: 'Unapproved Installation of Premium Packages', type: 'Activity', impact: 15, cause: 'Installation errors', effect: 'Increased modification costs', impactDesc: 'Low impact on budget'},
+            {id: 'Maintenance Activities', type: 'Activity', impact: 20, cause: 'Frequent breakdowns', effect: 'Higher repair needs', impactDesc: 'Moderate impact on vehicle availability'},
+            {id: 'Service Activities', type: 'Activity', impact: 15, cause: 'Staff shortages', effect: 'Service delays', impactDesc: 'Low impact on service levels'},
+            {id: 'Damage Repairs', type: 'Activity', impact: 15, cause: 'Accidents', effect: 'Increased repair times', impactDesc: 'Low impact on repair costs'},
+            {id: 'Spike in Claims and Damages', type: 'Outcome', impact: 20, cause: 'Increase in accidents', effect: 'Rising insurance claims', impactDesc: 'Moderate impact on financials'},
+            {id: 'Delivery Delays', type: 'Outcome', impact: 25, cause: 'Logistics disruptions', effect: 'Late deliveries', impactDesc: 'High impact on customer satisfaction'},
+            {id: 'Customer Inquiries and Complaints', type: 'Outcome', impact: 45, cause: 'Delivery issues', effect: 'Increased customer dissatisfaction', impactDesc: 'Very high impact on reputation'},
+            {id: 'OEM Discount Rate Not Enforced', type: 'Activity', impact: 29, cause: 'Payment processing errors', effect: 'Excess spending', impactDesc: 'High impact on budget'},
+            {id: 'Excess Payment for Parts', type: 'Outcome', impact: 25, cause: 'Vendor overcharging', effect: 'Budget overruns', impactDesc: 'High impact on financials'},
+            {id: 'Rising Upfit Costs', type: 'Outcome', impact: 23, cause: 'Increased material costs', effect: 'Higher vehicle costs', impactDesc: 'Moderate impact on profitability'},
+            
             // Outcomes
-            {id: 'Surplus of 2,000 vehicles/week', type: 'Outcome', impact: 22},
-            {id: 'Inventory Buildup', type: 'Outcome', impact: 27},
-            {id: 'Storage Capacity Issues', type: 'Outcome', impact: 35},
-            {id: 'Inefficient Operations', type: 'Outcome', impact: 25},
-            {id: 'Operational Challenges', type: 'Outcome', impact: 25},
-            {id: 'Rising Storage/Retransport Costs', type: 'Outcome', impact: 22},
-            {id: 'Rising Repair Costs', type: 'Outcome', impact: 37},
-            {id: 'Budget Overruns', type: 'Outcome', impact: 20},
-            {id: 'Increased Downtime', type: 'Outcome', impact: 25},
-            {id: 'Increased Insurance Premiums', type: 'Outcome', impact: 20},
-            {id: 'Customer Satisfaction Impact', type: 'Outcome', impact: 25},
-            {id: 'Brand Reputation Risk', type: 'Outcome', impact: 25},
-            {id: 'Partner Overcharging', type: 'Outcome', impact: 45},
-            {id: 'Risk of Continued Overpayments', type: 'Outcome', impact: 23},
-            {id: 'Audit and Compliance Implications', type: 'Outcome', impact: 25}
+            {id: 'Surplus of 2,000 vehicles/week', type: 'Outcome', impact: 22, cause: 'Overproduction', effect: 'Inventory buildup', impactDesc: 'Moderate impact on stock management'},
+            {id: 'Inventory Buildup', type: 'Outcome', impact: 27, cause: 'Surplus vehicles', effect: 'Storage overflow', impactDesc: 'High impact on storage'},
+            {id: 'Storage Capacity Issues', type: 'Outcome', impact: 35, cause: 'Inventory buildup', effect: 'Operational bottlenecks', impactDesc: 'Very high impact on efficiency'},
+            {id: 'Inefficient Operations', type: 'Outcome', impact: 25, cause: 'Operational delays', effect: 'Lower productivity', impactDesc: 'High impact on efficiency'},
+            {id: 'Operational Challenges', type: 'Outcome', impact: 25, cause: 'Capacity strain', effect: 'Service inefficiencies', impactDesc: 'High impact on operations'},
+            {id: 'Rising Storage/Retransport Costs', type: 'Outcome', impact: 22, cause: 'Extended storage time', effect: 'Increased transport costs', impactDesc: 'Moderate impact on financials'},
+            {id: 'Rising Repair Costs', type: 'Outcome', impact: 37, cause: 'Frequent damages', effect: 'Higher repair expenses', impactDesc: 'Very high impact on operational budget'},
+            {id: 'Budget Overruns', type: 'Outcome', impact: 20, cause: 'Excess payments', effect: 'Over-budget operations', impactDesc: 'Moderate impact on financial health'},
+            {id: 'Increased Downtime', type: 'Outcome', impact: 25, cause: 'Repair delays', effect: 'Reduced vehicle availability', impactDesc: 'High impact on service delivery'},
+            {id: 'Increased Insurance Premiums', type: 'Outcome', impact: 20, cause: 'Higher claim frequency', effect: 'Rising premiums', impactDesc: 'Moderate impact on financials'},
+            {id: 'Customer Satisfaction Impact', type: 'Outcome', impact: 25, cause: 'Delayed deliveries', effect: 'Lower customer satisfaction', impactDesc: 'High impact on reputation'},
+            {id: 'Brand Reputation Risk', type: 'Outcome', impact: 25, cause: 'Service failures', effect: 'Negative public perception', impactDesc: 'High impact on brand image'},
+            {id: 'Partner Overcharging', type: 'Outcome', impact: 45, cause: 'Vendor overbilling', effect: 'Financial losses', impactDesc: 'Very high impact on budget'},
+            {id: 'Risk of Continued Overpayments', type: 'Outcome', impact: 23, cause: 'Poor oversight', effect: 'Ongoing financial losses', impactDesc: 'Moderate impact on financial control'},
+            {id: 'Audit and Compliance Implications', type: 'Outcome', impact: 25, cause: 'Unregulated spending', effect: 'Audit penalties', impactDesc: 'High impact on compliance'}
         ];
+
 
         var links = [
             // Use Case 1 Links
@@ -228,8 +240,8 @@
             {source: 'Unapproved Installation of Premium Packages', target: 'Rising Upfit Costs'},
             {source: 'Rising Upfit Costs', target: 'Operational Challenges'},
             // Use Case 5 Links
-            {source: 'Accounts Payable Staff', target: 'OEM Discount Rate Not Enforced '},
-            {source: 'OEM Discount Rate Not Enforced ', target: 'Excess Payment for Parts'},
+            {source: 'Accounts Payable Staff', target: 'OEM Discount Rate Not Enforced'},
+            {source: 'OEM Discount Rate Not Enforced', target: 'Excess Payment for Parts'},
             {source: 'Excess Payment for Parts', target: 'Partner Overcharging'},
             {source: 'Rising Upfit Costs', target: 'Partner Overcharging'},
             {source: 'Partner Overcharging', target: 'Risk of Continued Overpayments'},
@@ -326,8 +338,19 @@
                 }
             });
 
-        node.append("title")
-            .text(function(d) { return d.id + " (" + d.type + ")"; });
+        // node.append("title")
+        //     .text(function(d) { return d.id + " (" + d.type + ")"; });
+
+        var tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
+            return '<strong>Cause:</strong> ' + d.cause + '<br>' +
+                   '<strong>Effect:</strong> ' + d.effect + '<br>' +
+                   '<strong>Impact:</strong> ' + d.impactDesc;
+        });
+
+        svg.call(tip);
+
+        node.on('mouseover', tip.show)
+            .on('mouseout', tip.hide);
 
         node.append("text")
             .attr("dy", 3)
@@ -372,6 +395,37 @@
           d.fx = null;
           d.fy = null;
         }
+
+        function fitToScreen() {
+            var bounds = container.node().getBBox();
+            var fullWidth = window.innerWidth;
+            var fullHeight = window.innerHeight - 50; // Adjust for the header height
+            var width = bounds.width;
+            var height = bounds.height;
+            var midX = bounds.x + width / 2;
+            var midY = bounds.y + height / 2;
+
+            var scale = 0.85 / Math.max(width / fullWidth, height / fullHeight);
+            var translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+            svg.transition()
+                .duration(750) // Optional: Smooth transition
+                .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
+        }
+
+        // Set up the zoom function
+        var zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on("zoom", function () {
+                container.attr("transform", d3.event.transform);
+            });
+
+        // Apply zoom behavior to the svg
+        svg.call(zoom);
+
+        window.onload = function() {
+            setTimeout(fitToScreen, 500); // Wait for nodes to settle, then fit to screen
+        };
     </script>
 </body>
 </html>
