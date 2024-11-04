@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+    <title>Supplier Deep Dive</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #fafafa;
+            color: #333;
+        }
+        .container {
+            margin: 0 auto;
+            padding: 20px;
+            max-width: 1400px;
+        }
+        /* Header */
+        .header {
+            background-color: #1a73e8;
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 18px;
+        }
+        /* Navigation */
+        .nav {
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: sticky;
+            top: 80px;
+            z-index: 999;
+        }
+        .nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav a {
+            color: #555;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        .nav a:hover, .nav a.active {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+        /* Main Sections */
+        .section {
+            background-color: white;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section h2 {
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        table th, table td {
+            border: 1px solid #f0f2f5;
+            padding: 12px;
+            text-align: center;
+        }
+        table th {
+            background-color: #f0f2f5;
+        }
+        /* Recommended Actions */
+        .recommendation {
+            text-align: left;
+            margin-top: 10px;
+        }
+        /* Navbar and Tabs */
+        .navbar-container {
+            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+            z-index: 4;
+            position: relative;
+        }
+        .master-container {
+            display: flex;
+            width: 100%;
+            height: calc(100% - 50px);
+        }
+        #tabs {
+            width: 82px;
+            flex-shrink: 0;
+            box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+            z-index: 3;
+            background: white;
+        }
+        #content-container {
+            flex-grow: 1;
+            display: inline-block;
+        }
+        #link-navigate {
+            position: absolute;
+            height: 100px;
+            width: 150px;
+            left: 175px;
+            top: 60px;
+        }
+        /* Filters */
+        .filters {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            background-color: #fff;
+            border-bottom: 1px solid #eaeaea;
+        }
+        .filters label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .filters select {
+            margin-right: 20px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+        .filters select:focus {
+            outline: none;
+            border-color: #3d76e9;
+        }
+        /* Chart Containers */
+        .chart-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        /* Icons */
+        .status-icon {
+            margin-right: 5px;
+            font-size: 16px;
+        }
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .nav .container {
+                flex-direction: column;
+            }
+            .filters {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .filters label, .filters select, .filters input[type="date"] {
+                margin-bottom: 10px;
+            }
+        }
+        /* Include any additional styles from SOURCE.HTML as needed */
+    </style>
+    <!-- Include Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Include Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+</head>
+<body>
+
+    <div class="navbar-container">
+        <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+    </div>
+    <div class="master-container">
+        <div id="tabs">
+            <img src="../tabs.png" style="width: 82px;">
+        </div>
+        <div id="content-container">
+            <a id="link-navigate" href="supplier-spend.html"></a>
+            <img src="../subnav_back.png" style="width:100%; display: block; border-bottom: 2px solid #eaeaea;">
+
+            <!-- Filters -->
+            <div class="filters">
+                <select id="regionSelect">
+                    <option value="all">All Regions</option>
+                    <option value="north">North</option>
+                    <option value="south">South</option>
+                    <option value="east">East</option>
+                    <option value="west">West</option>
+                </select>
+
+                <select id="timeRangeSelect">
+                    <option value="q1">Q1</option>
+                    <option value="q2">Q2</option>
+                    <option value="q3">Q3</option>
+                    <option value="q4">Q4</option>
+                    <option value="ytd">Year to Date</option>
+                </select>
+
+                <select id="categorySelect">
+                    <option value="all">All Categories</option>
+                    <option value="registration">Registration</option>
+                    <option value="transportation">Transportation</option>
+                    <option value="storage">Storage</option>
+                    <option value="inspection">Inspection</option>
+                    <option value="upfit">Upfit</option>
+                    <option value="repair">Repair</option>
+                    <option value="resale">Resale</option>
+                </select>
+
+                <select id="supplierSelect">
+                    <option value="all">All Suppliers</option>
+                    <option value="TransMove Logistics">TransMove Logistics</option>
+                    <option value="SpeedyTrans Co.">SpeedyTrans Co.</option>
+                    <option value="QuickInspect Services">QuickInspect Services</option>
+                    <option value="RapidRepair Inc.">RapidRepair Inc.</option>
+                    <option value="SecureStorage Facilities">SecureStorage Facilities</option>
+                    <option value="SafeKeep Warehousing">SafeKeep Warehousing</option>
+                    <option value="AutoUpfit Solutions">AutoUpfit Solutions</option>
+                    <option value="EliteRegistration Agency">EliteRegistration Agency</option>
+                    <option value="QuickDocs Services">QuickDocs Services</option>
+                    <option value="ResaleExperts LLC">ResaleExperts LLC</option>
+                </select>
+            </div>
+
+            <!-- Main Container -->
+            <div class="container">
+
+                <!-- Suppliers with Budget Issues Section -->
+                <div class="section">
+                    <h2>Suppliers with Budget Issues</h2>
+                    <div class="content">
+                        <div class="chart-container">
+                            <canvas id="budgetIssuesChart" width="800" height="400"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Supplier Name</th>
+                                        <th>Type</th>
+                                        <th>Current Spend</th>
+                                        <th>Budget/Forecast</th>
+                                        <th>Status</th>
+                                        <th>Recommended Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><i class="fas fa-exclamation-circle status-icon" style="color:red;"></i> Fast Transport</td>
+                                        <td>Transportation</td>
+                                        <td>$1,500,000</td>
+                                        <td>$1,200,000</td>
+                                        <td style="color: red;">Exceeded Budget</td>
+                                        <td>Negotiate better rates or consider alternative suppliers.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-exclamation-circle status-icon" style="color:red;"></i> RapidRepair Inc.</td>
+                                        <td>Repair</td>
+                                        <td>$1,200,000</td>
+                                        <td>$1,000,000</td>
+                                        <td style="color: red;">Exceeded Budget</td>
+                                        <td>Implement stricter repair approval processes.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-exclamation-triangle status-icon" style="color:orange;"></i> SecureStorage Facilities</td>
+                                        <td>Storage</td>
+                                        <td>$900,000</td>
+                                        <td>$1,000,000</td>
+                                        <td style="color: orange;">Close to Budget Limit</td>
+                                        <td>Optimize inventory turnover to reduce storage costs.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-exclamation-triangle status-icon" style="color:orange;"></i> EliteRegistration Agency</td>
+                                        <td>Registration</td>
+                                        <td>$800,000</td>
+                                        <td>$850,000</td>
+                                        <td style="color: orange;">Close to Budget Limit</td>
+                                        <td>Bundle registrations to get volume discounts.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-check-circle status-icon" style="color:green;"></i> AutoUpfit Solutions</td>
+                                        <td>Upfit</td>
+                                        <td>$750,000</td>
+                                        <td>$800,000</td>
+                                        <td style="color: green;">On Track</td>
+                                        <td>Maintain current spending; monitor for fluctuations.</td>
+                                    </tr>
+                                    <!-- Additional supplier rows as needed -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supplier Quality Index Section -->
+                <div class="section" id="quality-index">
+                    <h2>Supplier Quality Index</h2>
+                    <div class="content">
+                        <div class="chart-container">
+                            <canvas id="qualityIndexChart" width="800" height="400"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Supplier Name</th>
+                                        <th>Type</th>
+                                        <th>Current Spend</th>
+                                        <th>Budget/Forecast</th>
+                                        <th>Quality/Performance Index</th>
+                                        <th>Causes of Low Performance</th>
+                                        <th>Recommended Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><i class="fas fa-exclamation-circle status-icon" style="color:red;"></i> Fast Transport</td>
+                                        <td>Transportation</td>
+                                        <td>$1,500,000</td>
+                                        <td>$1,200,000</td>
+                                        <td style="color: red;">60</td>
+                                        <td>Fulfillment delays, Customer complaints</td>
+                                        <td>Conduct performance review; consider alternative transporters.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-exclamation-circle status-icon" style="color:red;"></i> RapidRepair Inc.</td>
+                                        <td>Repair</td>
+                                        <td>$1,200,000</td>
+                                        <td>$1,000,000</td>
+                                        <td style="color: red;">65</td>
+                                        <td>Quality issues, Rework required</td>
+                                        <td>Implement quality checks; negotiate SLA penalties.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-exclamation-triangle status-icon" style="color:orange;"></i> QuickInspect Services</td>
+                                        <td>Inspection</td>
+                                        <td>$700,000</td>
+                                        <td>$750,000</td>
+                                        <td style="color: orange;">70</td>
+                                        <td>Compliance errors, Delayed reports</td>
+                                        <td>Provide additional training; set performance KPIs.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-exclamation-triangle status-icon" style="color:orange;"></i> ResaleExperts LLC</td>
+                                        <td>Resale</td>
+                                        <td>$650,000</td>
+                                        <td>$700,000</td>
+                                        <td style="color: orange;">72</td>
+                                        <td>Lower resale values, Market timing issues</td>
+                                        <td>Review resale strategies; diversify resale channels.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-check-circle status-icon" style="color:green;"></i> SecureStorage Facilities</td>
+                                        <td>Storage</td>
+                                        <td>$900,000</td>
+                                        <td>$1,000,000</td>
+                                        <td style="color: green;">75</td>
+                                        <td>Inventory mismanagement</td>
+                                        <td>Improve inventory tracking; audit storage practices.</td>
+                                    </tr>
+                                    <!-- Additional supplier rows as needed -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Data for Budget Issues Chart
+        const budgetIssuesData = {
+            labels: ['Fast Transport', 'RapidRepair Inc.', 'SecureStorage Facilities', 'EliteRegistration Agency', 'AutoUpfit Solutions'],
+            currentSpend: [1500000, 1200000, 900000, 800000, 750000],
+            budget: [1200000, 1000000, 1000000, 850000, 800000]
+        };
+
+        // Budget Issues Bar Chart
+        const budgetIssuesCtx = document.getElementById('budgetIssuesChart').getContext('2d');
+        const budgetIssuesChart = new Chart(budgetIssuesCtx, {
+            type: 'bar',
+            data: {
+                labels: budgetIssuesData.labels,
+                datasets: [
+                    {
+                        label: 'Current Spend',
+                        data: budgetIssuesData.currentSpend,
+                        backgroundColor: 'rgba(255, 99, 132, 0.7)'
+                    },
+                    {
+                        label: 'Budget/Forecast',
+                        data: budgetIssuesData.budget,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y;
+                                return context.dataset.label + ': $' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value / 1000 + 'k';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Amount in USD'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Suppliers'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Data for Quality Index Chart
+        const qualityIndexData = {
+            labels: ['Fast Transport', 'RapidRepair Inc.', 'QuickInspect Services', 'ResaleExperts LLC', 'SecureStorage Facilities'],
+            qualityScores: [60, 65, 70, 72, 75]
+        };
+
+        // Quality Index Horizontal Bar Chart
+        const qualityIndexCtx = document.getElementById('qualityIndexChart').getContext('2d');
+        const qualityIndexChart = new Chart(qualityIndexCtx, {
+            type: 'bar',
+            data: {
+                labels: qualityIndexData.labels,
+                datasets: [{
+                    label: 'Quality/Performance Index',
+                    data: qualityIndexData.qualityScores,
+                    backgroundColor: function(context) {
+                        const score = context.parsed.y;
+                        if (score < 65) {
+                            return 'rgba(255, 99, 132, 0.7)'; // Red
+                        } else if (score < 75) {
+                            return 'rgba(255, 206, 86, 0.7)'; // Yellow
+                        } else {
+                            return 'rgba(75, 192, 192, 0.7)'; // Green
+                        }
+                    }
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.x;
+                                return context.dataset.label + ': ' + value;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Quality/Performance Index'
+                        },
+                        ticks: {
+                            stepSize: 10
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Suppliers'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

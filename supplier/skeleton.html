@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon"
+    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <title>Ridecell Supplier Intelligence Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Styles remain the same */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .header {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .header .highlight {
+      font-weight: bold;
+      color: #3d76e9;
+    }
+    .summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: #d4f5d1;
+      color: #4caf50;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+    .summary span.unusual {
+      background-color: #ffe6e6;
+      color: #f44336;
+    }
+    .filters {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      background-color: #fff;
+      border-bottom: 1px solid #eaeaea;
+    }
+    .filters label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .filters select {
+      margin-right: 20px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+    .filters select:focus {
+      outline: none;
+      border-color: #3d76e9;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 0px 20px;
+      padding-bottom: 20px;
+    }
+    .metric-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .metric-header {
+      font-size: 16px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .metric-header .normal {
+      background-color: #3d76e9;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-header .unusual {
+      background-color: #f44336;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-value {
+      font-size: 28px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .metric-change {
+      color: #4caf50;
+      margin-bottom: 15px;
+    }
+    .chart-container {
+      width: 100%;
+      height: 200px;
+    }
+    .metric-info {
+      font-size: 15px;
+      color: #777;
+      padding-top: 10px;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+    }
+
+    /* subnav Styling */
+    .subnav {
+        display: flex;
+        align-items: center;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .nav-item {
+        font-size: 14px;
+        color: #666666;
+        cursor: pointer;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-item.logo {
+        font-weight: bold;
+        color: #000000;
+        font-size: 22px;
+    }
+
+    .nav-item.active {
+        color: #000000;
+        border-bottom: 4px solid #4CAF50; /* Green underline for active state */
+        background-color: hsl(105deg 35.29% 93.33%);
+        padding: 30px 20px 24px;
+    }
+
+    .link {
+        text-decoration: none;
+        color: #22aaff;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar-container">
+    <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="subnav">
+        <div class="nav-item logo">Supplier Intelligence</div>
+        <a class="nav-item active">Performance</a>
+        <a class="nav-item" href="supplier-spend.html">Spend</a>
+      </div>
+  
+
+  
+
+    </div>
+  </div>
+
+</body>
+</html>

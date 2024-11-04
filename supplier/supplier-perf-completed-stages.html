@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+    <title>Completed Stages - Deep Dive</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #fafafa;
+            color: #333;
+        }
+        .container {
+            margin: 0 auto;
+            padding: 20px;
+            max-width: 1400px;
+        }
+        /* Header */
+        .header {
+            background-color: #1a73e8;
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 18px;
+        }
+        /* Navigation */
+        .nav {
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: sticky;
+            top: 80px;
+            z-index: 999;
+        }
+        .nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav a {
+            color: #555;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        .nav a:hover, .nav a.active {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+        /* Main Sections */
+        .section {
+            background-color: white;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section h2 {
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        /* Alerts */
+        .alert {
+            padding: 15px;
+            color: white;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .alert-danger {
+            background-color: #d93025;
+        }
+        .alert-warning {
+            background-color: #f9ab00;
+            color: #333;
+        }
+        .alert-icon {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        table th, table td {
+            border: 1px solid #f0f2f5;
+            padding: 12px;
+            text-align: center;
+        }
+        table th {
+            background-color: #f0f2f5;
+        }
+        /* Charts */
+        .chart {
+            margin-bottom: 30px;
+        }
+        /* Ideas */
+        .ideas ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .ideas ul li {
+            background-color: #e8f0fe;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .ideas ul li .icon {
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            padding: 10px;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        /* Buttons */
+        .action-button {
+            background-color: #6cc04a;
+            color: white;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 30px;
+            font-size: 16px;
+        }
+        .action-button:hover {
+            background-color: #1669bb;
+        }
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #ffffff;
+            text-align: center;
+            color: #999;
+            border-top: 1px solid #f0f2f5;
+        }
+        /* Key Metrics Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        .card-icon {
+            font-size: 30px;
+            color: #1a73e8;
+            margin-bottom: 10px;
+        }
+        .card h3 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+            margin: 0 0 10px;
+        }
+        .card p {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        .card .subtext {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .navbar-container {
+            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+            z-index: 4;
+            position: relative;
+        }
+        .master-container {
+            display: flex;
+            width: 100%;
+            height: calc(100% - 50px);
+        }
+        #tabs {
+            width: 82px;
+            flex-shrink: 0;
+            box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+            z-index: 3;
+            background: white;
+        }
+        #content-container {
+            flex-grow: 1;
+            display: inline-block;
+        }
+        #link-navigate {
+            position: absolute;
+            height: 100px;
+            width: 150px;
+            left: 175px;
+            top: 60px;
+        }
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .nav .container {
+                flex-direction: column;
+            }
+            .filters {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .filters label, .filters select, .filters input[type="date"] {
+                margin-bottom: 10px;
+            }
+        }
+
+        .filters {
+          padding: 20px;
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          background-color: #fff;
+          border-bottom: 1px solid #eaeaea;
+        }
+        .filters label {
+          margin-right: 10px;
+          font-weight: bold;
+        }
+        .filters select {
+          margin-right: 20px;
+          padding: 5px 10px;
+          border-radius: 5px;
+          border: 1px solid #ccc;
+          background-color: #f9f9f9;
+        }
+        .filters select:focus {
+          outline: none;
+          border-color: #3d76e9;
+        }
+    </style>
+    <!-- Include Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Include Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+</head>
+<body>
+
+    <div class="navbar-container">
+        <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+    </div>
+    <div class="master-container">
+        <div id="tabs">
+            <img src="../tabs.png" style="width: 82px;">
+        </div>
+        <div id="content-container">
+            <a id="link-navigate" href="supplier-perf.html"></a>
+            <img src="../subnav_back.png" style="width:100%; display: block; border-bottom: 2px solid #eaeaea;">
+            
+            <!-- Filters -->
+            <div class="filters">
+            <select id="regionSelect">
+              <option value="all">All Regions</option>
+              <option value="north">North</option>
+              <option value="south">South</option>
+              <option value="east">East</option>
+              <option value="west">West</option>
+            </select>
+
+            <select id="timeRangeSelect">
+              <option value="q1">Q1</option>
+              <option value="q2">Q2</option>
+              <option value="q3">Q3</option>
+              <option value="q4">Q4</option>
+              <option value="ytd">Year to Date</option>
+            </select>
+
+            <select id="categorySelect">
+              <option value="all">All Categories</option>
+              <option value="registration">Registration</option>
+              <option value="transportation">Transportation</option>
+              <option value="storage">Storage</option>
+              <option value="inspection">Inspection</option>
+              <option value="upfit">Upfit</option>
+              <option value="repair">Repair</option>
+              <option value="resale">Resale</option>
+            </select>
+
+            <select id="supplierSelect">
+              <option value="all">All Suppliers</option>
+              <option value="TransMove Logistics">TransMove Logistics</option>
+              <option value="SpeedyTrans Co.">SpeedyTrans Co.</option>
+              <option value="QuickInspect Services">QuickInspect Services</option>
+              <option value="RapidRepair Inc.">RapidRepair Inc.</option>
+              <option value="SecureStorage Facilities">SecureStorage Facilities</option>
+              <option value="SafeKeep Warehousing">SafeKeep Warehousing</option>
+              <option value="AutoUpfit Solutions">AutoUpfit Solutions</option>
+              <option value="EliteRegistration Agency">EliteRegistration Agency</option>
+              <option value="QuickDocs Services">QuickDocs Services</option>
+              <option value="ResaleExperts LLC">ResaleExperts LLC</option>
+            </select>
+            </div>
+
+            <!-- Main Container -->
+            <div class="container">
+
+                <!-- Key Metrics Cards Section -->
+                <div class="card-grid">
+                    <div class="card">
+                        <i class="fas fa-tasks card-icon"></i>
+                        <h3>Completed Stages</h3>
+                        <p>25,046</p>
+                        <div class="subtext">Current Period</div>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-chart-line card-icon"></i>
+                        <h3>Change from Last Period</h3>
+                        <p>+3,500</p>
+                        <div class="subtext">Improved</div>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-industry card-icon"></i>
+                        <h3>Total Activities</h3>
+                        <p>13</p>
+                        <div class="subtext">Stages Tracked</div>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-wrench card-icon"></i>
+                        <h3>Top Activity</h3>
+                        <p>Repair</p>
+                        <div class="subtext">5,000 Completions</div>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-truck-moving card-icon"></i>
+                        <h3>Transport Completions</h3>
+                        <p>4,000</p>
+                        <div class="subtext">This Period</div>
+                    </div>
+                </div>
+
+                <!-- Activity Breakdown Section -->
+                <div class="section">
+                    <h2>Activity Breakdown</h2>
+                    <div class="content">
+                        <div class="chart">
+                            <!-- Placeholder for Completed Stages Bar Chart -->
+                            <canvas id="completedStagesChart" width="100%" height="40"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <h3>Completed Stages by Activity</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Activity</th>
+                                        <th>Completed Stages</th>
+                                        <th>Change from Last Period</th>
+                                        <th>Percentage of Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1. Repair</td>
+                                        <td>5,000</td>
+                                        <td>+800</td>
+                                        <td>20%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2. Tyres</td>
+                                        <td>3,000</td>
+                                        <td>+500</td>
+                                        <td>12%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3. Transport</td>
+                                        <td>4,000</td>
+                                        <td>+600</td>
+                                        <td>16%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4. Storage</td>
+                                        <td>3,500</td>
+                                        <td>+400</td>
+                                        <td>14%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>5. Inspection</td>
+                                        <td>2,500</td>
+                                        <td>+300</td>
+                                        <td>10%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>6. Decommissioning and Disposal</td>
+                                        <td>1,000</td>
+                                        <td>+150</td>
+                                        <td>4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>7. Vehicle Suppliers (OEM)</td>
+                                        <td>1,500</td>
+                                        <td>+200</td>
+                                        <td>6%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>8. Service Center</td>
+                                        <td>1,200</td>
+                                        <td>+100</td>
+                                        <td>4.8%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>9. Compliance</td>
+                                        <td>1,000</td>
+                                        <td>+80</td>
+                                        <td>4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>10. Upfitting</td>
+                                        <td>1,100</td>
+                                        <td>+90</td>
+                                        <td>4.4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>11. Registration</td>
+                                        <td>900</td>
+                                        <td>+70</td>
+                                        <td>3.6%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>12. Battery Recovery</td>
+                                        <td>1,000</td>
+                                        <td>+100</td>
+                                        <td>4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>13. Vehicle Resale</td>
+                                        <td>1,346</td>
+                                        <td>+110</td>
+                                        <td>5.38%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p>The "Completed Stages" metric shows a positive trend with an overall increase of <strong>3,500</strong> stages completed compared to the last period. The "Repair" activity remains the top contributor, accounting for <strong>20%</strong> of the total completed stages.</p>
+                    </div>
+                </div>
+
+                <!-- Performance Insights Section -->
+                <div class="section">
+                    <h2>Performance Insights</h2>
+                    <div class="content">
+                        <p>Activities like "Transport" and "Repair" have high completion rates within SLA, indicating strong performance in these areas. Conversely, activities such as "Battery Recovery" and "Vehicle Resale" show lower completion rates within SLA, suggesting opportunities for improvement.</p>
+                        <div class="chart">
+                            <!-- Placeholder for Completion Rate Chart -->
+                            <canvas id="completionRateChart" width="100%" height="40"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommended Actions Section -->
+                <div class="section">
+                    <h2>Recommended Actions</h2>
+                    <div class="content">
+                        <div class="ideas">
+                            <ul>
+                                <li>
+                                    <span class="icon"><i class="fas fa-chart-line"></i></span>
+                                    <div>
+                                        <strong>Optimize Underperforming Activities:</strong> Develop strategies to boost completion rates in "Battery Recovery" and "Vehicle Resale" stages.
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="icon"><i class="fas fa-cogs"></i></span>
+                                    <div>
+                                        <strong>Process Improvement:</strong> Review and streamline processes in activities with lower completion rates to enhance efficiency.
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="icon"><i class="fas fa-handshake"></i></span>
+                                    <div>
+                                        <strong>Supplier Collaboration:</strong> Engage with suppliers across all activities to share best practices and address bottlenecks.
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="icon"><i class="fas fa-users"></i></span>
+                                    <div>
+                                        <strong>Training and Development:</strong> Provide training programs to staff involved in stages with lower performance to improve skills and knowledge.
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="icon"><i class="fas fa-sync-alt"></i></span>
+                                    <div>
+                                        <strong>Automate Processes:</strong> Identify manual processes within stages that can be automated to increase throughput.
+                                    </div>
+                                </li>
+                            </ul>
+                            <a href="#" class="action-button">Implement Action Plan</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Adjusted Data for Completed Stages Chart
+        const activities = [
+            { name: 'Repair', completions: 5000 },
+            { name: 'Tyres', completions: 3000 },
+            { name: 'Transport', completions: 4000 },
+            { name: 'Storage', completions: 3500 },
+            { name: 'Inspection', completions: 2500 },
+            { name: 'Decommissioning and Disposal', completions: 1000 },
+            { name: 'Vehicle Suppliers (OEM)', completions: 1500 },
+            { name: 'Service Center', completions: 1200 },
+            { name: 'Compliance', completions: 1000 },
+            { name: 'Upfitting', completions: 1100 },
+            { name: 'Registration', completions: 900 },
+            { name: 'Battery Recovery', completions: 1000 },
+            { name: 'Vehicle Resale', completions: 1346 }
+        ];
+
+        // Completed Stages Bar Chart
+        const completedStagesCtx = document.getElementById('completedStagesChart').getContext('2d');
+        const completedStagesChart = new Chart(completedStagesCtx, {
+            type: 'bar',
+            data: {
+                labels: activities.map(activity => activity.name),
+                datasets: [{
+                    label: 'Completed Stages',
+                    data: activities.map(activity => activity.completions),
+                    backgroundColor: 'rgba(66, 133, 244, 0.7)',
+                    borderColor: 'rgba(66, 133, 244, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.y} Completions`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Activity'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Completed Stages'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Data for Completion Rate Chart
+        const completionRates = [
+            { name: 'Repair', rate: 88 },
+            { name: 'Tyres', rate: 79 },
+            { name: 'Transport', rate: 91 },
+            { name: 'Storage', rate: 82 },
+            { name: 'Inspection', rate: 76 },
+            { name: 'Decommissioning and Disposal', rate: 67 },
+            { name: 'Vehicle Suppliers (OEM)', rate: 73 },
+            { name: 'Service Center', rate: 65 },
+            { name: 'Compliance', rate: 69 },
+            { name: 'Upfitting', rate: 60 },
+            { name: 'Registration', rate: 55 },
+            { name: 'Battery Recovery', rate: 58 },
+            { name: 'Vehicle Resale', rate: 50 }
+        ];
+
+        // Completion Rate Chart (Bar Chart)
+        const completionRateCtx = document.getElementById('completionRateChart').getContext('2d');
+        const completionRateChart = new Chart(completionRateCtx, {
+            type: 'bar',
+            data: {
+                labels: completionRates.map(activity => activity.name),
+                datasets: [{
+                    label: 'Completion Rate (%)',
+                    data: completionRates.map(activity => activity.rate),
+                    backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.y}% Completion Rate`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Activity'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Completion Rate (%)'
+                        },
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
