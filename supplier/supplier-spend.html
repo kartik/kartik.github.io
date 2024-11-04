@@ -340,7 +340,7 @@
             </table>
           </div>
           <div class="tile">
-            <a class="link" href="supplier-spend-details.html#quality-index"><h3>Best and Worst Supplier vs Spend →</h3></a>
+            <a class="link" href="supplier-spend-details.html#quality-index"><h3>Supplier Performance vs Spend →</h3></a>
             <canvas id="asset-acquisition-chart2"></canvas>
             <div class="recommendation">
               <strong>Recommendation:</strong> Consider alternative options or renegotiations with highlighted suppliers.
@@ -378,7 +378,7 @@
             </table>
           </div>
           <div class="tile">
-            <a class="link" href="supplier-spend-details.html#quality-index"><h3>Best and Worst Supplier vs Spend →</h3></a>
+            <a class="link" href="supplier-spend-details.html#quality-index"><h3>Supplier Performance vs Spend →</h3></a>
             <canvas id="in-lease-chart2"></canvas>
             <div class="recommendation">
               <strong>Recommendation:</strong> Focus on high-spend, low-performance suppliers for improvement.
@@ -415,7 +415,7 @@
             </table>
           </div>
           <div class="tile">
-            <a class="link" href="supplier-spend-details.html#quality-index"><h3>Best and Worst Supplier vs Spend →</h3></a>
+            <a class="link" href="supplier-spend-details.html#quality-index"><h3>Supplier Performance vs Spend →</h3></a>
             <canvas id="remarketing-chart2"></canvas>
             <div class="recommendation">
               <strong>Recommendation:</strong> Reevaluate contracts with underperforming suppliers.
@@ -446,8 +446,8 @@
         { supplier: 'ABC Motors', category: 'Vehicle Suppliers', performance: 90, spend: 250000 },
         { supplier: 'XYZ Financing', category: 'Financing Lenders', performance: 85, spend: 150000 },
         { supplier: 'Legal Partners', category: 'Legal', performance: 70, spend: 120000 },
-        { supplier: 'Fast Transport', category: 'Transporters', performance: 60, spend: 150000 },
-        { supplier: 'Upfit Solutions', category: 'Up-fitters', performance: 50, spend: 130000 },
+        { supplier: 'Fast Transport', category: 'Transporters', performance: 30, spend: 150000 },
+        { supplier: 'Upfit Solutions', category: 'Up-fitters', performance: 25, spend: 130000 },
         { supplier: 'Title Experts', category: 'Title Registration', performance: 40, spend: 100000 },
         // Additional suppliers if needed
       ]
@@ -471,8 +471,8 @@
         { supplier: 'Service Masters', category: 'Service', performance: 85, spend: 150000 },
         { supplier: 'Tyre Pros', category: 'Tyres', performance: 90, spend: 120000 },
         { supplier: 'Fuel Corp', category: 'Fuel', performance: 70, spend: 100000 },
-        { supplier: 'Transport Hub', category: 'Transporters', performance: 60, spend: 120000 },
-        { supplier: 'Compliance Check', category: 'Compliance', performance: 50, spend: 110000 },
+        { supplier: 'Transport Hub', category: 'Transporters', performance: 40, spend: 120000 },
+        { supplier: 'Compliance Check', category: 'Compliance', performance: 30, spend: 110000 },
         // Additional suppliers if needed
       ]
     };
@@ -492,9 +492,9 @@
       supplierPerformance: [
         { supplier: 'Transport Pro', category: 'Transporters', performance: 75, spend: 200000 },
         { supplier: 'Compliance Co.', category: 'Compliance', performance: 80, spend: 180000 },
-        { supplier: 'Repair Masters', category: 'Repair', performance: 65, spend: 160000 },
+        { supplier: 'Repair Masters', category: 'Repair', performance: 45, spend: 160000 },
         { supplier: 'Inspect It', category: 'Inspection', performance: 90, spend: 120000 },
-        { supplier: 'Resale Partners', category: 'Vehicle Resale', performance: 55, spend: 140000 },
+        { supplier: 'Resale Partners', category: 'Vehicle Resale', performance: 35, spend: 140000 },
         { supplier: 'Service Now', category: 'Service', performance: 70, spend: 130000 },
         // Additional suppliers if needed
       ]
@@ -593,7 +593,7 @@ assetAcquisitionData.top5Suppliers.forEach(function(supplier) {
   table1.appendChild(row);
 });
 
-// Asset Acquisition - Best and Worst Supplier vs Spend
+// Asset Acquisition - Supplier Performance vs Spend
 var ctx2 = document.getElementById('asset-acquisition-chart2').getContext('2d');
 var scatterData = assetAcquisitionData.supplierPerformance.map(function(item) {
   return {
@@ -743,7 +743,7 @@ inLeaseData.top5Suppliers.forEach(function(supplier) {
   table2.appendChild(row);
 });
 
-// In-Lease - Best and Worst Supplier vs Spend
+// In-Lease - Supplier Performance vs Spend
 var ctx4 = document.getElementById('in-lease-chart2').getContext('2d');
 var scatterData2 = inLeaseData.supplierPerformance.map(function(item) {
   return {
@@ -893,7 +893,7 @@ remarketingData.top5Suppliers.forEach(function(supplier) {
   table3.appendChild(row);
 });
 
-// Remarketing - Best and Worst Supplier vs Spend
+// Remarketing - Supplier Performance vs Spend
 var ctx6 = document.getElementById('remarketing-chart2').getContext('2d');
 var scatterData3 = remarketingData.supplierPerformance.map(function(item) {
   return {
