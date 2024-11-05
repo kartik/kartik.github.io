@@ -431,10 +431,10 @@
                                         <td>$650,000</td>
                                         <td>$700,000</td>
                                         <td style="color: orange;">72</td>
-                                        <td>Resale value 10% lower than comparable vendors</td>
+                                        <td>Resale value 10% lower than comparable suppliers</td>
                                         <td>
                                             <span class="action-item" data-modal="modal-lower-score">
-                                                <i class="fas fa-thumbs-down"></i> Lower vendor preference score
+                                                <i class="fas fa-thumbs-down"></i> Lower supplier performance score
                                             </span>
                                         </td>
                                     </tr>
@@ -574,11 +574,11 @@ Best regards,
         </div>
     </div>
 
-    <!-- Lower Vendor Preference Score Modal -->
+    <!-- Lower Supplier Preference Score Modal -->
     <div id="modal-lower-score" class="modal">
         <div class="modal-content">
             <span class="close" data-modal="modal-lower-score">&times;</span>
-            <h2>Adjust Vendor Preference Score</h2>
+            <h2>Adjust Supplier Preference Score</h2>
             <p>Current Score: <span id="current-score">72</span></p>
             <input type="range" id="score-slider" name="score-slider" min="0" max="100" value="72" oninput="document.getElementById('current-score').innerText = this.value;">
             <br><br>
@@ -781,7 +781,7 @@ Best regards,
         function updateScore() {
             var score = document.getElementById('score-slider').value;
             var comment = document.getElementById('score-comment').value;
-            alert('Vendor preference score updated to ' + score + '.\nReason: ' + comment);
+            alert('Supplier preference score updated to ' + score + '.\nReason: ' + comment);
             document.getElementById('modal-lower-score').style.display = 'none';
         }
 
