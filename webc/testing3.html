@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Top Posts and Comments</title>
+    <style>
+        /* Basic Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #FF4500; /* Reddit's orange color */
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+
+        .card-header h2 {
+            font-size: 1.2em;
+            color: #0079d3; /* Link color */
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .card-header .subreddit {
+            font-size: 0.9em;
+            color: #555;
+            margin-right: 10px;
+        }
+
+        .card-header .upvotes {
+            font-size: 1em;
+            color: #ff4500;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header .upvotes::before {
+            content: '▲';
+            margin-right: 5px;
+            font-size: 0.8em;
+        }
+
+        .card-image {
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .card-content {
+            padding: 15px 20px;
+            display: none;
+            border-top: 1px solid #eee;
+        }
+
+        .comment {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comment:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .comment-body {
+            margin-bottom: 5px;
+        }
+
+        .comment-upvotes {
+            font-size: 0.9em;
+            color: #ff4500;
+            display: flex;
+            align-items: center;
+        }
+
+        .comment-upvotes::before {
+            content: '▲';
+            margin-right: 5px;
+            font-size: 0.8em;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .card-header h2 {
+                margin-bottom: 10px;
+            }
+
+            .card-header .subreddit,
+            .card-header .upvotes {
+                margin-right: 0;
+            }
+
+            .card-image {
+                max-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Top Reddit Posts and Comments</h1>
+        <div id="postsContainer">
+            <!-- Post cards will be inserted here -->
+        </div>
+        <div class="loading" id="loading">Loading more posts...</div>
+    </div>
+
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Configuration Constants
+        const SUBREDDIT = 'wallstreetbets+cozyplaces+ArchitecturePorn+bayarea'; // Multiple subreddits
+        const TIMEFRAME = 'day';       // options: 'day', 'week', 'month', 'year'
+        const POST_LIMIT = 20;         // number of posts to fetch per request
+        const MIN_UPVOTES = 10;        // minimum upvotes for comments
+        const TOTAL_POSTS = 100;       // target number of posts to fetch in total
+        let after = null;              // pagination marker for Reddit API
+        let fetchedPosts = 0;          // counter for fetched posts
+        let lock = false;              // lock to prevent multiple concurrent fetches
+        let loadedIDArray = [];        // array to store loaded post IDs
+
+        // Regular Expression to check for image URLs
+        const imageRegEx = /.*\.(jpg|jpeg|png|gif)$/i;
+
+        $(document).ready(function() {
+            fetchTopPosts();
+
+            // Infinite Scroll
+            $(window).on('scroll', function() {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 500) {
+                    fetchTopPosts();
+                }
+            });
+        });
+
+        function fetchTopPosts() {
+            if (fetchedPosts >= TOTAL_POSTS || lock) return;
+
+            lock = true;
+            $('#loading').show();
+
+            let url = `https://www.reddit.com/r/${SUBREDDIT}/top/.json?limit=${POST_LIMIT}&t=${TIMEFRAME}`;
+            if (after) {
+                url += `&after=${after}`;
+            }
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    const posts = data.data.children;
+                    after = data.data.after;
+
+                    posts.forEach(post => {
+                        if (fetchedPosts >= TOTAL_POSTS) return;
+
+                        const postData = post.data;
+
+                        // Skip NSFW posts
+                        if (postData.over_18) return;
+
+                        // Avoid duplicates
+                        if (loadedIDArray.includes(postData.id)) return;
+
+                        const postId = postData.id;
+                        const postTitle = postData.title;
+                        const subreddit = postData.subreddit;
+                        const upvotes = postData.ups;
+                        const postURL = postData.url;
+
+                        // Check if the post has an image
+                        const hasImage = imageRegEx.test(postURL);
+                        const imageUrl = hasImage ? postURL : null;
+
+                        createPostCard(postId, postTitle, subreddit, upvotes, imageUrl);
+                        fetchedPosts++;
+                        loadedIDArray.push(postId);
+                    });
+
+                    // Hide loading spinner if no more posts
+                    if (!after || fetchedPosts >= TOTAL_POSTS) {
+                        $('#loading').hide();
+                    }
+
+                    lock = false;
+                },
+                error: function(err) {
+                    console.error('Error fetching posts:', err);
+                    $('#loading').text('Failed to load posts.');
+                    lock = false;
+                }
+            });
+        }
+
+        function createPostCard(postId, postTitle, subreddit, upvotes, imageUrl) {
+            // Create card element
+            const card = $(`
+                <div class="card" data-post-id="${postId}">
+                    <div class="card-header">
+                        <h2>${escapeHtml(postTitle)}</h2>
+                        <span class="subreddit">r/${escapeHtml(subreddit)}</span>
+                        <span class="upvotes">${upvotes}</span>
+                    </div>
+                    ${imageUrl ? `<div class="card-image"><img src="${escapeHtml(imageUrl)}" alt="Post Image"></div>` : ''}
+                    <div class="card-content">
+                        <p>Loading comments...</p>
+                    </div>
+                </div>
+            `);
+
+            // Append the card to the container
+            $('#postsContainer').append(card);
+
+            // Click event to toggle comments
+            card.find('.card-header').on('click', function() {
+                const content = $(this).nextAll('.card-content').first();
+
+                if (content.is(':visible')) {
+                    content.slideUp();
+                } else {
+                    // If comments are already loaded, just toggle
+                    if (content.data('loaded')) {
+                        content.slideDown();
+                    } else {
+                        // Fetch and display comments
+                        fetchComments(postId, content);
+                    }
+                }
+            });
+        }
+
+        function fetchComments(postId, contentElement) {
+            const commentURL = `https://www.reddit.com/r/${SUBREDDIT}/comments/${postId}.json?sort=top&limit=20`;
+
+            $.ajax({
+                url: commentURL,
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    const comments = data[1].data.children
+                        .filter(child => child.kind === 't1' && child.data.ups > MIN_UPVOTES)
+                        .map(child => child.data)
+                        .sort((a, b) => b.ups - a.ups); // Sort by upvotes descending
+
+                    if (comments.length === 0) {
+                        contentElement.html('<p>No comments available.</p>');
+                    } else {
+                        const commentsHtml = comments.map(comment => `
+                            <div class="comment">
+                                <div class="comment-body">${escapeHtml(comment.body)}</div>
+                                <div class="comment-upvotes">${comment.ups}</div>
+                            </div>
+                        `).join('');
+                        contentElement.html(commentsHtml);
+                    }
+
+                    // Mark as loaded
+                    contentElement.data('loaded', true);
+                    contentElement.slideDown();
+                },
+                error: function(err) {
+                    console.error('Error fetching comments:', err);
+                    contentElement.html('<p>Failed to load comments.</p>').slideDown();
+                }
+            });
+        }
+
+        // Utility function to escape HTML to prevent XSS
+        function escapeHtml(text) {
+            return $('<div>').text(text).html();
+        }
+    </script>
+</body>
+</html>

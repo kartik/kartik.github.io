@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Comments</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Top Comments from Reddit</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Post Title</th>
+                    <th>Comment</th>
+                    <th>Upvotes</th>
+                </tr>
+            </thead>
+            <tbody id="commentsTable">
+                <!-- Results will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Constants for easy configuration
+        const SUBREDDIT = 'wallstreetbets';
+        const TIMEFRAME = 'day';       // options: 'day', 'week', 'month', 'year'
+        const POST_LIMIT = 20;         // number of posts to fetch per request
+        const MIN_UPVOTES = 10;        // minimum upvotes for comments
+        const TOTAL_POSTS = 100;       // target number of posts to fetch in total
+        let after = null;              // pagination marker for Reddit API
+
+        $(document).ready(function() {
+            fetchTopPosts();
+        });
+
+        function fetchTopPosts() {
+            const url = `https://www.reddit.com/r/${SUBREDDIT}/top/.json?limit=${POST_LIMIT}&t=${TIMEFRAME}${after ? `&after=${after}` : ''}`;
+            
+            $.ajax({
+                url: url,
+                dataType: 'jsonp',        // Use JSONP for cross-domain requests
+                jsonp: 'jsonp',
+                success: function(data) {
+                    const posts = data.data.children;
+                    after = data.data.after; // update the pagination marker
+                    posts.forEach(post => {
+                        const postId = post.data.id;
+                        const postTitle = post.data.title;
+                        fetchComments(postId, postTitle);
+                    });
+
+                    // Continue fetching posts if the target number isn't reached and there's a next page
+                    if (after && $('#commentsTable tr').length < TOTAL_POSTS) {
+                        fetchTopPosts();
+                    }
+                }
+            });
+        }
+
+        function fetchComments(postId, postTitle) {
+            const commentURL = `https://www.reddit.com/r/${SUBREDDIT}/comments/${postId}.json`;
+            
+            $.ajax({
+                url: commentURL,
+                dataType: 'jsonp',        // Use JSONP for cross-domain requests
+                jsonp: 'jsonp',
+                success: function(data) {
+                    const comments = data[1].data.children;
+                    comments.forEach(comment => {
+                        const commentData = comment.data;
+                        if (commentData.ups > MIN_UPVOTES) {
+                            const commentText = commentData.body;
+                            const upvotes = commentData.ups;
+                            appendToTable(postTitle, commentText, upvotes);
+                        }
+                    });
+                }
+            });
+        }
+
+        function appendToTable(postTitle, commentText, upvotes) {
+            $('#commentsTable').append(`
+                <tr>
+                    <td>${postTitle}</td>
+                    <td>${commentText}</td>
+                    <td>${upvotes}</td>
+                </tr>
+            `);
+        }
+    </script>
+</body>
+</html>
