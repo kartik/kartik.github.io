@@ -11,7 +11,6 @@
   <title>Ridecell Supplier Intelligence Hub</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Include styles from SOURCE.html, and add styles for swimlanes */
     body {
       font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
@@ -44,13 +43,13 @@
       color: #f44336;
     }
     .filters {
-      padding: 20px;
+      padding: 15px 20px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      background-color: #fff;
-      border-bottom: 1px solid #eaeaea;
       justify-content: space-between;
+      background: #fafafa;
+      border-bottom: 2px solid #eaeaea;
     }
     .filters label {
       margin-right: 10px;
@@ -170,8 +169,6 @@
       flex-grow: 1;
       display: inline-block;
     }
-
-    /* Add styles for swimlanes */
     .swimlane-container {
       display: flex;
       padding: 10px;
@@ -189,6 +186,7 @@
     }
     .swimlane h2 {
       margin: 0;
+      font-size: 20px;
     }
     .swimlane .filter {
       padding: 10px;
@@ -221,6 +219,7 @@
     }
     .tile h3 {
       margin-top: 0;
+      font-weight: normal;
     }
     .chart-container {
       width: 100%;
@@ -255,47 +254,39 @@
       padding: 10px;
       border-radius: 5px;
     }
-
-    /* subnav Styling */
     .subnav {
-        display: flex;
-        align-items: center;
-        background-color: #ffffff;
-        border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
     }
-
     .nav-item {
-        font-size: 14px;
-        color: #666666;
-        cursor: pointer;
-        padding: 20px;
-        text-decoration: none;
+      font-size: 14px;
+      color: #666666;
+      cursor: pointer;
+      padding: 20px;
+      text-decoration: none;
     }
-
     .nav-item.logo {
-        font-weight: bold;
-        color: #000000;
-        font-size: 22px;
+      font-weight: bold;
+      color: #000000;
+      font-size: 22px;
     }
-
     .nav-item.active {
-        color: #000000;
-        border-bottom: 4px solid #4CAF50; /* Green underline for active state */
-        background-color: hsl(105deg 35.29% 93.33%);
-        padding: 30px 20px 24px;
+      color: #000000;
+      border-bottom: 4px solid #4CAF50;
+      background-color: hsl(105deg 35.29% 93.33%);
+      padding: 30px 20px 24px;
     }
-
     .link {
-        text-decoration: none;
-        color: #22aaff;
+      text-decoration: none;
+      color: #22aaff;
     }
-    /* Styles for supplier links */
     .supplier-link {
       color: #22aaff;
-      text-decoration: underline;
+      text-decoration: none;
       cursor: pointer;
     }
-    /* Other styles as needed */
   </style>
 </head>
 <body>
@@ -370,7 +361,7 @@
                 <canvas id="oem-chart1"></canvas>
               </div>
               <div class="tile">
-                <h3>OEM: Top 5 Suppliers by Spend</h3>
+                <h3>OEM: Top 3 Suppliers by Spend</h3>
                 <table id="oem-table1">
                   <!-- Table content -->
                 </table>
@@ -392,7 +383,7 @@
                 <canvas id="repair-chart1"></canvas>
               </div>
               <div class="tile">
-                <h3>Repair: Top 5 Suppliers by Spend</h3>
+                <h3>Repair: Top 3 Suppliers by Spend</h3>
                 <table id="repair-table1">
                   <!-- Table content -->
                 </table>
@@ -414,7 +405,7 @@
                 <canvas id="transport-chart1"></canvas>
               </div>
               <div class="tile">
-                <h3>Transport: Top 5 Suppliers by Spend</h3>
+                <h3>Transport: Top 3 Suppliers by Spend</h3>
                 <table id="transport-table1">
                   <!-- Table content -->
                 </table>
@@ -436,7 +427,7 @@
                 <canvas id="upfitters-chart1"></canvas>
               </div>
               <div class="tile">
-                <h3>Up-fitters: Top 5 Suppliers by Spend</h3>
+                <h3>Up-fitters: Top 3 Suppliers by Spend</h3>
                 <table id="upfitters-table1">
                   <!-- Table content -->
                 </table>
@@ -458,7 +449,7 @@
                 <canvas id="storage-chart1"></canvas>
               </div>
               <div class="tile">
-                <h3>Storage: Top 5 Suppliers by Spend</h3>
+                <h3>Storage: Top 3 Suppliers by Spend</h3>
                 <table id="storage-table1">
                   <!-- Table content -->
                 </table>
@@ -480,7 +471,7 @@
                 <canvas id="inspection-chart1"></canvas>
               </div>
               <div class="tile">
-                <h3>Inspection: Top 5 Suppliers by Spend</h3>
+                <h3>Inspection: Top 3 Suppliers by Spend</h3>
                 <table id="inspection-table1">
                   <!-- Table content -->
                 </table>

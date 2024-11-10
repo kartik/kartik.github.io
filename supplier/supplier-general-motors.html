@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="chatbot.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Base Styles */
     body {
       font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
@@ -38,7 +37,6 @@
       flex-grow: 1;
       display: inline-block;
     }
-    /* Subnav Styling */
     .subnav {
       display: flex;
       align-items: center;
@@ -67,31 +65,30 @@
       text-decoration: none;
       color: #22aaff;
     }
-    /* Supplier Profile Styles */
     .profile-header {
       display: flex;
       align-items: center;
-      padding: 20px;
+      padding: 5px 20px;
+      background: #fafafa;
+      border-bottom: 2px solid #eaeaea;
     }
     .profile-header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 20px;
       color: #333;
     }
     .profile-header p {
       margin: 5px 0 0 0;
       color: #777;
     }
-    /* Section Styles */
     .section-heading {
       padding: 20px;
       background-color: #f4f4f9;
     }
     .section-heading h2 {
       margin: 0;
-      font-size: 24px;
+      font-size: 20px;
     }
-    /* Cards Container */
     .cards-container {
       display: flex;
       flex-wrap: wrap;
@@ -110,6 +107,8 @@
     }
     .card h3 {
       margin-top: 0;
+      margin-bottom: 0px;
+      font-weight: normal;
     }
     .card canvas {
       margin-top: 10px;
@@ -118,7 +117,6 @@
       margin-top: 10px;
       color: #555;
     }
-    /* Tooltip Styles */
     .tooltip {
       position: relative;
       display: inline-block;
@@ -145,7 +143,6 @@
       visibility: visible;
       opacity: 1;
     }
-    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
@@ -189,7 +186,6 @@
       right: 20px;
       top: 20px;
     }
-    /* Table Styles */
     .vehicle-table {
       width: 100%;
       border-collapse: collapse;
@@ -203,7 +199,6 @@
       background-color: #f2f2f2;
       text-align: left;
     }
-    /* Recommendations Table */
     .recommendations-table {
       width: 100%;
       border-collapse: collapse;
@@ -252,7 +247,6 @@
     .action-text {
       font-size: 14px;
     }
-    /* Timeline Styles in Modal */
     .timeline {
       list-style-type: none;
       position: relative;
@@ -313,16 +307,17 @@
       <img src="../tabs.png" style="width: 78px;">
     </div>
     <div id="content-container">
-      <div class="subnav">
+<!--       <div class="subnav">
         <div class="nav-item logo">Supplier Intelligence</div>
         <a class="nav-item" href="supplier-blueprint.html">Blueprint</a>
         <a class="nav-item" href="supplier-spend.html">Spend</a>
         <a class="nav-item" href="supplier-perf.html">Performance</a>
-      </div>
+      </div> -->
 
       <div class="profile-header">
         <h1>General Motors</h1>
         <span class="priority-chip info-priority">OEM</span>
+        <img src="back.png" onclick="window.history.back();" style="width:48px; cursor: pointer;">
       </div>
 
       <!-- Section: Financial Overview -->

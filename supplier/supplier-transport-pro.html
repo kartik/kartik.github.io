@@ -71,11 +71,13 @@
     .profile-header {
       display: flex;
       align-items: center;
-      padding: 20px;
+      padding: 5px 20px;
+      background: #fafafa;
+      border-bottom: 2px solid #eaeaea;
     }
     .profile-header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 20px;
       color: #333;
     }
     .profile-header p {
@@ -89,7 +91,7 @@
     }
     .section-heading h2 {
       margin: 0;
-      font-size: 24px;
+      font-size: 20px;
     }
     /* Cards Container */
     .cards-container {
@@ -110,6 +112,8 @@
     }
     .card h3 {
       margin-top: 0;
+      margin-bottom: 0px;
+      font-weight: normal;
     }
     .card canvas {
       margin-top: 10px;
@@ -313,16 +317,17 @@
       <img src="../tabs.png" style="width: 78px;">
     </div>
     <div id="content-container">
-      <div class="subnav">
+<!--       <div class="subnav">
         <div class="nav-item logo">Supplier Intelligence</div>
         <a class="nav-item" href="supplier-blueprint.html">Blueprint</a>
         <a class="nav-item" href="supplier-spend.html">Spend</a>
         <a class="nav-item" href="supplier-perf.html">Performance</a>
-      </div>
+      </div> -->
 
       <div class="profile-header">
         <h1>Transport Pro</h1>
         <span class="priority-chip info-priority">Transportation Services</span>
+        <img src="back.png" onclick="window.history.back();" style="width:48px; cursor: pointer;">
       </div>
 
       <!-- Section: Operational Overview -->
