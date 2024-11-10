@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Webpage Chatbot Demo</title>
+  <link rel="stylesheet" href="chatbot.css">
+</head>
+<body>
+
+  <!-- Main content area where webpage content goes -->
+  <div id="content-container">
+'Supplier Intelligence\nBlueprint\nSpend\nPerformance\nAll Regions\nNorth\nSouth\nEast\nWest\n \nYear to Date\nQ1\nQ2\nQ3\nQ4\n \nAll Suppliers\nGeneral Motors\nTransMove Logistics\nSpeedyTrans Co.\nQuickInspect Services\nRapidRepair Inc.\nSecureStorage Facilities\nSafeKeep Warehousing\nAutoUpfit Solutions\nEliteRegistration Agency\nQuickDocs Services\nResaleExperts LLC\nBy Lifecycle\nBy Category\n🚙 Asset Acquisition\n(Sourcing to Delivery)\nAcquisition: Spend by Category ▲\nAcquisition: Top 5 Suppliers by Spend →\nSupplier\tSpend Amount\t% to Target\tAlert\nGeneral Motors\t$120,500,000\t104.78%\tOver Target\nFord\t$20,000,000\t1111.11%\tOver Target\nLightningFast Transport\t$15,000,000\t187.50%\tOver Target\nLegalPros\t$1,000,000\t100.00%\tAlmost Over Target\nUpfit Solutions\t$1,000,000\t100.00%\tAlmost Over Target\nAcquisition: Quality Index\nRecommendation: Consider alternative options or renegotiations with highlighted suppliers.\n📄 In-Lease\n(Fleet Operation Services)\nIn-Lease: Spend by Category ▼\nIn-Lease: Top 5 Suppliers by Spend\nSupplier\tSpend Amount\t% to Target\tAlert\nRapidRepair Inc.\t$20,000,000\t111.11%\tOver Target\nService Masters\t$15,000,000\t100.00%\tAlmost Over Target\nTyre Pros\t$12,000,000\t120.00%\tOver Target\nFuel Corp\t$10,000,000\t83.33%\tAlmost Over Target\nTransport Hub\t$8,000,000\t114.29%\tOver Target\nIn-Lease: Quality Index\nRecommendation: Focus on high-spend, low-performance suppliers for improvement.\n🏷️ Remarketing\n(Resell or Reallocate)\nRemarketing: Spend by Category ▲\nRemarketing: Top 5 Suppliers by Spend\nSupplier\tSpend Amount\t% to Target\tAlert\nTransport Pro\t$20,000,000\t111.11%\tOver Target\nCompliance Co.\t$18,000,000\t120.00%\tOver Target\nRapidRepair Inc.\t$15,000,000\t125.00%\tOver Target\nInspect It\t$12,000,000\t100.00%\tAlmost Over Target\nResaleExperts LLC\t$10,000,000\t83.33%\tAlmost Over Target\nRemarketing: Quality Index →\nRecommendation: Reevaluate contracts with underperforming suppliers.'
+  </div>
+
+  <!-- Floating chat icon -->
+  <div id="chat-icon" onclick="toggleChat()"><img src="robot-icon.png" style="height:80px"></div>
+
+  <!-- Chat window -->
+  <div id="chat-window">
+    <div id="chat-header">
+      <span>FleetCaptain</span>
+      <span id="close-chat" onclick="toggleChat()">✖</span>
+    </div>
+    <div id="chat-messages"></div>
+    <!-- Loading indicator -->
+    <div id="loading-indicator">
+      <div class="spinner"></div>
+    </div>
+    <div id="chat-input-container">
+      <input type="text" id="chat-input" placeholder="Ask a question..." onkeypress="handleKeyPress(event)">
+      <button id="send-button" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- Include Marked.js for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supplier Profile - RapidRepair Inc</title>
+  <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <!-- Include Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="chatbot.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Base Styles */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+    }
+    /* Subnav Styling */
+    .subnav {
+      display: flex;
+      align-items: center;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .nav-item {
+      font-size: 14px;
+      color: #666666;
+      cursor: pointer;
+      padding: 20px;
+      text-decoration: none;
+    }
+    .nav-item.logo {
+      font-weight: bold;
+      color: #000000;
+      font-size: 22px;
+    }
+    .nav-item.active {
+      color: #000000;
+      border-bottom: 4px solid #4CAF50; /* Green underline for active state */
+      background-color: hsl(105deg 35.29% 93.33%);
+      padding: 30px 20px 24px;
+    }
+    .link {
+      text-decoration: none;
+      color: #22aaff;
+    }
+    /* Supplier Profile Styles */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+    }
+    .profile-header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #333;
+    }
+    .profile-header p {
+      margin: 5px 0 0 0;
+      color: #777;
+    }
+    /* Section Styles */
+    .section-heading {
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    .section-heading h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+    /* Cards Container */
+    .cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 0 20px 20px 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      flex: 1 1 calc(33% - 40px);
+      box-sizing: border-box;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      position: relative;
+      align-self: flex-start;
+    }
+    .card h3 {
+      margin-top: 0;
+    }
+    .card canvas {
+      margin-top: 10px;
+    }
+    .card .insight-text {
+      margin-top: 10px;
+      color: #555;
+    }
+    /* Tooltip Styles */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* Position above */
+      left: 50%;
+      margin-left: -100px; /* Center the tooltip */
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.8em;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 5;
+      padding-top: 100px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 35%;
+      border-radius: 10px;
+      position: relative;
+    }
+    .close, .modal-close-button {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close {
+      font-size: 28px;
+      color: #aaa;
+    }
+    .close:hover {
+      color: #000;
+    }
+    .modal h2 {
+      margin-top: 0;
+    }
+    .modal .modal-close-button {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+    }
+    /* Table Styles */
+    .vehicle-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .vehicle-table th, .vehicle-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .vehicle-table th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+    /* Recommendations Table */
+    .recommendations-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .recommendations-table th, .recommendations-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: middle;
+    }
+    .recommendations-table th {
+      background-color: #f2f2f2;
+      text-align: center;
+    }
+    .recommendations-table td:first-child {
+      text-align: left;
+    }
+    .priority-chip {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .high-priority {
+      background-color: #f44336;
+    }
+    .medium-priority {
+      background-color: #ff9800;
+    }
+    .low-priority {
+      background-color: #4caf50;
+    }
+    .info-priority {
+      background-color: gray;
+      margin-left: 10px;
+    }
+    .action-icon, .action-text {
+      cursor: pointer;
+      color: #1a73e8;
+      font-size: 20px;
+      margin-right: 5px;
+      display: inline-block;
+    }
+    .action-text {
+      font-size: 14px;
+    }
+    /* Timeline Styles in Modal */
+    .timeline {
+      list-style-type: none;
+      position: relative;
+      margin: 20px 0;
+      padding: 0;
+    }
+    .timeline:before {
+      content: '';
+      background: #d4d9df;
+      display: inline-block;
+      position: absolute;
+      left: 18px;
+      width: 5px;
+      height: 82%;
+      z-index: 400;
+      border-radius: 1%;
+    }
+    .timeline > li {
+      margin: 20px 0;
+      padding-left: 40px;
+    }
+    .timeline > li:before {
+      content: '';
+      background: white;
+      display: inline-block;
+      position: absolute;
+      border-radius: 50%;
+      border: 3px solid #22aaff;
+      left: 11px;
+      width: 15px;
+      height: 15px;
+      z-index: 400;
+    }
+    .timeline > li.in-progress:before {
+      border-color: #4caf50;
+    }
+    .timeline > li.completed:before {
+      border-color: #4caf50;
+      background-color: #4caf50;
+    }
+    .timeline > li .status {
+      font-size: 12px;
+      color: #777;
+    }
+    .timeline > li .duration {
+      font-size: 12px;
+      color: #555;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar-container">
+    <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="subnav">
+        <div class="nav-item logo">Supplier Intelligence</div>
+        <a class="nav-item" href="supplier-blueprint.html">Blueprint</a>
+        <a class="nav-item" href="supplier-spend.html">Spend</a>
+        <a class="nav-item" href="supplier-perf.html">Performance</a>
+      </div>
+
+      <div class="profile-header">
+        <h1>RapidRepair Inc</h1>
+        <span class="priority-chip info-priority">Repair Services</span>
+      </div>
+
+      <!-- Section: Operational Overview -->
+      <div class="section-heading">
+        <h2>🔧 Operational Overview</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: Total Repairs Completed YTD -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Total Repairs Completed YTD</h3>
+            <span class="tooltiptext">Total number of vehicle repairs completed year-to-date.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">25,000</p>
+          <p style="color: #4caf50;">+10% from last year</p>
+          <canvas id="repairsChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Increase in fleet size and aging vehicles.<br>
+            <strong>Future Projection:</strong> Expected to reach 28,000 repairs by end of the year.<br>
+            <strong>Impact:</strong> Indicates high reliance on RapidRepair Inc's services.
+          </p>
+        </div>
+        <!-- Card 2: Average Repair Cost -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Average Repair Cost</h3>
+            <span class="tooltiptext">Average cost per repair service.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">$800</p>
+          <p style="color: #ff9800;">Stable compared to last year</p>
+          <canvas id="repairCostChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Consistent pricing despite market fluctuations.<br>
+            <strong>Future Projection:</strong> Costs may rise due to inflationary pressures.<br>
+            <strong>Impact:</strong> Could affect client billing and satisfaction.
+          </p>
+        </div>
+        <!-- Card 3: Total Spend YTD -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Total Spend YTD</h3>
+            <span class="tooltiptext">Total amount billed through RapidRepair Inc year-to-date.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">$20,000,000</p>
+          <p style="color: #4caf50;">+12% from last year</p>
+          <canvas id="totalSpendChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Higher volume of repairs and increased service rates.<br>
+            <strong>Future Projection:</strong> Anticipated to grow by 15% next year.<br>
+            <strong>Impact:</strong> May require renegotiation of client contracts.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Performance Metrics -->
+      <div class="section-heading">
+        <h2>📈 Performance Metrics</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: Average Repair Time -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Average Repair Time</h3>
+            <span class="tooltiptext">Average time taken to complete a repair.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">2.5 Days</p>
+          <p style="color: #4caf50;">Improved by 0.5 Days</p>
+          <canvas id="repairTimeChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Streamlined repair processes and better resource allocation.<br>
+            <strong>Future Projection:</strong> Aiming for 2 Days average by next quarter.<br>
+            <strong>Impact:</strong> Reduces vehicle downtime, improving client satisfaction.
+          </p>
+        </div>
+        <!-- Card 2: On-Time Completion Rate -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>On-Time Completion Rate</h3>
+            <span class="tooltiptext">Percentage of repairs completed within the promised timeframe.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">95%</p>
+          <p style="color: #4caf50;">+3% from last quarter</p>
+          <canvas id="onTimeCompletionChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Improved scheduling and parts availability.<br>
+            <strong>Future Projection:</strong> Expected to maintain high rates.<br>
+            <strong>Impact:</strong> Enhances reliability and client trust.
+          </p>
+        </div>
+        <!-- Card 3: Customer Satisfaction Score -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Customer Satisfaction Score</h3>
+            <span class="tooltiptext">Average satisfaction rating from clients.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">4.7 / 5</p>
+          <p style="color: #4caf50;">Consistent Performance</p>
+          <canvas id="customerSatisfactionChart" width="216" height="216"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> High-quality service and effective communication.<br>
+            <strong>Future Projection:</strong> Aiming to achieve 4.8 with feedback initiatives.<br>
+            <strong>Impact:</strong> Strengthens client relationships and retention.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Quality Metrics -->
+      <div class="section-heading">
+        <h2>🛠️ Quality Metrics</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: Warranty Claim Rate -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Warranty Claim Rate</h3>
+            <span class="tooltiptext">Percentage of repairs that resulted in warranty claims.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">2%</p>
+          <p style="color: #4caf50;">Improved by 1%</p>
+          <canvas id="warrantyClaimChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Enhanced repair quality and parts durability.<br>
+            <strong>Future Projection:</strong> Targeting a rate below 1.5% next quarter.<br>
+            <strong>Impact:</strong> Reduces additional costs and client inconvenience.
+          </p>
+        </div>
+        <!-- Card 2: Repeat Repair Rate -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Repeat Repair Rate</h3>
+            <span class="tooltiptext">Percentage of vehicles returning for the same issue.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">5%</p>
+          <p style="color: #ff9800;">Stable compared to last quarter</p>
+          <canvas id="repeatRepairChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Certain complex issues require multiple interventions.<br>
+            <strong>Future Projection:</strong> Implementing solutions to reduce rate to 4%.<br>
+            <strong>Impact:</strong> Enhances efficiency and client satisfaction.
+          </p>
+        </div>
+        <!-- Card 3: Safety Compliance Rate -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Safety Compliance Rate</h3>
+            <span class="tooltiptext">Adherence to safety standards during repairs.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">92%</p>
+          <p style="color: #4caf50;">Maintained High Standards</p>
+          <canvas id="safetyComplianceChart" width="216" height="216"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Rigorous training and safety protocols.<br>
+            <strong>Future Projection:</strong> Aiming for consistent 100% compliance.<br>
+            <strong>Impact:</strong> Ensures safety of personnel and vehicles.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Vehicle Repair Details -->
+      <div class="section-heading">
+        <h2>🚗 Vehicle Repair Details</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Vehicle Repair Details Table (Spanning Full Width) -->
+        <div class="card" style="flex: 1 1 100%;">
+          <table class="vehicle-table">
+            <tr>
+              <th>Make</th>
+              <th>Model</th>
+              <th>Year</th>
+              <th>Repairs Completed</th>
+              <th>Common Issues</th>
+            </tr>
+            <!-- Added 10 rows -->
+            <tr>
+              <td>Ford</td>
+              <td>Fusion</td>
+              <td>2018</td>
+              <td>3,500</td>
+              <td>Brake System</td>
+            </tr>
+            <tr>
+              <td>Toyota</td>
+              <td>Camry</td>
+              <td>2019</td>
+              <td>4,000</td>
+              <td>Transmission</td>
+            </tr>
+            <tr>
+              <td>Chevrolet</td>
+              <td>Malibu</td>
+              <td>2017</td>
+              <td>2,800</td>
+              <td>Engine Performance</td>
+            </tr>
+            <tr>
+              <td>Honda</td>
+              <td>Accord</td>
+              <td>2020</td>
+              <td>2,200</td>
+              <td>Electrical Systems</td>
+            </tr>
+            <tr>
+              <td>Nissan</td>
+              <td>Altima</td>
+              <td>2016</td>
+              <td>1,500</td>
+              <td>Suspension</td>
+            </tr>
+            <tr>
+              <td>Ford</td>
+              <td>Escape</td>
+              <td>2018</td>
+              <td>1,800</td>
+              <td>Air Conditioning</td>
+            </tr>
+            <tr>
+              <td>Toyota</td>
+              <td>Corolla</td>
+              <td>2019</td>
+              <td>2,600</td>
+              <td>Steering Issues</td>
+            </tr>
+            <tr>
+              <td>Chevrolet</td>
+              <td>Impala</td>
+              <td>2017</td>
+              <td>1,200</td>
+              <td>Fuel System</td>
+            </tr>
+            <tr>
+              <td>Honda</td>
+              <td>Civic</td>
+              <td>2020</td>
+              <td>2,000</td>
+              <td>Brake System</td>
+            </tr>
+            <tr>
+              <td>Nissan</td>
+              <td>Sentra</td>
+              <td>2016</td>
+              <td>1,400</td>
+              <td>Transmission</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section: Actionable Recommendations -->
+      <div class="section-heading">
+        <h2>✅ Actionable Recommendations</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Recommendations Table (Spanning Full Width) -->
+        <div class="card" style="flex: 1 1 100%;">
+          <table class="recommendations-table">
+            <tr>
+              <th>Recommendation</th>
+              <th>Priority</th>
+              <th>Impact Score</th>
+              <th>Action</th>
+            </tr>
+            <tr>
+              <td>Negotiate Volume Discounts due to increased repair volumes.</td>
+              <td><span class="priority-chip high-priority">High</span></td>
+              <td>90</td>
+              <td><span class="action-icon" data-action="negotiateDiscounts"><i class="fas fa-handshake"></i></span><span class="action-text" data-action="negotiateDiscounts">Initiate Negotiation</span></td>
+            </tr>
+            <tr>
+              <td>Implement Predictive Maintenance Programs to reduce repair frequency.</td>
+              <td><span class="priority-chip high-priority">High</span></td>
+              <td>85</td>
+              <td><span class="action-icon" data-action="implementPredictive"><i class="fas fa-chart-line"></i></span><span class="action-text" data-action="implementPredictive">Develop Program</span></td>
+            </tr>
+            <tr>
+              <td>Enhance Parts Inventory Management to prevent repair delays.</td>
+              <td><span class="priority-chip medium-priority">Medium</span></td>
+              <td>75</td>
+              <td><span class="action-icon" data-action="enhanceInventory"><i class="fas fa-warehouse"></i></span><span class="action-text" data-action="enhanceInventory">Optimize Inventory</span></td>
+            </tr>
+            <tr>
+              <td>Increase Repair Quality Audits to further reduce warranty claims.</td>
+              <td><span class="priority-chip medium-priority">Medium</span></td>
+              <td>80</td>
+              <td><span class="action-icon" data-action="increaseAudits"><i class="fas fa-search-plus"></i></span><span class="action-text" data-action="increaseAudits">Schedule Audits</span></td>
+            </tr>
+            <tr>
+              <td>Offer Training Programs for Technicians to handle complex repairs.</td>
+              <td><span class="priority-chip low-priority">Low</span></td>
+              <td>65</td>
+              <td><span class="action-icon" data-action="offerTraining"><i class="fas fa-chalkboard-teacher"></i></span><span class="action-text" data-action="offerTraining">Organize Training</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div id="modal" class="modal">
+        <div class="modal-content">
+          <span class="close" id="closeModal">&times;</span>
+          <!-- Modal content will be injected here -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Floating chat icon -->
+    <div id="chat-icon" onclick="toggleChat()"><img src="robot-icon.png" style="height:80px"></div>
+
+    <!-- Chat window -->
+    <div id="chat-window">
+      <div id="chat-header">
+        <span>FleetCaptain</span>
+        <span id="close-chat" onclick="toggleChat()">✖</span>
+      </div>
+      <div id="chat-messages"></div>
+      <!-- Loading indicator -->
+      <div id="loading-indicator">
+        <div class="spinner"></div>
+      </div>
+      <div id="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Ask a question about this data..." onkeypress="handleKeyPress(event)">
+        <button id="send-button" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Actionable Recommendations Icons
+    const actionElements = document.querySelectorAll('.action-icon, .action-text');
+
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+
+    closeModal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // Define actions and their steps with durations
+    const actions = {
+      negotiateDiscounts: {
+        title: 'Negotiating Volume Discounts',
+        steps: [
+          { description: 'Analyze current repair volumes and costs.', duration: 'Expected Duration: 3 days' },
+          { description: 'Prepare proposal for volume discount.', duration: 'Expected Duration: 2 days' },
+          { description: 'Schedule meeting with RapidRepair Inc.', duration: 'Expected Duration: 5 days' }
+        ]
+      },
+      implementPredictive: {
+        title: 'Implementing Predictive Maintenance Programs',
+        steps: [
+          { description: 'Assess fleet data for maintenance patterns.', duration: 'Expected Duration: 4 days' },
+          { description: 'Develop predictive maintenance strategy.', duration: 'Expected Duration: 7 days' },
+          { description: 'Integrate program with RapidRepair Inc.', duration: 'Expected Duration: 10 days' }
+        ]
+      },
+      enhanceInventory: {
+        title: 'Enhancing Parts Inventory Management',
+        steps: [
+          { description: 'Review current parts inventory levels.', duration: 'Expected Duration: 2 days' },
+          { description: 'Collaborate with supplier to optimize stock.', duration: 'Expected Duration: 5 days' },
+          { description: 'Implement real-time inventory tracking.', duration: 'Expected Duration: 8 days' }
+        ]
+      },
+      increaseAudits: {
+        title: 'Increasing Repair Quality Audits',
+        steps: [
+          { description: 'Schedule additional quality audits.', duration: 'Expected Duration: 2 days' },
+          { description: 'Train audit teams on new protocols.', duration: 'Expected Duration: 3 days' },
+          { description: 'Analyze audit results and feedback.', duration: 'Expected Duration: 5 days' }
+        ]
+      },
+      offerTraining: {
+        title: 'Offering Training Programs for Technicians',
+        steps: [
+          { description: 'Identify areas requiring advanced skills.', duration: 'Expected Duration: 3 days' },
+          { description: 'Develop training curriculum.', duration: 'Expected Duration: 6 days' },
+          { description: 'Schedule training sessions with staff.', duration: 'Expected Duration: 10 days' }
+        ]
+      }
+    };
+
+    actionElements.forEach(element => {
+      element.addEventListener('click', () => {
+        const actionKey = element.getAttribute('data-action');
+        const actionDetails = actions[actionKey];
+
+        // Check if actionDetails exists
+        if (!actionDetails) {
+          console.error(`Action details not found for action key: ${actionKey}`);
+          return;
+        }
+
+        // Clear previous content in modal (except close button)
+        const modalContent = modal.querySelector('.modal-content');
+        while (modalContent.childNodes.length > 1) {
+          modalContent.removeChild(modalContent.lastChild);
+        }
+
+        // Populate modal with action details
+        const titleElement = document.createElement('h2');
+        titleElement.textContent = actionDetails.title;
+        modalContent.appendChild(titleElement);
+
+        const stepsList = document.createElement('ul');
+        stepsList.className = 'timeline';
+
+        actionDetails.steps.forEach((step, index) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>Step ${index + 1}:</strong> ${step.description}`;
+          const durationDiv = document.createElement('div');
+          durationDiv.className = 'duration';
+          durationDiv.textContent = step.duration;
+          li.appendChild(durationDiv);
+          if (index === 0) {
+            li.className = 'in-progress';
+            li.innerHTML += '<div class="status">In Progress</div>';
+          } else {
+            li.innerHTML += '<div class="status">Pending</div>';
+          }
+          stepsList.appendChild(li);
+        });
+
+        modalContent.appendChild(stepsList);
+
+        modal.style.display = 'block';
+      });
+    });
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Charts Data
+    // Total Repairs Completed Chart
+    const repairsCtx = document.getElementById('repairsChart').getContext('2d');
+    const repairsChart = new Chart(repairsCtx, {
+      type: 'line',
+      data: {
+        labels: ['2019', '2020', '2021', '2022', '2023'],
+        datasets: [{
+          label: 'Repairs Completed',
+          data: [18000, 20000, 22000, 25000, 28000],
+          borderColor: 'blue',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Repairs'
+            }
+          }
+        }
+      }
+    });
+
+    // Average Repair Cost Chart
+    const repairCostCtx = document.getElementById('repairCostChart').getContext('2d');
+    const repairCostChart = new Chart(repairCostCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023'],
+        datasets: [{
+          label: 'Average Repair Cost ($)',
+          data: [790, 800, 810, 800],
+          backgroundColor: 'green'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 900,
+            title: {
+              display: true,
+              text: 'Cost ($)'
+            }
+          }
+        }
+      }
+    });
+
+    // Total Spend YTD Chart
+    const totalSpendCtx = document.getElementById('totalSpendChart').getContext('2d');
+    const totalSpendChart = new Chart(totalSpendCtx, {
+      type: 'line',
+      data: {
+        labels: ['2019', '2020', '2021', '2022', '2023'],
+        datasets: [{
+          label: 'Total Spend ($ millions)',
+          data: [12, 15, 17, 20, 23],
+          borderColor: 'purple',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: 'Spend ($ millions)'
+            }
+          }
+        }
+      }
+    });
+
+    // Average Repair Time Chart
+    const repairTimeCtx = document.getElementById('repairTimeChart').getContext('2d');
+    const repairTimeChart = new Chart(repairTimeCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023'],
+        datasets: [{
+          label: 'Repair Time (Days)',
+          data: [3, 2.8, 2.6, 2.5],
+          borderColor: 'orange',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            reverse: true,
+            title: {
+              display: true,
+              text: 'Days (Lower is Better)'
+            }
+          }
+        }
+      }
+    });
+
+    // On-Time Completion Rate Chart
+    const onTimeCompletionCtx = document.getElementById('onTimeCompletionChart').getContext('2d');
+    const onTimeCompletionChart = new Chart(onTimeCompletionCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'On-Time Completion (%)',
+          data: [90, 92, 94, 95],
+          backgroundColor: 'teal'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 100,
+            min: 80,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Customer Satisfaction Score Chart
+    const customerSatisfactionCtx = document.getElementById('customerSatisfactionChart').getContext('2d');
+    const customerSatisfactionChart = new Chart(customerSatisfactionCtx, {
+      type: 'pie',
+      data: {
+        labels: ['5 Stars', '4 Stars', '3 Stars', 'Below 3 Stars'],
+        datasets: [{
+          data: [70, 20, 7, 3],
+          backgroundColor: ['green', 'lightgreen', 'orange', 'red']
+        }]
+      },
+      options: {
+        responsive: false,
+        aspectRatio: 1,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    });
+
+    // Warranty Claim Rate Chart
+    const warrantyClaimCtx = document.getElementById('warrantyClaimChart').getContext('2d');
+    const warrantyClaimChart = new Chart(warrantyClaimCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023'],
+        datasets: [{
+          label: 'Warranty Claims (%)',
+          data: [3, 2.5, 2, 2],
+          borderColor: 'red',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 5,
+            min: 0,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Repeat Repair Rate Chart
+    const repeatRepairCtx = document.getElementById('repeatRepairChart').getContext('2d');
+    const repeatRepairChart = new Chart(repeatRepairCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Repeat Repairs (%)',
+          data: [5, 5, 5, 5],
+          backgroundColor: 'grey'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 10,
+            min: 0,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Safety Compliance Rate Chart
+    const safetyComplianceCtx = document.getElementById('safetyComplianceChart').getContext('2d');
+    const safetyComplianceChart = new Chart(safetyComplianceCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Compliant', 'Non-Compliant'],
+        datasets: [{
+          data: [92, 8],
+          backgroundColor: ['#4caf50', '#f44336']
+        }]
+      },
+      options: {
+        responsive: false,
+        aspectRatio: 1,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    });
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

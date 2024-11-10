@@ -50,6 +50,7 @@
       align-items: center;
       background-color: #fff;
       border-bottom: 1px solid #eaeaea;
+      justify-content: space-between;
     }
     .filters label {
       margin-right: 10px;
@@ -65,6 +66,30 @@
     .filters select:focus {
       outline: none;
       border-color: #3d76e9;
+    }
+    .toggle-buttons {
+      display: flex;
+      align-items: center;
+    }
+    .toggle-buttons button {
+      padding: 8px 15px;
+      border: none;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .toggle-buttons button.selected {
+      background-color: #4caf50;
+      color: #fff;
+    }
+    .toggle-buttons button:first-child {
+      border-radius: 5px 0 0 5px;
+    }
+    .toggle-buttons button:last-child {
+      border-radius: 0 5px 5px 0;
+    }
+    .toggle-buttons button:not(:last-child) {
+      border-right: 1px solid #ccc;
     }
     .metrics {
       display: grid;
@@ -256,6 +281,12 @@
         text-decoration: none;
         color: #22aaff;
     }
+    /* Styles for supplier links */
+    .supplier-link {
+      color: #22aaff;
+      text-decoration: none;
+      cursor: pointer;
+    }
     /* Other styles as needed */
   </style>
 </head>
@@ -278,35 +309,42 @@
 
       <!-- Filters -->
       <div class="filters">
-        <select id="regionSelect">
-          <option value="all">All Regions</option>
-          <option value="north">North</option>
-          <option value="south">South</option>
-          <option value="east">East</option>
-          <option value="west">West</option>
-        </select>
-  
-        <select id="timeRangeSelect">
-          <option value="q1">Q1</option>
-          <option value="q2">Q2</option>
-          <option value="q3">Q3</option>
-          <option value="q4">Q4</option>
-          <option value="ytd">Year to Date</option>
-        </select>
-  
-        <select id="supplierSelect">
-          <option value="all">All Suppliers</option>
-          <option value="TransMove Logistics">TransMove Logistics</option>
-          <option value="SpeedyTrans Co.">SpeedyTrans Co.</option>
-          <option value="QuickInspect Services">QuickInspect Services</option>
-          <option value="RapidRepair Inc.">RapidRepair Inc.</option>
-          <option value="SecureStorage Facilities">SecureStorage Facilities</option>
-          <option value="SafeKeep Warehousing">SafeKeep Warehousing</option>
-          <option value="AutoUpfit Solutions">AutoUpfit Solutions</option>
-          <option value="EliteRegistration Agency">EliteRegistration Agency</option>
-          <option value="QuickDocs Services">QuickDocs Services</option>
-          <option value="ResaleExperts LLC">ResaleExperts LLC</option>
-        </select>
+        <div>
+          <select id="regionSelect">
+            <option value="all">All Regions</option>
+            <option value="north">North</option>
+            <option value="south">South</option>
+            <option value="east">East</option>
+            <option value="west">West</option>
+          </select>
+
+          <select id="timeRangeSelect">
+            <option value="ytd">Year to Date</option>
+            <option value="q1">Q1</option>
+            <option value="q2">Q2</option>
+            <option value="q3">Q3</option>
+            <option value="q4">Q4</option>
+          </select>
+
+          <select id="supplierSelect">
+            <option value="all">All Suppliers</option>
+            <option value="General Motors">General Motors</option>
+            <option value="TransMove Logistics">TransMove Logistics</option>
+            <option value="SpeedyTrans Co.">SpeedyTrans Co.</option>
+            <option value="QuickInspect Services">QuickInspect Services</option>
+            <option value="RapidRepair Inc.">RapidRepair Inc.</option>
+            <option value="SecureStorage Facilities">SecureStorage Facilities</option>
+            <option value="SafeKeep Warehousing">SafeKeep Warehousing</option>
+            <option value="AutoUpfit Solutions">AutoUpfit Solutions</option>
+            <option value="EliteRegistration Agency">EliteRegistration Agency</option>
+            <option value="QuickDocs Services">QuickDocs Services</option>
+            <option value="ResaleExperts LLC">ResaleExperts LLC</option>
+          </select>
+        </div>
+        <div class="toggle-buttons">
+          <button id="byLifecycleButton" class="selected">By Lifecycle</button>
+          <button id="byCategoryButton">By Category</button>
+        </div>
       </div>
 
       <!-- Now, create the swimlane container -->
@@ -314,18 +352,6 @@
         <!-- Swimlane 1: Asset Acquisition -->
         <div class="swimlane">
           <div class="title"><h2>🚙 Asset Acquisition</h2>(Sourcing to Delivery)</div>
-          <!-- Filter -->
-          <div class="filter">
-            <select id="filter-asset-acquisition">
-              <option value="all">All Categories</option>
-              <option value="vehicle-suppliers">Vehicle Suppliers</option>
-              <option value="financing">Financing Lenders</option>
-              <option value="legal">Legal</option>
-              <option value="transporters">Transporters</option>
-              <option value="up-fitters">Up-fitters</option>
-              <option value="title-registration">Title Registration</option>
-            </select>
-          </div>
           <!-- Tiles -->
           <div class="tile">
             <h3>Acquisition: Spend by Category
@@ -351,19 +377,6 @@
         <!-- Swimlane 2: In-Lease -->
         <div class="swimlane">
           <div class="title"><h2>📄 In-Lease</h2>(Fleet Operation Services)</div>
-          <!-- Filter -->
-          <div class="filter">
-            <select id="filter-in-lease">
-              <option value="all">All Categories</option>
-              <option value="repair">Repair</option>
-              <option value="service">Service</option>
-              <option value="tyres">Tyres</option>
-              <option value="fuel">Fuel</option>
-              <option value="transporters">Transporters</option>
-              <option value="compliance">Compliance</option>
-              <option value="telematics">Telematics</option>
-            </select>
-          </div>
           <!-- Tiles -->
           <div class="tile">
             <h3>In-Lease: Spend by Category
@@ -389,18 +402,6 @@
         <!-- Swimlane 3: Remarketing -->
         <div class="swimlane">
           <div class="title"><h2>🏷️ Remarketing</h2>(Resell or Reallocate)</div>
-          <!-- Filter -->
-          <div class="filter">
-            <select id="filter-remarketing">
-              <option value="all">All Categories</option>
-              <option value="transporters">Transporters</option>
-              <option value="compliance">Compliance</option>
-              <option value="repair">Repair</option>
-              <option value="service">Service</option>
-              <option value="inspection">Inspection</option>
-              <option value="vehicle-resale">Vehicle Resale</option>
-            </select>
-          </div>
           <!-- Tiles -->
           <div class="tile">
             <h3>Remarketing: Spend by Category
@@ -429,26 +430,30 @@
 
   <!-- Include scripts to render charts and tables -->
   <script>
+    document.getElementById("byCategoryButton").addEventListener("click", function() {
+      window.location.href = "supplier-spend-by-category.html"; // Opens in the same tab
+    });
+
     // Sample data for Asset Acquisition with 'category' field added
     var assetAcquisitionData = {
       spendByCategory: {
-        labels: ['Vehicle Suppliers', 'Financing Lenders', 'Legal', 'Transporters', 'Up-fitters', 'Title Registration'],
-        data: [400000, 200000, 100000, 150000, 100000, 50000]
+        labels: ['OEM', 'Financing Lenders', 'Legal', 'Transporters', 'Up-fitters', 'Title Registration'],
+        data: [148500000, 20000000, 10000000, 15000000, 10000000, 5000000]
       },
       top5Suppliers: [
-        { name: 'ABC Motors', category: 'Vehicle Suppliers', spendAmount: 250000, target: 200000 },
-        { name: 'XYZ Financing', category: 'Financing Lenders', spendAmount: 150000, target: 180000 },
-        { name: 'Legal Partners', category: 'Legal', spendAmount: 120000, target: 100000 },
-        { name: 'Fast Transport', category: 'Transporters', spendAmount: 150000, target: 80000 },
-        { name: 'Upfit Solutions', category: 'Up-fitters', spendAmount: 130000, target: 100000 },
+        { name: 'General Motors', category: 'OEM', spendAmount: 120500000, target: 115000000 },
+        { name: 'Ford', category: 'OEM', spendAmount: 20000000, target: 1800000 },
+        { name: 'LightningFast Transport', category: 'Transporters', spendAmount: 15000000, target: 8000000 },
+        { name: 'LegalPros', category: 'Legal', spendAmount: 1000000, target: 1000000 },
+        { name: 'Upfit Solutions', category: 'Up-fitters', spendAmount: 1000000, target: 1000000 },
       ],
       supplierPerformance: [
-        { supplier: 'ABC Motors', category: 'Vehicle Suppliers', performance: 90, spend: 250000 },
-        { supplier: 'XYZ Financing', category: 'Financing Lenders', performance: 85, spend: 150000 },
-        { supplier: 'Legal Partners', category: 'Legal', performance: 70, spend: 120000 },
-        { supplier: 'Fast Transport', category: 'Transporters', performance: 30, spend: 150000 },
-        { supplier: 'Upfit Solutions', category: 'Up-fitters', performance: 25, spend: 130000 },
-        { supplier: 'Title Experts', category: 'Title Registration', performance: 40, spend: 100000 },
+        { supplier: 'General Motors', category: 'OEM', performance: 88, spend: 120500000 },
+        { supplier: 'Ford', category: 'OEM', performance: 85, spend: 20000000 },
+        { supplier: 'LegalPros', category: 'Legal', performance: 70, spend: 1000000 },
+        { supplier: 'LightningFast Transport', category: 'Transporters', performance: 30, spend: 15000000 },
+        { supplier: 'Upfit Solutions', category: 'Up-fitters', performance: 25, spend: 1000000 },
+        { supplier: 'Title Experts', category: 'Title Registration', performance: 40, spend: 500000 },
         // Additional suppliers if needed
       ]
     };
@@ -457,22 +462,22 @@
     var inLeaseData = {
       spendByCategory: {
         labels: ['Repair', 'Service', 'Tyres', 'Fuel', 'Transporters', 'Compliance', 'Title Registration', 'Telematics'],
-        data: [250000, 200000, 150000, 100000, 100000, 80000, 70000, 50000]
+        data: [25000000, 20000000, 15000000, 10000000, 10000000, 8000000, 7000000, 5000000]
       },
       top5Suppliers: [
-        { name: 'Quick Repair Co.', category: 'Repair', spendAmount: 200000, target: 180000 },
-        { name: 'Service Masters', category: 'Service', spendAmount: 150000, target: 150000 },
-        { name: 'Tyre Pros', category: 'Tyres', spendAmount: 120000, target: 100000 },
-        { name: 'Fuel Corp', category: 'Fuel', spendAmount: 100000, target: 120000 },
-        { name: 'Transport Hub', category: 'Transporters', spendAmount: 80000, target: 70000 },
+        { name: 'RapidRepair Inc.', category: 'Repair', spendAmount: 20000000, target: 18000000 },
+        { name: 'Service Masters', category: 'Service', spendAmount: 15000000, target: 15000000 },
+        { name: 'Tyre Pros', category: 'Tyres', spendAmount: 12000000, target: 10000000 },
+        { name: 'Fuel Corp', category: 'Fuel', spendAmount: 10000000, target: 12000000 },
+        { name: 'Transport Hub', category: 'Transporters', spendAmount: 8000000, target: 7000000 },
       ],
       supplierPerformance: [
-        { supplier: 'Quick Repair Co.', category: 'Repair', performance: 80, spend: 200000 },
-        { supplier: 'Service Masters', category: 'Service', performance: 85, spend: 150000 },
-        { supplier: 'Tyre Pros', category: 'Tyres', performance: 90, spend: 120000 },
-        { supplier: 'Fuel Corp', category: 'Fuel', performance: 70, spend: 100000 },
-        { supplier: 'Transport Hub', category: 'Transporters', performance: 40, spend: 120000 },
-        { supplier: 'Compliance Check', category: 'Compliance', performance: 30, spend: 110000 },
+        { supplier: 'RapidRepair Inc.', category: 'Repair', performance: 80, spend: 20000000 },
+        { supplier: 'Service Masters', category: 'Service', performance: 85, spend: 15000000 },
+        { supplier: 'Tyre Pros', category: 'Tyres', performance: 90, spend: 12000000 },
+        { supplier: 'Fuel Corp', category: 'Fuel', performance: 70, spend: 10000000 },
+        { supplier: 'Transport Hub', category: 'Transporters', performance: 40, spend: 12000000 },
+        { supplier: 'Compliance Check', category: 'Compliance', performance: 30, spend: 11000000 },
         // Additional suppliers if needed
       ]
     };
@@ -480,22 +485,22 @@
     var remarketingData = {
       spendByCategory: {
         labels: ['Transporters', 'Compliance', 'Repair', 'Service', 'Inspection', 'Vehicle Resale'],
-        data: [300000, 200000, 150000, 100000, 150000, 100000]
+        data: [30000000, 20000000, 15000000, 10000000, 15000000, 10000000]
       },
       top5Suppliers: [
-        { name: 'Transport Pro', category: 'Transporters', spendAmount: 200000, target: 180000 },
-        { name: 'Compliance Co.', category: 'Compliance', spendAmount: 180000, target: 150000 },
-        { name: 'Repair Masters', category: 'Repair', spendAmount: 150000, target: 120000 },
-        { name: 'Inspect It', category: 'Inspection', spendAmount: 120000, target: 100000 },
-        { name: 'Resale Partners', category: 'Vehicle Resale', spendAmount: 100000, target: 120000 },
+        { name: 'Transport Pro', category: 'Transporters', spendAmount: 19000000, target: 18000000 },
+        { name: 'Compliance Co.', category: 'Compliance', spendAmount: 18000000, target: 15000000 },
+        { name: 'RapidRepair Inc.', category: 'Repair', spendAmount: 15000000, target: 12000000 },
+        { name: 'Inspect It', category: 'Inspection', spendAmount: 12000000, target: 12000000 },
+        { name: 'ResaleExperts LLC', category: 'Vehicle Resale', spendAmount: 10000000, target: 12000000 },
       ],
       supplierPerformance: [
-        { supplier: 'ResaleExperts LLC', category: 'Transporters', performance: 75, spend: 200000 },
-        { supplier: 'SecureStorage Facilities', category: 'Compliance', performance: 80, spend: 180000 },
-        { supplier: 'RapidRepair Inc.', category: 'Repair', performance: 45, spend: 160000 },
-        { supplier: 'Inspect It', category: 'Inspection', performance: 90, spend: 120000 },
-        { supplier: 'Fast Transport', category: 'Vehicle Resale', performance: 35, spend: 140000 },
-        { supplier: 'QuickInspect Services', category: 'Service', performance: 70, spend: 130000 },
+        { supplier: 'ResaleExperts LLC', category: 'Vehicle Resale', performance: 75, spend: 10000000 },
+        { supplier: 'SecureStorage Facilities', category: 'Compliance', performance: 80, spend: 18000000 },
+        { supplier: 'RapidRepair Inc.', category: 'Repair', performance: 45, spend: 16000000 },
+        { supplier: 'Inspect It', category: 'Inspection', performance: 90, spend: 12000000 },
+        { supplier: 'LightningFast Transport', category: 'Transporters', performance: 35, spend: 14000000 },
+        { supplier: 'QuickInspect Services', category: 'Service', performance: 70, spend: 13000000 },
         // Additional suppliers if needed
       ]
     };
@@ -505,458 +510,469 @@
       return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
-// Initialize charts and tables (the same as before)
+    // Initialize charts and tables
 
-// Asset Acquisition - Spend by Supplier Category
-var ctx1 = document.getElementById('asset-acquisition-chart1').getContext('2d');
-var chart1 = new Chart(ctx1, {
-  type: 'bar',
-  data: {
-    labels: assetAcquisitionData.spendByCategory.labels,
-    datasets: [{
-      label: 'Spend Amount',
-      data: assetAcquisitionData.spendByCategory.data,
-      backgroundColor: '#36A2EB'
-    }]
-  },
-  options: {
-    title: {
-      display: true,
-      text: 'Spend by Supplier Category'
-    },
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function(tooltipItem) {
-            return formatCurrency(tooltipItem.parsed.y);
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Spend Amount'
-        },
-        ticks: {
-          callback: function(value) {
-            return formatCurrency(value);
-          }
-        }
+    // Asset Acquisition - Spend by Supplier Category
+    var ctx1 = document.getElementById('asset-acquisition-chart1').getContext('2d');
+    var chart1 = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: assetAcquisitionData.spendByCategory.labels,
+        datasets: [{
+          label: 'Spend Amount',
+          data: assetAcquisitionData.spendByCategory.data,
+          backgroundColor: '#36A2EB'
+        }]
       },
-      x: {
+      options: {
         title: {
           display: true,
-          text: 'Supplier Category'
+          text: 'Spend by Supplier Category'
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return formatCurrency(tooltipItem.parsed.y);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Spend Amount'
+            },
+            ticks: {
+              callback: function(value) {
+                return formatCurrency(value);
+              }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Supplier Category'
+            }
+          }
         }
       }
-    }
-  }
-});
+    });
 
-// Asset Acquisition - Top 5 Suppliers by Spend
-var table1 = document.getElementById('asset-acquisition-table1');
-// Create table headers
-var headerRow = document.createElement('tr');
-var headers = ['Supplier', 'Spend Amount', '% to Target', 'Alert'];
-headers.forEach(function(header) {
-  var th = document.createElement('th');
-  th.textContent = header;
-  headerRow.appendChild(th);
-});
-table1.appendChild(headerRow);
+    // Asset Acquisition - Top 5 Suppliers by Spend
+    var table1 = document.getElementById('asset-acquisition-table1');
+    // Create table headers
+    var headerRow = document.createElement('tr');
+    var headers = ['Supplier', 'Spend Amount', '% to Target', 'Alert'];
+    headers.forEach(function(header) {
+      var th = document.createElement('th');
+      th.textContent = header;
+      headerRow.appendChild(th);
+    });
+    table1.appendChild(headerRow);
 
-// Populate table rows
-assetAcquisitionData.top5Suppliers.forEach(function(supplier) {
-  var row = document.createElement('tr');
-  var supplierCell = document.createElement('td');
-  supplierCell.textContent = supplier.name;
-  var spendCell = document.createElement('td');
-  spendCell.textContent = formatCurrency(supplier.spendAmount);
-  var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
-  var targetCell = document.createElement('td');
-  targetCell.textContent = percentToTarget;
-  var alertCell = document.createElement('td');
-  if (supplier.spendAmount > supplier.target) {
-    alertCell.textContent = 'Over Target';
-    alertCell.style.color = 'red';
-  } else {
-    alertCell.textContent = 'On Target';
-    alertCell.style.color = 'green';
-  }
-  row.appendChild(supplierCell);
-  row.appendChild(spendCell);
-  row.appendChild(targetCell);
-  row.appendChild(alertCell);
-  table1.appendChild(row);
-});
-
-// Asset Acquisition - Supplier Performance vs Spend
-var ctx2 = document.getElementById('asset-acquisition-chart2').getContext('2d');
-var scatterData = assetAcquisitionData.supplierPerformance.map(function(item) {
-  return {
-    x: item.performance,
-    y: item.spend / 1000, // Convert to thousands for better scaling
-    r: 5,
-    supplier: item.supplier,
-    isHighlight: item.performance < 70 && item.spend > 100000 // High-spend, low-performance
-  };
-});
-var chart2 = new Chart(ctx2, {
-  type: 'bubble',
-  data: {
-    datasets: [{
-      label: 'Suppliers',
-      data: scatterData,
-      backgroundColor: function(context) {
-        var index = context.dataIndex;
-        var data = context.dataset.data[index];
-        return data.isHighlight ? 'red' : '#36A2EB';
+    // Populate table rows
+    assetAcquisitionData.top5Suppliers.forEach(function(supplier) {
+      var row = document.createElement('tr');
+      var supplierCell = document.createElement('td');
+      var supplierLink = document.createElement('a');
+      supplierLink.textContent = supplier.name;
+      supplierLink.href = getSupplierLink(supplier.name);
+      supplierLink.className = 'supplier-link';
+      supplierCell.appendChild(supplierLink);
+      var spendCell = document.createElement('td');
+      spendCell.textContent = formatCurrency(supplier.spendAmount);
+      var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
+      var targetCell = document.createElement('td');
+      targetCell.textContent = percentToTarget;
+      var alertCell = document.createElement('td');
+      if (supplier.spendAmount > supplier.target) {
+        alertCell.textContent = 'Over Target';
+        alertCell.style.color = 'red';
+      } else {
+        alertCell.textContent = 'Almost Over Target';
+        alertCell.style.color = 'orange';
       }
-    }]
-  },
-  options: {
-    title: {
-      display: true,
-      text: 'Supplier Performance vs Spend'
-    },
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Performance Score'
-        },
-        min: 0,
-        max: 100
+      row.appendChild(supplierCell);
+      row.appendChild(spendCell);
+      row.appendChild(targetCell);
+      row.appendChild(alertCell);
+      table1.appendChild(row);
+    });
+
+    // Asset Acquisition - Supplier Performance vs Spend
+    var ctx2 = document.getElementById('asset-acquisition-chart2').getContext('2d');
+    var scatterData = assetAcquisitionData.supplierPerformance.map(function(item) {
+      return {
+        x: item.performance,
+        y: item.spend / 1000000, // Convert to millions for better scaling
+        r: 5,
+        supplier: item.supplier,
+        isHighlight: item.performance < 70 && item.spend > 1000000 // High-spend, low-performance
+      };
+    });
+    var chart2 = new Chart(ctx2, {
+      type: 'bubble',
+      data: {
+        datasets: [{
+          label: 'Suppliers',
+          data: scatterData,
+          backgroundColor: function(context) {
+            var index = context.dataIndex;
+            var data = context.dataset.data[index];
+            return data.isHighlight ? 'red' : '#36A2EB';
+          }
+        }]
       },
-      y: {
+      options: {
         title: {
           display: true,
-          text: 'Spend (in thousands)'
+          text: 'Supplier Performance vs Spend'
         },
-        beginAtZero: true,
-        ticks: {
-          callback: function(value) {
-            return '$' + value + 'k';
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Performance Score'
+            },
+            min: 0,
+            max: 100
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Spend (in millions)'
+            },
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '$' + value + 'M';
+              }
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                var item = tooltipItem.raw;
+                return item.supplier + ': Performance ' + item.x + ', Spend ' + formatCurrency(item.y * 1000000);
+              }
+            }
           }
         }
       }
-    },
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function(tooltipItem) {
-            var item = tooltipItem.raw;
-            return item.supplier + ': Performance ' + item.x + ', Spend ' + formatCurrency(item.y * 1000);
-          }
-        }
-      }
-    }
-  }
-});
+    });
 
-// In-Lease - Spend by Supplier Category
-var ctx3 = document.getElementById('in-lease-chart1').getContext('2d');
-var chart3 = new Chart(ctx3, {
-  type: 'bar',
-  data: {
-    labels: inLeaseData.spendByCategory.labels,
-    datasets: [{
-      label: 'Spend Amount',
-      data: inLeaseData.spendByCategory.data,
-      backgroundColor: '#36A2EB'
-    }]
-  },
-  options: {
-    title: {
-      display: true,
-      text: 'Spend by Supplier Category'
-    },
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function(tooltipItem) {
-            return formatCurrency(tooltipItem.parsed.y);
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Spend Amount'
-        },
-        ticks: {
-          callback: function(value) {
-            return formatCurrency(value);
-          }
-        }
+    // In-Lease - Spend by Supplier Category
+    var ctx3 = document.getElementById('in-lease-chart1').getContext('2d');
+    var chart3 = new Chart(ctx3, {
+      type: 'bar',
+      data: {
+        labels: inLeaseData.spendByCategory.labels,
+        datasets: [{
+          label: 'Spend Amount',
+          data: inLeaseData.spendByCategory.data,
+          backgroundColor: '#36A2EB'
+        }]
       },
-      x: {
+      options: {
         title: {
           display: true,
-          text: 'Supplier Category'
+          text: 'Spend by Supplier Category'
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return formatCurrency(tooltipItem.parsed.y);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Spend Amount'
+            },
+            ticks: {
+              callback: function(value) {
+                return formatCurrency(value);
+              }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Supplier Category'
+            }
+          }
         }
       }
-    }
-  }
-});
+    });
 
-// In-Lease - Top 5 Suppliers by Spend
-var table2 = document.getElementById('in-lease-table1');
-// Create table headers
-var headerRow2 = document.createElement('tr');
-var headers2 = ['Supplier', 'Spend Amount', '% to Target', 'Alert'];
-headers2.forEach(function(header) {
-  var th = document.createElement('th');
-  th.textContent = header;
-  headerRow2.appendChild(th);
-});
-table2.appendChild(headerRow2);
+    // In-Lease - Top 5 Suppliers by Spend
+    var table2 = document.getElementById('in-lease-table1');
+    // Create table headers
+    var headerRow2 = document.createElement('tr');
+    var headers2 = ['Supplier', 'Spend Amount', '% to Target', 'Alert'];
+    headers2.forEach(function(header) {
+      var th = document.createElement('th');
+      th.textContent = header;
+      headerRow2.appendChild(th);
+    });
+    table2.appendChild(headerRow2);
 
-// Populate table rows
-inLeaseData.top5Suppliers.forEach(function(supplier) {
-  var row = document.createElement('tr');
-  var supplierCell = document.createElement('td');
-  supplierCell.textContent = supplier.name;
-  var spendCell = document.createElement('td');
-  spendCell.textContent = formatCurrency(supplier.spendAmount);
-  var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
-  var targetCell = document.createElement('td');
-  targetCell.textContent = percentToTarget;
-  var alertCell = document.createElement('td');
-  if (supplier.spendAmount > supplier.target) {
-    alertCell.textContent = 'Over Target';
-    alertCell.style.color = 'red';
-  } else {
-    alertCell.textContent = 'On Target';
-    alertCell.style.color = 'green';
-  }
-  row.appendChild(supplierCell);
-  row.appendChild(spendCell);
-  row.appendChild(targetCell);
-  row.appendChild(alertCell);
-  table2.appendChild(row);
-});
-
-// In-Lease - Supplier Performance vs Spend
-var ctx4 = document.getElementById('in-lease-chart2').getContext('2d');
-var scatterData2 = inLeaseData.supplierPerformance.map(function(item) {
-  return {
-    x: item.performance,
-    y: item.spend / 1000,
-    r: 5,
-    supplier: item.supplier,
-    isHighlight: item.performance < 70 && item.spend > 100000
-  };
-});
-var chart4 = new Chart(ctx4, {
-  type: 'bubble',
-  data: {
-    datasets: [{
-      label: 'Suppliers',
-      data: scatterData2,
-      backgroundColor: function(context) {
-        var index = context.dataIndex;
-        var data = context.dataset.data[index];
-        return data.isHighlight ? 'red' : '#36A2EB';
+    // Populate table rows
+    inLeaseData.top5Suppliers.forEach(function(supplier) {
+      var row = document.createElement('tr');
+      var supplierCell = document.createElement('td');
+      var supplierLink = document.createElement('a');
+      supplierLink.textContent = supplier.name;
+      supplierLink.href = getSupplierLink(supplier.name);
+      supplierLink.className = 'supplier-link';
+      supplierCell.appendChild(supplierLink);
+      var spendCell = document.createElement('td');
+      spendCell.textContent = formatCurrency(supplier.spendAmount);
+      var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
+      var targetCell = document.createElement('td');
+      targetCell.textContent = percentToTarget;
+      var alertCell = document.createElement('td');
+      if (supplier.spendAmount > supplier.target) {
+        alertCell.textContent = 'Over Target';
+        alertCell.style.color = 'red';
+      } else {
+        alertCell.textContent = 'Almost Over Target';
+        alertCell.style.color = 'orange';
       }
-    }]
-  },
-  options: {
-    title: {
-      display: true,
-      text: 'Supplier Performance vs Spend'
-    },
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Performance Score'
-        },
-        min: 0,
-        max: 100
+      row.appendChild(supplierCell);
+      row.appendChild(spendCell);
+      row.appendChild(targetCell);
+      row.appendChild(alertCell);
+      table2.appendChild(row);
+    });
+
+    // In-Lease - Supplier Performance vs Spend
+    var ctx4 = document.getElementById('in-lease-chart2').getContext('2d');
+    var scatterData2 = inLeaseData.supplierPerformance.map(function(item) {
+      return {
+        x: item.performance,
+        y: item.spend / 1000000,
+        r: 5,
+        supplier: item.supplier,
+        isHighlight: item.performance < 70 && item.spend > 10000000
+      };
+    });
+    var chart4 = new Chart(ctx4, {
+      type: 'bubble',
+      data: {
+        datasets: [{
+          label: 'Suppliers',
+          data: scatterData2,
+          backgroundColor: function(context) {
+            var index = context.dataIndex;
+            var data = context.dataset.data[index];
+            return data.isHighlight ? 'red' : '#36A2EB';
+          }
+        }]
       },
-      y: {
+      options: {
         title: {
           display: true,
-          text: 'Spend (in thousands)'
+          text: 'Supplier Performance vs Spend'
         },
-        beginAtZero: true,
-        ticks: {
-          callback: function(value) {
-            return '$' + value + 'k';
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Performance Score'
+            },
+            min: 0,
+            max: 100
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Spend (in millions)'
+            },
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '$' + value + 'M';
+              }
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                var item = tooltipItem.raw;
+                return item.supplier + ': Performance ' + item.x + ', Spend ' + formatCurrency(item.y * 1000000);
+              }
+            }
           }
         }
       }
-    },
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function(tooltipItem) {
-            var item = tooltipItem.raw;
-            return item.supplier + ': Performance ' + item.x + ', Spend ' + formatCurrency(item.y * 1000);
-          }
-        }
-      }
-    }
-  }
-});
+    });
 
-// Remarketing - Spend by Supplier Category
-var ctx5 = document.getElementById('remarketing-chart1').getContext('2d');
-var chart5 = new Chart(ctx5, {
-  type: 'bar',
-  data: {
-    labels: remarketingData.spendByCategory.labels,
-    datasets: [{
-      label: 'Spend Amount',
-      data: remarketingData.spendByCategory.data,
-      backgroundColor: '#36A2EB'
-    }]
-  },
-  options: {
-    title: {
-      display: true,
-      text: 'Spend by Supplier Category'
-    },
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function(tooltipItem) {
-            return formatCurrency(tooltipItem.parsed.y);
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Spend Amount'
-        },
-        ticks: {
-          callback: function(value) {
-            return formatCurrency(value);
-          }
-        }
+    // Remarketing - Spend by Supplier Category
+    var ctx5 = document.getElementById('remarketing-chart1').getContext('2d');
+    var chart5 = new Chart(ctx5, {
+      type: 'bar',
+      data: {
+        labels: remarketingData.spendByCategory.labels,
+        datasets: [{
+          label: 'Spend Amount',
+          data: remarketingData.spendByCategory.data,
+          backgroundColor: '#36A2EB'
+        }]
       },
-      x: {
+      options: {
         title: {
           display: true,
-          text: 'Supplier Category'
+          text: 'Spend by Supplier Category'
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return formatCurrency(tooltipItem.parsed.y);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Spend Amount'
+            },
+            ticks: {
+              callback: function(value) {
+                return formatCurrency(value);
+              }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Supplier Category'
+            }
+          }
         }
       }
-    }
-  }
-});
+    });
 
-// Remarketing - Top 5 Suppliers by Spend
-var table3 = document.getElementById('remarketing-table1');
-// Create table headers
-var headerRow3 = document.createElement('tr');
-var headers3 = ['Supplier', 'Spend Amount', '% to Target', 'Alert'];
-headers3.forEach(function(header) {
-  var th = document.createElement('th');
-  th.textContent = header;
-  headerRow3.appendChild(th);
-});
-table3.appendChild(headerRow3);
+    // Remarketing - Top 5 Suppliers by Spend
+    var table3 = document.getElementById('remarketing-table1');
+    // Create table headers
+    var headerRow3 = document.createElement('tr');
+    var headers3 = ['Supplier', 'Spend Amount', '% to Target', 'Alert'];
+    headers3.forEach(function(header) {
+      var th = document.createElement('th');
+      th.textContent = header;
+      headerRow3.appendChild(th);
+    });
+    table3.appendChild(headerRow3);
 
-// Populate table rows
-remarketingData.top5Suppliers.forEach(function(supplier) {
-  var row = document.createElement('tr');
-  var supplierCell = document.createElement('td');
-  supplierCell.textContent = supplier.name;
-  var spendCell = document.createElement('td');
-  spendCell.textContent = formatCurrency(supplier.spendAmount);
-  var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
-  var targetCell = document.createElement('td');
-  targetCell.textContent = percentToTarget;
-  var alertCell = document.createElement('td');
-  if (supplier.spendAmount > supplier.target) {
-    alertCell.textContent = 'Over Target';
-    alertCell.style.color = 'red';
-  } else {
-    alertCell.textContent = 'On Target';
-    alertCell.style.color = 'green';
-  }
-  row.appendChild(supplierCell);
-  row.appendChild(spendCell);
-  row.appendChild(targetCell);
-  row.appendChild(alertCell);
-  table3.appendChild(row);
-});
-
-// Remarketing - Supplier Performance vs Spend
-var ctx6 = document.getElementById('remarketing-chart2').getContext('2d');
-var scatterData3 = remarketingData.supplierPerformance.map(function(item) {
-  return {
-    x: item.performance,
-    y: item.spend / 1000,
-    r: 5,
-    supplier: item.supplier,
-    isHighlight: item.performance < 70 && item.spend > 130000
-  };
-});
-var chart6 = new Chart(ctx6, {
-  type: 'bubble',
-  data: {
-    datasets: [{
-      label: 'Suppliers',
-      data: scatterData3,
-      backgroundColor: function(context) {
-        var index = context.dataIndex;
-        var data = context.dataset.data[index];
-        return data.isHighlight ? 'red' : '#36A2EB';
+    // Populate table rows
+    remarketingData.top5Suppliers.forEach(function(supplier) {
+      var row = document.createElement('tr');
+      var supplierCell = document.createElement('td');
+      var supplierLink = document.createElement('a');
+      supplierLink.textContent = supplier.name;
+      supplierLink.href = getSupplierLink(supplier.name);
+      supplierLink.className = 'supplier-link';
+      supplierCell.appendChild(supplierLink);
+      var spendCell = document.createElement('td');
+      spendCell.textContent = formatCurrency(supplier.spendAmount);
+      var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
+      var targetCell = document.createElement('td');
+      targetCell.textContent = percentToTarget;
+      var alertCell = document.createElement('td');
+      if (supplier.spendAmount > supplier.target) {
+        alertCell.textContent = 'Over Target';
+        alertCell.style.color = 'red';
+      } else {
+        alertCell.textContent = 'Almost Over Target';
+        alertCell.style.color = 'orange';
       }
-    }]
-  },
-  options: {
-    title: {
-      display: true,
-      text: 'Supplier Performance vs Spend'
-    },
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Performance Score'
-        },
-        min: 0,
-        max: 100
+      row.appendChild(supplierCell);
+      row.appendChild(spendCell);
+      row.appendChild(targetCell);
+      row.appendChild(alertCell);
+      table3.appendChild(row);
+    });
+
+    // Remarketing - Supplier Performance vs Spend
+    var ctx6 = document.getElementById('remarketing-chart2').getContext('2d');
+    var scatterData3 = remarketingData.supplierPerformance.map(function(item) {
+      return {
+        x: item.performance,
+        y: item.spend / 1000000,
+        r: 5,
+        supplier: item.supplier,
+        isHighlight: item.performance < 70 && item.spend > 13000000
+      };
+    });
+    var chart6 = new Chart(ctx6, {
+      type: 'bubble',
+      data: {
+        datasets: [{
+          label: 'Suppliers',
+          data: scatterData3,
+          backgroundColor: function(context) {
+            var index = context.dataIndex;
+            var data = context.dataset.data[index];
+            return data.isHighlight ? 'red' : '#36A2EB';
+          }
+        }]
       },
-      y: {
+      options: {
         title: {
           display: true,
-          text: 'Spend (in thousands)'
+          text: 'Supplier Performance vs Spend'
         },
-        beginAtZero: true,
-        ticks: {
-          callback: function(value) {
-            return '$' + value + 'k';
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Performance Score'
+            },
+            min: 0,
+            max: 100
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Spend (in millions)'
+            },
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '$' + value + 'M';
+              }
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                var item = tooltipItem.raw;
+                return item.supplier + ': Performance ' + item.x + ', Spend ' + formatCurrency(item.y * 1000000);
+              }
+            }
           }
         }
       }
-    },
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function(tooltipItem) {
-            var item = tooltipItem.raw;
-            return item.supplier + ': Performance ' + item.x + ', Spend ' + formatCurrency(item.y * 1000);
-          }
-        }
-      }
-    }
-  }
-});
-
+    });
 
     // Attach event listeners to the filters
     document.getElementById('filter-asset-acquisition').addEventListener('change', function() {
@@ -1016,7 +1032,11 @@ var chart6 = new Chart(ctx6, {
       filteredSuppliers.forEach(function(supplier) {
         var row = document.createElement('tr');
         var supplierCell = document.createElement('td');
-        supplierCell.textContent = supplier.name;
+        var supplierLink = document.createElement('a');
+        supplierLink.textContent = supplier.name;
+        supplierLink.href = getSupplierLink(supplier.name);
+        supplierLink.className = 'supplier-link';
+        supplierCell.appendChild(supplierLink);
         var spendCell = document.createElement('td');
         spendCell.textContent = formatCurrency(supplier.spendAmount);
         var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
@@ -1027,8 +1047,8 @@ var chart6 = new Chart(ctx6, {
           alertCell.textContent = 'Over Target';
           alertCell.style.color = 'red';
         } else {
-          alertCell.textContent = 'On Target';
-          alertCell.style.color = 'green';
+          alertCell.textContent = 'Almost Over Target';
+          alertCell.style.color = 'orange';
         }
         row.appendChild(supplierCell);
         row.appendChild(spendCell);
@@ -1050,10 +1070,10 @@ var chart6 = new Chart(ctx6, {
       var scatterData = filteredPerformance.map(function(item) {
         return {
           x: item.performance,
-          y: item.spend / 1000,
+          y: item.spend / 1000000,
           r: 5,
           supplier: item.supplier,
-          isHighlight: item.performance < 70 && item.spend > 100000
+          isHighlight: item.performance < 70 && item.spend > 1000000
         };
       });
 
@@ -1102,7 +1122,11 @@ var chart6 = new Chart(ctx6, {
       filteredSuppliers.forEach(function(supplier) {
         var row = document.createElement('tr');
         var supplierCell = document.createElement('td');
-        supplierCell.textContent = supplier.name;
+        var supplierLink = document.createElement('a');
+        supplierLink.textContent = supplier.name;
+        supplierLink.href = getSupplierLink(supplier.name);
+        supplierLink.className = 'supplier-link';
+        supplierCell.appendChild(supplierLink);
         var spendCell = document.createElement('td');
         spendCell.textContent = formatCurrency(supplier.spendAmount);
         var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
@@ -1113,8 +1137,8 @@ var chart6 = new Chart(ctx6, {
           alertCell.textContent = 'Over Target';
           alertCell.style.color = 'red';
         } else {
-          alertCell.textContent = 'On Target';
-          alertCell.style.color = 'green';
+          alertCell.textContent = 'Almost Over Target';
+          alertCell.style.color = 'orange';
         }
         row.appendChild(supplierCell);
         row.appendChild(spendCell);
@@ -1136,10 +1160,10 @@ var chart6 = new Chart(ctx6, {
       var scatterData2 = filteredPerformance.map(function(item) {
         return {
           x: item.performance,
-          y: item.spend / 1000,
+          y: item.spend / 1000000,
           r: 5,
           supplier: item.supplier,
-          isHighlight: item.performance < 70 && item.spend > 100000
+          isHighlight: item.performance < 70 && item.spend > 10000000
         };
       });
 
@@ -1188,7 +1212,11 @@ var chart6 = new Chart(ctx6, {
       filteredSuppliers.forEach(function(supplier) {
         var row = document.createElement('tr');
         var supplierCell = document.createElement('td');
-        supplierCell.textContent = supplier.name;
+        var supplierLink = document.createElement('a');
+        supplierLink.textContent = supplier.name;
+        supplierLink.href = getSupplierLink(supplier.name);
+        supplierLink.className = 'supplier-link';
+        supplierCell.appendChild(supplierLink);
         var spendCell = document.createElement('td');
         spendCell.textContent = formatCurrency(supplier.spendAmount);
         var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
@@ -1199,8 +1227,8 @@ var chart6 = new Chart(ctx6, {
           alertCell.textContent = 'Over Target';
           alertCell.style.color = 'red';
         } else {
-          alertCell.textContent = 'On Target';
-          alertCell.style.color = 'green';
+          alertCell.textContent = 'Almost Over Target';
+          alertCell.style.color = 'orange';
         }
         row.appendChild(supplierCell);
         row.appendChild(spendCell);
@@ -1222,10 +1250,10 @@ var chart6 = new Chart(ctx6, {
       var scatterData3 = filteredPerformance.map(function(item) {
         return {
           x: item.performance,
-          y: item.spend / 1000,
+          y: item.spend / 1000000,
           r: 5,
           supplier: item.supplier,
-          isHighlight: item.performance < 70 && item.spend > 130000
+          isHighlight: item.performance < 70 && item.spend > 13000000
         };
       });
 
@@ -1237,6 +1265,19 @@ var chart6 = new Chart(ctx6, {
     updateAssetAcquisitionData('all');
     updateInLeaseData('all');
     updateRemarketingData('all');
+
+    function getSupplierLink(supplierName) {
+      switch (supplierName) {
+        case 'General Motors':
+          return 'supplier-general-motors.html';
+        case 'RapidRepair Inc.':
+          return 'supplier-rapidrepair.html';
+        case 'Transport Pro':
+          return 'supplier-transport-pro.html';
+        default:
+          return '#';
+      }
+    }
   </script>
 </body>
 </html>

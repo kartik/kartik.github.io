@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supplier Profile - General Motors</title>
+  <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <!-- Include Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="chatbot.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Base Styles */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+    }
+    /* Subnav Styling */
+    .subnav {
+      display: flex;
+      align-items: center;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .nav-item {
+      font-size: 14px;
+      color: #666666;
+      cursor: pointer;
+      padding: 20px;
+      text-decoration: none;
+    }
+    .nav-item.logo {
+      font-weight: bold;
+      color: #000000;
+      font-size: 22px;
+    }
+    .nav-item.active {
+      color: #000000;
+      border-bottom: 4px solid #4CAF50; /* Green underline for active state */
+      background-color: hsl(105deg 35.29% 93.33%);
+      padding: 30px 20px 24px;
+    }
+    .link {
+      text-decoration: none;
+      color: #22aaff;
+    }
+    /* Supplier Profile Styles */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+    }
+    .profile-header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #333;
+    }
+    .profile-header p {
+      margin: 5px 0 0 0;
+      color: #777;
+    }
+    /* Section Styles */
+    .section-heading {
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    .section-heading h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+    /* Cards Container */
+    .cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 0 20px 20px 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      flex: 1 1 calc(33% - 40px);
+      box-sizing: border-box;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      position: relative;
+      align-self: flex-start;
+    }
+    .card h3 {
+      margin-top: 0;
+    }
+    .card canvas {
+      margin-top: 10px;
+    }
+    .card .insight-text {
+      margin-top: 10px;
+      color: #555;
+    }
+    /* Tooltip Styles */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* Position above */
+      left: 50%;
+      margin-left: -100px; /* Center the tooltip */
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.8em;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 5;
+      padding-top: 100px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 35%;
+      border-radius: 10px;
+      position: relative;
+    }
+    .close, .modal-close-button {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close {
+      font-size: 28px;
+      color: #aaa;
+    }
+    .close:hover {
+      color: #000;
+    }
+    .modal h2 {
+      margin-top: 0;
+    }
+    .modal .modal-close-button {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+    }
+    /* Table Styles */
+    .vehicle-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .vehicle-table th, .vehicle-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .vehicle-table th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+    /* Recommendations Table */
+    .recommendations-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .recommendations-table th, .recommendations-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: middle;
+    }
+    .recommendations-table th {
+      background-color: #f2f2f2;
+      text-align: center;
+    }
+    .recommendations-table td:first-child {
+      text-align: left;
+    }
+    .priority-chip {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .high-priority {
+      background-color: #f44336;
+    }
+    .medium-priority {
+      background-color: #ff9800;
+    }
+    .low-priority {
+      background-color: #4caf50;
+    }
+    .info-priority {
+      background-color: gray;
+      margin-left: 10px;
+    }
+    .action-icon, .action-text {
+      cursor: pointer;
+      color: #1a73e8;
+      font-size: 20px;
+      margin-right: 5px;
+      display: inline-block;
+    }
+    .action-text {
+      font-size: 14px;
+    }
+    /* Timeline Styles in Modal */
+    .timeline {
+      list-style-type: none;
+      position: relative;
+      margin: 20px 0;
+      padding: 0;
+    }
+    .timeline:before {
+      content: '';
+      background: #d4d9df;
+      display: inline-block;
+      position: absolute;
+      left: 18px;
+      width: 5px;
+      height: 82%;
+      z-index: 400;
+      border-radius: 1%;
+    }
+    .timeline > li {
+      margin: 20px 0;
+      padding-left: 40px;
+    }
+    .timeline > li:before {
+      content: '';
+      background: white;
+      display: inline-block;
+      position: absolute;
+      border-radius: 50%;
+      border: 3px solid #22aaff;
+      left: 11px;
+      width: 15px;
+      height: 15px;
+      z-index: 400;
+    }
+    .timeline > li.in-progress:before {
+      border-color: #4caf50;
+    }
+    .timeline > li.completed:before {
+      border-color: #4caf50;
+      background-color: #4caf50;
+    }
+    .timeline > li .status {
+      font-size: 12px;
+      color: #777;
+    }
+    .timeline > li .duration {
+      font-size: 12px;
+      color: #555;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar-container">
+    <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="subnav">
+        <div class="nav-item logo">Supplier Intelligence</div>
+        <a class="nav-item" href="supplier-blueprint.html">Blueprint</a>
+        <a class="nav-item" href="supplier-spend.html">Spend</a>
+        <a class="nav-item" href="supplier-perf.html">Performance</a>
+      </div>
+
+      <div class="profile-header">
+        <h1>General Motors</h1>
+        <span class="priority-chip info-priority">OEM</span>
+      </div>
+
+      <!-- Section: Financial Overview -->
+      <div class="section-heading">
+        <h2>🏦 Financial Overview</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: Total Spend YTD -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Total Spend YTD</h3>
+            <span class="tooltiptext">Total amount spent on purchases from this supplier year-to-date.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">$120,500,000</p>
+          <p style="color: #4caf50;">+8% from last year</p>
+          <canvas id="spendChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Increased demand for fuel-efficient models.<br>
+            <strong>Future Projection:</strong> Spend expected to reach $130 million by end of 2025.<br>
+            <strong>Impact:</strong> Requires budget adjustment to accommodate growth.
+          </p>
+        </div>
+        <!-- Card 2: Units Purchased YTD -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Units Purchased YTD</h3>
+            <span class="tooltiptext">Total number of units purchased from this supplier year-to-date.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">15,250</p>
+          <p style="color: #4caf50;">+5% from last year</p>
+          <canvas id="unitsChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Market shift towards eco-friendly vehicles.<br>
+            <strong>Future Projection:</strong> Units may increase by 7% in 2025.<br>
+            <strong>Impact:</strong> Potential strain on supply chain if not managed.
+          </p>
+        </div>
+        <!-- Card 3: Incentive Realization Rate -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Incentive Realization Rate</h3>
+            <span class="tooltiptext">Percentage of eligible incentives successfully realized.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">92%</p>
+          <p style="color: #f44336;">-3% from target</p>
+          <canvas id="incentiveChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Missed volume thresholds for certain models.<br>
+            <strong>Future Projection:</strong> Could decrease further without action.<br>
+            <strong>Impact:</strong> Loss of up to $2 million in incentives.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Performance Metrics -->
+      <div class="section-heading">
+        <h2>📈 Performance Metrics</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: On-Time Delivery % -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>On-Time Delivery %</h3>
+            <span class="tooltiptext">Percentage of deliveries received on or before the scheduled date.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">88%</p>
+          <p style="color: #f44336;">-4% from last quarter</p>
+          <canvas id="onTimeChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Logistics delays due to supplier shortages.<br>
+            <strong>Future Projection:</strong> May drop to 85% if not addressed.<br>
+            <strong>Impact:</strong> Customer satisfaction could decline by 10%.
+          </p>
+        </div>
+        <!-- Card 2: SLA Violations -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>SLA Violations</h3>
+            <span class="tooltiptext">Number of times the supplier failed to meet the Service Level Agreement.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">12</p>
+          <p style="color: #f44336;">+5 from last quarter</p>
+          <canvas id="slaChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Increased demand causing capacity strains.<br>
+            <strong>Future Projection:</strong> Violations may rise without process improvements.<br>
+            <strong>Impact:</strong> Potential penalties up to $500,000.
+          </p>
+        </div>
+        <!-- Card 3: Defect Rate -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Defect Rate</h3>
+            <span class="tooltiptext">Percentage of products received with defects.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">5%</p>
+          <p style="color: #f44336;">+2% from last quarter</p>
+          <canvas id="defectChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Quality control issues at manufacturing plant.<br>
+            <strong>Future Projection:</strong> Could reach 6% if unaddressed.<br>
+            <strong>Impact:</strong> Increased warranty claims and repair costs.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Operational Insights -->
+      <div class="section-heading">
+        <h2>🔧 Operational Insights</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: Quality Audit Scores -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Quality Audit Scores</h3>
+            <span class="tooltiptext">Results from recent quality audits of the supplier's facilities.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">90%</p>
+          <p style="color: #4caf50;">+2% from last audit</p>
+          <canvas id="auditChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Implementation of new quality protocols.<br>
+            <strong>Future Projection:</strong> Expected to improve to 92% by next audit.<br>
+            <strong>Impact:</strong> Enhances brand reputation and customer trust.
+          </p>
+        </div>
+        <!-- Card 2: Average Turnaround Time -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Average Turnaround Time</h3>
+            <span class="tooltiptext">Average time between order placement and delivery.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">10 Days</p>
+          <p style="color: #4caf50;">Improved by 1 Day</p>
+          <canvas id="turnaroundChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Streamlined production processes.<br>
+            <strong>Future Projection:</strong> May improve to 9 days with automation.<br>
+            <strong>Impact:</strong> Faster delivery enhances customer satisfaction.
+          </p>
+        </div>
+        <!-- Card 3: Supplier Responsiveness -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Supplier Responsiveness</h3>
+            <span class="tooltiptext">How quickly the supplier responds to inquiries and issues.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">Excellent</p>
+          <p style="color: #4caf50;">Consistent Performance</p>
+          <!-- Reduced the size of the pie chart -->
+          <canvas id="responsivenessChart" width="216" height="216"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Effective communication channels.<br>
+            <strong>Future Projection:</strong> Expected to maintain high levels.<br>
+            <strong>Impact:</strong> Strengthens partnership and operational efficiency.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Purchasing Metrics -->
+      <div class="section-heading">
+        <h2>🛒 Purchasing Metrics</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: Purchase Related Income (% Below Invoice) -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Purchase Related Income (% Below Invoice)</h3>
+            <span class="tooltiptext">Percentage saved below the invoice price due to incentives and discounts.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">4.5%</p>
+          <p style="color: #4caf50;">Consistent with industry average</p>
+          <canvas id="purchaseIncomeChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Negotiated OEM incentives leading to cost savings.<br>
+            <strong>Future Projection:</strong> Anticipate similar or improved rates with upcoming negotiations.<br>
+            <strong>Impact:</strong> Enhances pricing strategies and competitive positioning.
+          </p>
+        </div>
+        <!-- Card 2: Hold Back Percentage -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Hold Back Percentage</h3>
+            <span class="tooltiptext">Percentage of invoice price retained by the OEM until certain conditions are met.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">4%</p>
+          <p style="color: #4caf50;">Retained from OEM orders</p>
+          <!-- Reduced the size of the pie chart -->
+          <canvas id="holdBackChart" width="198" height="198"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Effective direct ordering strategies with OEMs.<br>
+            <strong>Future Projection:</strong> Potential to negotiate for lower hold back percentages.<br>
+            <strong>Impact:</strong> Increases immediate cash flow and reduces capital tied up.
+          </p>
+        </div>
+        <!-- Card 3: Average Discount per Vehicle -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Average Discount per Vehicle</h3>
+            <span class="tooltiptext">Average amount saved per vehicle due to discounts.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">$1,800</p>
+          <p style="color: #4caf50;">Within expected range</p>
+          <canvas id="avgDiscountChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Successful utilization of purchase-related income.<br>
+            <strong>Future Projection:</strong> Discounts may increase with higher volume commitments.<br>
+            <strong>Impact:</strong> Reduces acquisition costs, improving overall profitability.
+          </p>
+        </div>
+        <!-- Card 4: Profit Margin per Supplier -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Profit Margin per Supplier</h3>
+            <span class="tooltiptext">Profit margins achieved from different suppliers.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">12%</p>
+          <p style="color: #4caf50;">Stable Margins</p>
+          <canvas id="profitMarginChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Balanced supplier relationships and effective cost management.<br>
+            <strong>Future Projection:</strong> Margins expected to improve with better negotiations.<br>
+            <strong>Impact:</strong> Identifies high-performing suppliers, ensuring sustained profitability.
+          </p>
+        </div>
+        <!-- Card 5: Volume-Based Discounts Utilization -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Volume-Based Discounts Utilization</h3>
+            <span class="tooltiptext">Extent to which volume-based discounts are being utilized.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">75%</p>
+          <p style="color: #ff9800;">Potential for improvement</p>
+          <canvas id="volumeDiscountChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Not fully leveraging volume-based discount tiers.<br>
+            <strong>Future Projection:</strong> Aiming to reach 85% utilization with strategic planning.<br>
+            <strong>Impact:</strong> Maximizes savings and strengthens OEM partnerships.
+          </p>
+        </div>
+        <!-- Card 6: Rebate and Incentive Reconciliation Accuracy -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Rebate and Incentive Reconciliation Accuracy</h3>
+            <span class="tooltiptext">Accuracy in reconciling rebates and incentives from the supplier.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">95%</p>
+          <p style="color: #4caf50;">High accuracy</p>
+          <!-- Reduced the size of the pie chart -->
+          <canvas id="rebateAccuracyChart" width="216" height="216"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Efficient tracking systems in place.<br>
+            <strong>Future Projection:</strong> Targeting 99% accuracy with process enhancements.<br>
+            <strong>Impact:</strong> Ensures financial integrity and optimal incentive utilization.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Vehicle Details -->
+      <div class="section-heading">
+        <h2>🚗 Vehicle Details</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Vehicle Details Table (Spanning Full Width) -->
+        <div class="card" style="flex: 1 1 100%;">
+          <table class="vehicle-table">
+            <tr>
+              <th>Make</th>
+              <th>Model</th>
+              <th>Year</th>
+              <th>Units Purchased</th>
+              <th>Total Spend</th>
+            </tr>
+            <!-- Added 10 rows -->
+            <tr>
+              <td>General Motors</td>
+              <td>EcoSedan</td>
+              <td>2023</td>
+              <td>5,000</td>
+              <td>$40,000,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>MaxSUV</td>
+              <td>2023</td>
+              <td>3,500</td>
+              <td>$35,000,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>TransitVan</td>
+              <td>2022</td>
+              <td>4,000</td>
+              <td>$25,000,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>HybridHatch</td>
+              <td>2023</td>
+              <td>2,750</td>
+              <td>$20,500,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>ElectricCoupe</td>
+              <td>2024</td>
+              <td>1,500</td>
+              <td>$22,500,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>LuxurySedan</td>
+              <td>2023</td>
+              <td>800</td>
+              <td>$18,000,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>CompactSUV</td>
+              <td>2022</td>
+              <td>2,200</td>
+              <td>$19,800,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>SportsCar</td>
+              <td>2024</td>
+              <td>300</td>
+              <td>$15,000,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>FamilyVan</td>
+              <td>2023</td>
+              <td>1,000</td>
+              <td>$12,000,000</td>
+            </tr>
+            <tr>
+              <td>General Motors</td>
+              <td>OffroadTruck</td>
+              <td>2024</td>
+              <td>600</td>
+              <td>$14,400,000</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section: Actionable Recommendations -->
+      <div class="section-heading">
+        <h2>✅ Actionable Recommendations</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Recommendations Table (Spanning Full Width) -->
+        <div class="card" style="flex: 1 1 100%;">
+          <table class="recommendations-table">
+            <tr>
+              <th>Recommendation</th>
+              <th>Priority</th>
+              <th>Impact Score</th>
+              <th>Action</th>
+            </tr>
+            <tr>
+              <td>Improve Incentive Compliance to meet target rates and maximize potential earnings from OEM incentive programs.</td>
+              <td><span class="priority-chip high-priority">High</span></td>
+              <td>85</td>
+              <td><span class="action-icon" data-action="improveIncentive"><i class="fas fa-cogs"></i></span><span class="action-text" data-action="improveIncentive">Develop Compliance Plan</span></td>
+            </tr>
+            <tr>
+              <td>Address On-Time Delivery Issues to enhance customer satisfaction and maintain service level agreements.</td>
+              <td><span class="priority-chip high-priority">High</span></td>
+              <td>90</td>
+              <td><span class="action-icon" data-action="addressOnTime"><i class="fas fa-truck"></i></span><span class="action-text" data-action="addressOnTime">Optimize Logistics</span></td>
+            </tr>
+            <tr>
+              <td>Reduce SLA Violations to avoid penalties and improve overall operational efficiency.</td>
+              <td><span class="priority-chip medium-priority">Medium</span></td>
+              <td>75</td>
+              <td><span class="action-icon" data-action="reduceSla"><i class="fas fa-file-contract"></i></span><span class="action-text" data-action="reduceSla">Strengthen SLA Monitoring</span></td>
+            </tr>
+            <tr>
+              <td>Request Quality Control Improvements to reduce defect rates and warranty claims.</td>
+              <td><span class="priority-chip medium-priority">Medium</span></td>
+              <td>80</td>
+              <td><span class="action-icon" data-action="improveQuality"><i class="fas fa-search-plus"></i></span><span class="action-text" data-action="improveQuality">Quality Enhancement</span></td>
+            </tr>
+            <tr>
+              <td>Request Production Capacity Increase to meet demand and capture market opportunities.</td>
+              <td><span class="priority-chip low-priority">Low</span></td>
+              <td>65</td>
+              <td><span class="action-icon" data-action="expandCapacity"><i class="fas fa-industry"></i></span><span class="action-text" data-action="expandCapacity">Plan Expansion</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div id="modal" class="modal">
+        <div class="modal-content">
+          <span class="close" id="closeModal">&times;</span>
+          <!-- Modal content will be injected here -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Floating chat icon -->
+    <div id="chat-icon" onclick="toggleChat()"><img src="robot-icon.png" style="height:80px"></div>
+
+    <!-- Chat window -->
+    <div id="chat-window">
+      <div id="chat-header">
+        <span>FleetCaptain</span>
+        <span id="close-chat" onclick="toggleChat()">✖</span>
+      </div>
+      <div id="chat-messages"></div>
+      <!-- Loading indicator -->
+      <div id="loading-indicator">
+        <div class="spinner"></div>
+      </div>
+      <div id="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Ask a question about this data..." onkeypress="handleKeyPress(event)">
+        <button id="send-button" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Actionable Recommendations Icons
+    const actionElements = document.querySelectorAll('.action-icon, .action-text');
+
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+
+    closeModal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // Define actions and their steps with durations
+    const actions = {
+      improveIncentive: {
+        title: 'Initiating Incentive Compliance Improvement',
+        steps: [
+          { description: 'Initiate communication with Procurement Team.', duration: 'Expected Duration: 2 days' },
+          { description: 'Schedule meeting with General Motors representative.', duration: 'Expected Duration: 3 days' },
+          { description: 'Develop action plan to reach incentive thresholds.', duration: 'Expected Duration: 5 days' }
+        ]
+      },
+      addressOnTime: {
+        title: 'Addressing On-Time Delivery Issues',
+        steps: [
+          { description: 'Notify Logistics Department of delays.', duration: 'Expected Duration: 1 day' },
+          { description: 'Collaborate with supplier to optimize routes.', duration: 'Expected Duration: 4 days' },
+          { description: 'Request Real-Time Tracking from Suppliers.', duration: 'Expected Duration: 7 days' }
+        ]
+      },
+      reduceSla: {
+        title: 'Reducing SLA Violations',
+        steps: [
+          { description: 'Analyze violation incidents with Quality Assurance.', duration: 'Expected Duration: 3 days' },
+          { description: 'Implement corrective measures.', duration: 'Expected Duration: 5 days' },
+          { description: 'Monitor SLA compliance closely.', duration: 'Expected Duration: Ongoing' }
+        ]
+      },
+      improveQuality: {
+        title: 'Improving Quality Control',
+        steps: [
+          { description: 'Contact Production Manager for process audit.', duration: 'Expected Duration: 2 days' },
+          { description: 'Enhance quality checkpoints.', duration: 'Expected Duration: 6 days' },
+          { description: 'Encourage Supplier Training Initiatives.', duration: 'Expected Duration: 4 days' }
+        ]
+      },
+      expandCapacity: {
+        title: 'Expanding Production Capacity',
+        steps: [
+          { description: 'Assess current production capabilities.', duration: 'Expected Duration: 5 days' },
+          { description: 'Propose expansion plan to management.', duration: 'Expected Duration: 7 days' },
+          { description: 'Secure investment for new facilities.', duration: 'Expected Duration: 14 days' }
+        ]
+      }
+    };
+
+    actionElements.forEach(element => {
+      element.addEventListener('click', () => {
+        const actionKey = element.getAttribute('data-action');
+        const actionDetails = actions[actionKey];
+
+        // Check if actionDetails exists
+        if (!actionDetails) {
+          console.error(`Action details not found for action key: ${actionKey}`);
+          return;
+        }
+
+        // Clear previous content in modal (except close button)
+        const modalContent = modal.querySelector('.modal-content');
+        while (modalContent.childNodes.length > 1) {
+          modalContent.removeChild(modalContent.lastChild);
+        }
+
+        // Populate modal with action details
+        const titleElement = document.createElement('h2');
+        titleElement.textContent = actionDetails.title;
+        modalContent.appendChild(titleElement);
+
+        const stepsList = document.createElement('ul');
+        stepsList.className = 'timeline';
+
+        actionDetails.steps.forEach((step, index) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>Step ${index + 1}:</strong> ${step.description}`;
+          const durationDiv = document.createElement('div');
+          durationDiv.className = 'duration';
+          durationDiv.textContent = step.duration;
+          li.appendChild(durationDiv);
+          if (index === 0) {
+            li.className = 'in-progress';
+            li.innerHTML += '<div class="status">In Progress</div>';
+          } else {
+            li.innerHTML += '<div class="status">Pending</div>';
+          }
+          stepsList.appendChild(li);
+        });
+
+        modalContent.appendChild(stepsList);
+
+        modal.style.display = 'block';
+      });
+    });
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Charts Data with Dotted Projections after Q4 2024
+    const spendLabels = ['2020', '2021', '2022', '2023', '2024', '2025'];
+    const spendData = [100, 105, 112, 120.5, 125, 130];
+
+    const spendCtx = document.getElementById('spendChart').getContext('2d');
+    const spendChart = new Chart(spendCtx, {
+      type: 'line',
+      data: {
+        labels: spendLabels,
+        datasets: [{
+          label: 'Total Spend ($ millions)',
+          data: spendData,
+          borderColor: 'blue',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 4 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: 'Spend ($ millions)'
+            }
+          }
+        }
+      }
+    });
+
+    // Units Purchased Chart
+    const unitsCtx = document.getElementById('unitsChart').getContext('2d');
+    const unitsChart = new Chart(unitsCtx, {
+      type: 'line',
+      data: {
+        labels: spendLabels,
+        datasets: [{
+          label: 'Units Purchased',
+          data: [12500, 13000, 14500, 15250, 15810, 16317],
+          borderColor: 'green',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 4 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Units'
+            }
+          }
+        }
+      }
+    });
+
+    // Incentive Realization Rate Chart
+    const incentiveCtx = document.getElementById('incentiveChart').getContext('2d');
+    const incentiveChart = new Chart(incentiveCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'Incentive Realization (%)',
+          data: [95, 94, 93, 92, 90],
+          borderColor: 'red',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 100,
+            min: 85,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // On-Time Delivery % Chart
+    const onTimeCtx = document.getElementById('onTimeChart').getContext('2d');
+    const onTimeChart = new Chart(onTimeCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'On-Time Delivery %',
+          data: [92, 90, 88, 88, 85],
+          borderColor: 'orange',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 100,
+            min: 80,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // SLA Violations Chart
+    const slaCtx = document.getElementById('slaChart').getContext('2d');
+    const slaChart = new Chart(slaCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'SLA Violations',
+          data: [4, 6, 7, 12, 15],
+          backgroundColor: 'red',
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Violations'
+            }
+          }
+        }
+      }
+    });
+
+    // Defect Rate Chart
+    const defectCtx = document.getElementById('defectChart').getContext('2d');
+    const defectChart = new Chart(defectCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'Defect Rate (%)',
+          data: [3, 3.5, 4, 5, 6],
+          borderColor: 'purple',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 10,
+            min: 0,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Quality Audit Scores Chart
+    const auditCtx = document.getElementById('auditChart').getContext('2d');
+    const auditChart = new Chart(auditCtx, {
+      type: 'line',
+      data: {
+        labels: ['2021', '2022', '2023', '2024', '2025'],
+        datasets: [{
+          label: 'Audit Scores (%)',
+          data: [85, 87, 88, 90, 92],
+          borderColor: 'green',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 100,
+            min: 80,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Average Turnaround Time Chart
+    const turnaroundCtx = document.getElementById('turnaroundChart').getContext('2d');
+    const turnaroundChart = new Chart(turnaroundCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'Turnaround Time (Days)',
+          data: [12, 11, 10, 10, 9],
+          borderColor: 'blue',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            reverse: true,
+            title: {
+              display: true,
+              text: 'Days (Lower is Better)'
+            }
+          }
+        }
+      }
+    });
+
+    // Supplier Responsiveness Chart
+    const responsivenessCtx = document.getElementById('responsivenessChart').getContext('2d');
+    const responsivenessChart = new Chart(responsivenessCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Excellent', 'Good', 'Average', 'Poor'],
+        datasets: [{
+          data: [70, 20, 7, 3],
+          backgroundColor: ['green', 'lightgreen', 'orange', 'red']
+        }]
+      },
+      options: {
+        responsive: false,
+        aspectRatio: 1,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    });
+
+    // Purchase Related Income Chart
+    const purchaseIncomeCtx = document.getElementById('purchaseIncomeChart').getContext('2d');
+    const purchaseIncomeChart = new Chart(purchaseIncomeCtx, {
+      type: 'bar',
+      data: {
+        labels: ['General Motors', 'Ford', 'Chrysler', 'Toyota', 'Others'],
+        datasets: [{
+          label: '% Below Invoice',
+          data: [4.5, 4.0, 3.8, 3.5, 3.0],
+          backgroundColor: ['#2196f3', '#4caf50', '#ff9800', '#f44336', 'purple']
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 5,
+            min: 0,
+            title: {
+              display: true,
+              text: '% Below Invoice'
+            }
+          }
+        }
+      }
+    });
+
+    // Hold Back Percentage Chart
+    const holdBackCtx = document.getElementById('holdBackChart').getContext('2d');
+    const holdBackChart = new Chart(holdBackCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Retained', 'Released'],
+        datasets: [{
+          data: [4, 96],
+          backgroundColor: ['#4caf50', '#e0e0e0']
+        }]
+      },
+      options: {
+        responsive: false,
+        aspectRatio: 1,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    });
+
+    // Average Discount per Vehicle Chart
+    const avgDiscountCtx = document.getElementById('avgDiscountChart').getContext('2d');
+    const avgDiscountChart = new Chart(avgDiscountCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Discount per Vehicle ($)',
+          data: [1700, 1800, 1750, 1800],
+          backgroundColor: 'teal'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 2000,
+            title: {
+              display: true,
+              text: 'Discount ($)'
+            }
+          }
+        }
+      }
+    });
+
+    // Profit Margin per Supplier Chart
+    const profitMarginCtx = document.getElementById('profitMarginChart').getContext('2d');
+    const profitMarginChart = new Chart(profitMarginCtx, {
+      type: 'bar',
+      data: {
+        labels: ['General Motors', 'Ford', 'Chrysler', 'Toyota'],
+        datasets: [{
+          label: 'Profit Margin (%)',
+          data: [12, 11, 13, 10],
+          backgroundColor: ['#2196f3', '#4caf50', '#ff9800', '#f44336']
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 15,
+            min: 5,
+            title: {
+              display: true,
+              text: 'Profit Margin (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Volume-Based Discounts Utilization Chart
+    const volumeDiscountCtx = document.getElementById('volumeDiscountChart').getContext('2d');
+    const volumeDiscountChart = new Chart(volumeDiscountCtx, {
+      type: 'line',
+      data: {
+        labels: ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'],
+        datasets: [{
+          label: 'Utilization (%)',
+          data: [60, 75, 80, 90],
+          borderColor: 'purple',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 100,
+            min: 50,
+            title: {
+              display: true,
+              text: 'Utilization (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Rebate and Incentive Reconciliation Accuracy Chart
+    const rebateAccuracyCtx = document.getElementById('rebateAccuracyChart').getContext('2d');
+    const rebateAccuracyChart = new Chart(rebateAccuracyCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Accurate', 'Inaccurate'],
+        datasets: [{
+          data: [95, 5],
+          backgroundColor: ['#4caf50', '#f44336']
+        }]
+      },
+      options: {
+        responsive: false,
+        aspectRatio: 1,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    });
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

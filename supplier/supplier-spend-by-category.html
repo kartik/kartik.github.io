@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Same as in SOURCE.html -->
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon"
+    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <title>Ridecell Supplier Intelligence Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Include styles from SOURCE.html, and add styles for swimlanes */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .header {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .header .highlight {
+      font-weight: bold;
+      color: #3d76e9;
+    }
+    .summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: #d4f5d1;
+      color: #4caf50;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+    .summary span.unusual {
+      background-color: #ffe6e6;
+      color: #f44336;
+    }
+    .filters {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      background-color: #fff;
+      border-bottom: 1px solid #eaeaea;
+      justify-content: space-between;
+    }
+    .filters label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .filters select {
+      margin-right: 20px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+    .filters select:focus {
+      outline: none;
+      border-color: #3d76e9;
+    }
+    .toggle-buttons {
+      display: flex;
+      align-items: center;
+    }
+    .toggle-buttons button {
+      padding: 8px 15px;
+      border: none;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .toggle-buttons button.selected {
+      background-color: #4caf50;
+      color: #fff;
+    }
+    .toggle-buttons button:first-child {
+      border-radius: 5px 0 0 5px;
+    }
+    .toggle-buttons button:last-child {
+      border-radius: 0 5px 5px 0;
+    }
+    .toggle-buttons button:not(:last-child) {
+      border-right: 1px solid #ccc;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 0px 20px;
+      padding-bottom: 20px;
+    }
+    .metric-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .metric-header {
+      font-size: 16px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .metric-header .normal {
+      background-color: #3d76e9;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-header .unusual {
+      background-color: #f44336;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-value {
+      font-size: 28px;
+      color: #22aaff;
+      margin-bottom: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .metric-change {
+      color: #4caf50;
+      margin-bottom: 15px;
+    }
+    .chart-container {
+      width: 100%;
+      height: 200px;
+    }
+    .metric-info {
+      font-size: 15px;
+      color: #777;
+      padding-top: 10px;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+    }
+
+    /* Add styles for swimlanes */
+    .swimlane-container {
+      display: flex;
+      padding: 10px;
+    }
+    .swimlane-container.vertical {
+      flex-direction: column;
+    }
+    .swimlane {
+      margin: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .swimlane .title {
+      padding: 10px;
+    }
+    .swimlane h2 {
+      margin: 0;
+    }
+    .swimlane .filter {
+      padding: 10px;
+    }
+    .swimlane .filter select {
+      margin-right: 10px;
+      padding: 5px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .tile-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin: 0 10px;
+    }
+    .tile {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      flex: 1;
+      margin-right: 10px;
+    }
+    .tile:last-child {
+      margin-right: 0;
+    }
+    .tile h3 {
+      margin-top: 0;
+    }
+    .chart-container {
+      width: 100%;
+      height: 200px;
+    }
+    .trend-icon {
+      font-size: 20px;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    .trend-up {
+      color: red;
+    }
+    .trend-down {
+      color: green;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid #eaeaea;
+    }
+    table th {
+      background-color: #f9f9f9;
+    }
+    .recommendation {
+      margin-top: 10px;
+      background-color: #f9f9f9;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    /* subnav Styling */
+    .subnav {
+        display: flex;
+        align-items: center;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .nav-item {
+        font-size: 14px;
+        color: #666666;
+        cursor: pointer;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-item.logo {
+        font-weight: bold;
+        color: #000000;
+        font-size: 22px;
+    }
+
+    .nav-item.active {
+        color: #000000;
+        border-bottom: 4px solid #4CAF50; /* Green underline for active state */
+        background-color: hsl(105deg 35.29% 93.33%);
+        padding: 30px 20px 24px;
+    }
+
+    .link {
+        text-decoration: none;
+        color: #22aaff;
+    }
+    /* Styles for supplier links */
+    .supplier-link {
+      color: #22aaff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    /* Other styles as needed */
+  </style>
+</head>
+<body>
+  <!-- Navbar and tabs from SOURCE.html -->
+  <div class="navbar-container">
+    <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="subnav">
+        <div class="nav-item logo">Supplier Intelligence</div>
+        <a class="nav-item" href="supplier-blueprint.html">Blueprint</a>
+        <div class="nav-item active">Spend</div>
+        <a class="nav-item" href="supplier-perf.html">Performance</a>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <div>
+          <select id="regionSelect">
+            <option value="all">All Regions</option>
+            <option value="north">North</option>
+            <option value="south">South</option>
+            <option value="east">East</option>
+            <option value="west">West</option>
+          </select>
+
+          <select id="timeRangeSelect">
+            <option value="ytd">Year to Date</option>
+            <option value="q1">Q1</option>
+            <option value="q2">Q2</option>
+            <option value="q3">Q3</option>
+            <option value="q4">Q4</option>
+          </select>
+
+          <select id="supplierSelect">
+            <option value="all">All Suppliers</option>
+            <option value="General Motors">General Motors</option>
+            <option value="TransMove Logistics">TransMove Logistics</option>
+            <option value="SpeedyTrans Co.">SpeedyTrans Co.</option>
+            <option value="QuickInspect Services">QuickInspect Services</option>
+            <option value="RapidRepair Inc.">RapidRepair Inc.</option>
+            <option value="SecureStorage Facilities">SecureStorage Facilities</option>
+            <option value="SafeKeep Warehousing">SafeKeep Warehousing</option>
+            <option value="AutoUpfit Solutions">AutoUpfit Solutions</option>
+            <option value="EliteRegistration Agency">EliteRegistration Agency</option>
+            <option value="QuickDocs Services">QuickDocs Services</option>
+            <option value="ResaleExperts LLC">ResaleExperts LLC</option>
+          </select>
+        </div>
+        <div class="toggle-buttons">
+          <button id="byLifecycleButton">By Lifecycle</button>
+          <button id="byCategoryButton" class="selected">By Category</button>
+        </div>
+      </div>
+
+      <!-- By Category View -->
+      <div id="category-view">
+        <div class="swimlane-container vertical">
+          <!-- Swimlane for OEM -->
+          <div class="swimlane">
+            <div class="title"><h2>🚙 OEM</h2></div>
+            <!-- Tiles in a row -->
+            <div class="tile-row">
+              <div class="tile">
+                <h3>OEM: Spend by Supplier
+                  <span class="trend-icon trend-up">▲</span>
+                </h3>
+                <canvas id="oem-chart1"></canvas>
+              </div>
+              <div class="tile">
+                <h3>OEM: Top 5 Suppliers by Spend</h3>
+                <table id="oem-table1">
+                  <!-- Table content -->
+                </table>
+              </div>
+              <div class="tile">
+                <h3>OEM: Supplier Performance vs Spend</h3>
+                <canvas id="oem-chart2"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Swimlane for Repair -->
+          <div class="swimlane">
+            <div class="title"><h2>🔧 Repair</h2></div>
+            <div class="tile-row">
+              <div class="tile">
+                <h3>Repair: Spend by Supplier
+                  <span class="trend-icon trend-down">▼</span>
+                </h3>
+                <canvas id="repair-chart1"></canvas>
+              </div>
+              <div class="tile">
+                <h3>Repair: Top 5 Suppliers by Spend</h3>
+                <table id="repair-table1">
+                  <!-- Table content -->
+                </table>
+              </div>
+              <div class="tile">
+                <h3>Repair: Supplier Performance vs Spend</h3>
+                <canvas id="repair-chart2"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Swimlane for Transport -->
+          <div class="swimlane">
+            <div class="title"><h2>🚚 Transport</h2></div>
+            <div class="tile-row">
+              <div class="tile">
+                <h3>Transport: Spend by Supplier
+                  <span class="trend-icon trend-up">▲</span>
+                </h3>
+                <canvas id="transport-chart1"></canvas>
+              </div>
+              <div class="tile">
+                <h3>Transport: Top 5 Suppliers by Spend</h3>
+                <table id="transport-table1">
+                  <!-- Table content -->
+                </table>
+              </div>
+              <div class="tile">
+                <h3>Transport: Supplier Performance vs Spend</h3>
+                <canvas id="transport-chart2"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Swimlane for Up-fitters -->
+          <div class="swimlane">
+            <div class="title"><h2>🛠️ Up-fitters</h2></div>
+            <div class="tile-row">
+              <div class="tile">
+                <h3>Up-fitters: Spend by Supplier
+                  <span class="trend-icon trend-down">▼</span>
+                </h3>
+                <canvas id="upfitters-chart1"></canvas>
+              </div>
+              <div class="tile">
+                <h3>Up-fitters: Top 5 Suppliers by Spend</h3>
+                <table id="upfitters-table1">
+                  <!-- Table content -->
+                </table>
+              </div>
+              <div class="tile">
+                <h3>Up-fitters: Supplier Performance vs Spend</h3>
+                <canvas id="upfitters-chart2"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Swimlane for Storage -->
+          <div class="swimlane">
+            <div class="title"><h2>🏢 Storage</h2></div>
+            <div class="tile-row">
+              <div class="tile">
+                <h3>Storage: Spend by Supplier
+                  <span class="trend-icon trend-up">▲</span>
+                </h3>
+                <canvas id="storage-chart1"></canvas>
+              </div>
+              <div class="tile">
+                <h3>Storage: Top 5 Suppliers by Spend</h3>
+                <table id="storage-table1">
+                  <!-- Table content -->
+                </table>
+              </div>
+              <div class="tile">
+                <h3>Storage: Supplier Performance vs Spend</h3>
+                <canvas id="storage-chart2"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Swimlane for Inspection -->
+          <div class="swimlane">
+            <div class="title"><h2>🔍 Inspection</h2></div>
+            <div class="tile-row">
+              <div class="tile">
+                <h3>Inspection: Spend by Supplier
+                  <span class="trend-icon trend-down">▼</span>
+                </h3>
+                <canvas id="inspection-chart1"></canvas>
+              </div>
+              <div class="tile">
+                <h3>Inspection: Top 5 Suppliers by Spend</h3>
+                <table id="inspection-table1">
+                  <!-- Table content -->
+                </table>
+              </div>
+              <div class="tile">
+                <h3>Inspection: Supplier Performance vs Spend</h3>
+                <canvas id="inspection-chart2"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Include scripts to render charts and tables -->
+  <script>
+    document.getElementById("byLifecycleButton").addEventListener("click", function() {
+      window.location.href = "supplier-spend.html"; // Opens in the same tab
+    });
+
+    // Function to format numbers as currency
+    function formatCurrency(value) {
+      return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Data for Categories
+    var categoryData = {
+      'OEM': {
+        spendBySupplier: {
+          labels: ['General Motors', 'Ford', 'Tesla'],
+          data: [120500000, 20000000, 5000000]
+        },
+        top5Suppliers: [
+          { name: 'General Motors', spendAmount: 120500000, target: 115000000 },
+          { name: 'Ford', spendAmount: 20000000, target: 18000000 },
+          { name: 'Tesla', spendAmount: 5000000, target: 4000000 },
+        ],
+        supplierPerformance: [
+          { supplier: 'General Motors', performance: 88, spend: 120500000 },
+          { supplier: 'Ford', performance: 39, spend: 20000000 },
+          { supplier: 'Tesla', performance: 90, spend: 5000000 },
+        ]
+      },
+      'Repair': {
+        spendBySupplier: {
+          labels: ['RapidRepair Inc.', 'FixItFast Services', 'QuickFix Co.'],
+          data: [20000000, 15000000, 10000000]
+        },
+        top5Suppliers: [
+          { name: 'RapidRepair Inc.', spendAmount: 20000000, target: 18000000 },
+          { name: 'FixItFast Services', spendAmount: 15000000, target: 14000000 },
+          { name: 'QuickFix Co.', spendAmount: 10000000, target: 9000000 },
+        ],
+        supplierPerformance: [
+          { supplier: 'RapidRepair Inc.', performance: 80, spend: 20000000 },
+          { supplier: 'FixItFast Services', performance: 75, spend: 15000000 },
+          { supplier: 'QuickFix Co.', performance: 35, spend: 10000000 },
+        ]
+      },
+      'Transport': {
+        spendBySupplier: {
+          labels: ['Transport Pro', 'LightningFast Transport', 'TransMove Logistics'],
+          data: [19000000, 10000000, 8000000]
+        },
+        top5Suppliers: [
+          { name: 'Transport Pro', spendAmount: 19000000, target: 14000000 },
+          { name: 'LightningFast Transport', spendAmount: 10000000, target: 9000000 },
+          { name: 'TransMove Logistics', spendAmount: 8000000, target: 7000000 },
+        ],
+        supplierPerformance: [
+          { supplier: 'Transport Pro', performance: 30, spend: 15000000 },
+          { supplier: 'LightningFast Transport', performance: 40, spend: 10000000 },
+          { supplier: 'TransMove Logistics', performance: 35, spend: 8000000 },
+        ]
+      },
+      'Up-fitters': {
+        spendBySupplier: {
+          labels: ['Upfit Solutions', 'AutoUpfit Inc.', 'CustomFit Co.'],
+          data: [10000000, 8000000, 6000000]
+        },
+        top5Suppliers: [
+          { name: 'Upfit Solutions', spendAmount: 10000000, target: 9000000 },
+          { name: 'AutoUpfit Inc.', spendAmount: 8000000, target: 7000000 },
+          { name: 'CustomFit Co.', spendAmount: 6000000, target: 5000000 },
+        ],
+        supplierPerformance: [
+          { supplier: 'Upfit Solutions', performance: 25, spend: 10000000 },
+          { supplier: 'AutoUpfit Inc.', performance: 70, spend: 8000000 },
+          { supplier: 'CustomFit Co.', performance: 75, spend: 6000000 },
+        ]
+      },
+      'Storage': {
+        spendBySupplier: {
+          labels: ['SecureStorage Facilities', 'SafeKeep Warehousing', 'StoreMore Inc.'],
+          data: [18000000, 15000000, 12000000]
+        },
+        top5Suppliers: [
+          { name: 'SecureStorage Facilities', spendAmount: 18000000, target: 17000000 },
+          { name: 'SafeKeep Warehousing', spendAmount: 15000000, target: 14000000 },
+          { name: 'StoreMore Inc.', spendAmount: 12000000, target: 11000000 },
+        ],
+        supplierPerformance: [
+          { supplier: 'SecureStorage Facilities', performance: 15, spend: 18000000 },
+          { supplier: 'SafeKeep Warehousing', performance: 85, spend: 15000000 },
+          { supplier: 'StoreMore Inc.', performance: 90, spend: 12000000 },
+        ]
+      },
+      'Inspection': {
+        spendBySupplier: {
+          labels: ['Inspect It', 'QuickInspect Services', 'DetailCheck Co.'],
+          data: [12000000, 10000000, 8000000]
+        },
+        top5Suppliers: [
+          { name: 'Inspect It', spendAmount: 12000000, target: 11000000 },
+          { name: 'QuickInspect Services', spendAmount: 10000000, target: 9000000 },
+          { name: 'DetailCheck Co.', spendAmount: 8000000, target: 7000000 },
+        ],
+        supplierPerformance: [
+          { supplier: 'Inspect It', performance: 90, spend: 12000000 },
+          { supplier: 'QuickInspect Services', performance: 85, spend: 10000000 },
+          { supplier: 'DetailCheck Co.', performance: 10, spend: 8000000 },
+        ]
+      },
+      // Add data for Financing, Legal if needed
+    };
+
+    // Function to render category data
+    function renderCategoryData(categoryName) {
+      var data = categoryData[categoryName];
+      if (!data) {
+        console.error('No data for category ' + categoryName);
+        return;
+      }
+
+      // Render Spend by Supplier chart
+      var ctx = document.getElementById(categoryName.toLowerCase().replace(/[^a-z0-9]/g, '') + '-chart1').getContext('2d');
+      var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.spendBySupplier.labels,
+          datasets: [{
+            label: 'Spend Amount',
+            data: data.spendBySupplier.data,
+            backgroundColor: '#36A2EB'
+          }]
+        },
+        options: {
+          title: {
+            display: true,
+            text: 'Spend by Supplier'
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return formatCurrency(tooltipItem.parsed.y);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Spend Amount'
+              },
+              ticks: {
+                callback: function(value) {
+                  return formatCurrency(value);
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Supplier'
+              }
+            }
+          }
+        }
+      });
+
+      // Render Top 5 Suppliers by Spend table
+      var table = document.getElementById(categoryName.toLowerCase().replace(/[^a-z0-9]/g, '') + '-table1');
+      // Clear any existing content
+      table.innerHTML = '';
+      // Create table headers
+      var headerRow = document.createElement('tr');
+      var headers = ['Supplier', 'Spend Amount', '% to Target', 'Alert'];
+      headers.forEach(function(header) {
+        var th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      });
+      table.appendChild(headerRow);
+
+      // Populate table rows
+      data.top5Suppliers.forEach(function(supplier) {
+        var row = document.createElement('tr');
+        var supplierCell = document.createElement('td');
+        var supplierLink = document.createElement('a');
+        supplierLink.textContent = supplier.name;
+        supplierLink.href = getSupplierLink(supplier.name);
+        supplierLink.className = 'supplier-link';
+        supplierCell.appendChild(supplierLink);
+        var spendCell = document.createElement('td');
+        spendCell.textContent = formatCurrency(supplier.spendAmount);
+        var percentToTarget = ((supplier.spendAmount / supplier.target) * 100).toFixed(2) + '%';
+        var targetCell = document.createElement('td');
+        targetCell.textContent = percentToTarget;
+        var alertCell = document.createElement('td');
+        if (supplier.spendAmount > supplier.target) {
+          alertCell.textContent = 'Over Target';
+          alertCell.style.color = 'red';
+        } else {
+          alertCell.textContent = 'On Target';
+          alertCell.style.color = 'green';
+        }
+        row.appendChild(supplierCell);
+        row.appendChild(spendCell);
+        row.appendChild(targetCell);
+        row.appendChild(alertCell);
+        table.appendChild(row);
+      });
+
+      // Render Supplier Performance vs Spend chart
+      var ctx2 = document.getElementById(categoryName.toLowerCase().replace(/[^a-z0-9]/g, '') + '-chart2').getContext('2d');
+      var scatterData = data.supplierPerformance.map(function(item) {
+        return {
+          x: item.performance,
+          y: item.spend / 1000000,
+          r: 5,
+          supplier: item.supplier,
+          isHighlight: item.performance < 40
+        };
+      });
+
+      var chart2 = new Chart(ctx2, {
+        type: 'bubble',
+        data: {
+          datasets: [{
+            label: 'Suppliers',
+            data: scatterData,
+            backgroundColor: function(context) {
+              var index = context.dataIndex;
+              var data = context.dataset.data[index];
+              return data.isHighlight ? 'red' : '#36A2EB';
+            }
+          }]
+        },
+        options: {
+          title: {
+            display: true,
+            text: 'Supplier Performance vs Spend'
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Performance Score'
+              },
+              min: 0,
+              max: 100
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Spend (in millions)'
+              },
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value + 'M';
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  var item = tooltipItem.raw;
+                  return item.supplier + ': Performance ' + item.x + ', Spend ' + formatCurrency(item.y * 1000000);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Render data for each category
+    var categories = ['OEM', 'Repair', 'Transport', 'Up-fitters', 'Storage', 'Inspection']; // Add other categories as needed
+    categories.forEach(function(category) {
+      renderCategoryData(category);
+    });
+
+    function getSupplierLink(supplierName) {
+      switch (supplierName) {
+        case 'General Motors':
+          return 'supplier-general-motors.html';
+        case 'RapidRepair Inc.':
+          return 'supplier-rapidrepair.html';
+        case 'Transport Pro':
+          return 'supplier-transport-pro.html';
+        default:
+          return '#';
+      }
+    }
+
+  </script>
+</body>
+</html>
