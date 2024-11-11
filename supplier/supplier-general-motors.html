@@ -104,6 +104,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       position: relative;
       align-self: flex-start;
+      max-width: 437px;
     }
     .card h3 {
       margin-top: 0;
@@ -296,6 +297,17 @@
       color: #555;
       margin-top: 5px;
     }
+    .summary {
+      font-size: 14px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: gray;
+      color: white;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
@@ -315,9 +327,12 @@
       </div> -->
 
       <div class="profile-header">
+        <img src="back.png" onclick="window.history.back();" style="width:48px; cursor: pointer;">
         <h1>General Motors</h1>
         <span class="priority-chip info-priority">OEM</span>
-        <img src="back.png" onclick="window.history.back();" style="width:48px; cursor: pointer;">
+        <span class="priority-chip info-priority">Contract End: Dec, 2025</span>
+        <span class="priority-chip info-priority">Incentive: Tier Discount</span>
+        <span class="priority-chip info-priority">Unit Target: 15,000/Year</span>
       </div>
 
       <!-- Section: Financial Overview -->
@@ -332,27 +347,26 @@
             <span class="tooltiptext">Total amount spent on purchases from this supplier year-to-date.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">$120,500,000</p>
-          <p style="color: #4caf50;">+8% from last year</p>
+          <p style="color: red;">5% over target</p>
           <canvas id="spendChart"></canvas>
           <p class="insight-text">
             <strong>Root Analysis:</strong> Increased demand for fuel-efficient models.<br>
             <strong>Future Projection:</strong> Spend expected to reach $130 million by end of 2025.<br>
-            <strong>Impact:</strong> Requires budget adjustment to accommodate growth.
+            <strong>Impact:</strong> Requires budget adjustment for growth.
           </p>
         </div>
-        <!-- Card 2: Units Purchased YTD -->
+        <!-- Card 2: Units Ordered YTD -->
         <div class="card">
           <div class="tooltip">
-            <h3>Units Purchased YTD</h3>
-            <span class="tooltiptext">Total number of units purchased from this supplier year-to-date.</span>
+            <h3>Units Ordered YTD</h3>
+            <span class="tooltiptext">Total number of units ordered from this supplier year-to-date.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">15,250</p>
-          <p style="color: #4caf50;">+5% from last year</p>
+          <p style="color: #4caf50;">+5% increase projected in next quarter</p>
           <canvas id="unitsChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Market shift towards eco-friendly vehicles.<br>
-            <strong>Future Projection:</strong> Units may increase by 7% in 2025.<br>
-            <strong>Impact:</strong> Potential strain on supply chain if not managed.
+            <strong>Root Analysis:</strong> Gradual increase in units ordered, produced, and delivered observed due to rising market demand for efficient vehicles.<br>
+            <strong>Future Projection:</strong> Q1 2025 shows a projected increase of 5%, continuing the upward trend.
           </p>
         </div>
         <!-- Card 3: Incentive Realization Rate -->
@@ -368,6 +382,71 @@
             <strong>Root Analysis:</strong> Missed volume thresholds for certain models.<br>
             <strong>Future Projection:</strong> Could decrease further without action.<br>
             <strong>Impact:</strong> Loss of up to $2 million in incentives.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Purchasing Metrics -->
+      <div class="section-heading">
+        <h2>🛒 Purchasing Metrics</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: OEM Incentive Benchmark (% Incentive) -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>OEM Incentive Benchmark (% Incentive)</h3>
+            <span class="tooltiptext">Percentage saved below the invoice price due to incentives and discounts.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">4.5%</p>
+          <p style="color: #4caf50;">Slightly higher than industry average</p>
+          <canvas id="purchaseIncomeChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Negotiated OEM incentives leading to cost savings.<br>
+            <strong>Future Projection:</strong> Anticipate similar or improved rates with upcoming negotiations.<br>
+            <strong>Impact:</strong> Enhances pricing strategies and competitive positioning.
+          </p>
+        </div>
+        <!-- Card 3: Income from Incentives -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Income from Incentives YTD</h3>
+            <span class="tooltiptext">Average amount saved per vehicle due to discounts.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">$24,100,000</p>
+          <p style="color: #4caf50;">Healthy trend</p>
+          <canvas id="avgDiscountChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Effectively generated income attributed to purchase-related discounts.<br>
+            <strong>Future Projection:</strong> Projected 5% increase in discounts for Q1 2025 based on higher volume commitments.<br>
+          </p>
+        </div>
+        <!-- Card 5: Volume-Based Discounts Capture -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Volume-Based Discounts Capture</h3>
+            <span class="tooltiptext">Extent to which volume-based discounts are being utilized.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">75%</p>
+          <p style="color: #ff9800;">Potential for improvement</p>
+          <canvas id="volumeDiscountChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Not fully leveraging volume-based discount tiers.<br>
+            <strong>Future Projection:</strong> Aiming to reach 85% capture with strategic planning.<br>
+            <strong>Impact:</strong> Maximizes savings and strengthens OEM partnerships.
+          </p>
+        </div>
+        <!-- Card 6: OEM Incentive Reconciliation -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>OEM Incentive Reconciliation</h3>
+            <span class="tooltiptext">Accuracy in reconciling rebates and incentives from the supplier.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">75%</p>
+          <p style="color: orange;">Needs improvement</p>
+          <!-- Reduced the size of the pie chart -->
+          <canvas id="rebateAccuracyChart" width="216" height="216"></canvas>
+          <p class="insight-text">
+            <strong>Impact:</strong> Risk of $15,355,625 lost in 2024 due to agreed incentives not being applied.
           </p>
         </div>
       </div>
@@ -392,10 +471,10 @@
             <strong>Impact:</strong> Customer satisfaction could decline by 10%.
           </p>
         </div>
-        <!-- Card 2: SLA Violations -->
+        <!-- Card 2: SLA Compliance -->
         <div class="card">
           <div class="tooltip">
-            <h3>SLA Violations</h3>
+            <h3>SLA Compliance</h3>
             <span class="tooltiptext">Number of times the supplier failed to meet the Service Level Agreement.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">12</p>
@@ -403,23 +482,23 @@
           <canvas id="slaChart"></canvas>
           <p class="insight-text">
             <strong>Root Analysis:</strong> Increased demand causing capacity strains.<br>
-            <strong>Future Projection:</strong> Violations may rise without process improvements.<br>
+            <strong>Future Projection:</strong> Compliance may rise without process improvements.<br>
             <strong>Impact:</strong> Potential penalties up to $500,000.
           </p>
         </div>
-        <!-- Card 3: Defect Rate -->
+        <!-- Card 3: Recall Rate -->
         <div class="card">
           <div class="tooltip">
-            <h3>Defect Rate</h3>
+            <h3>Recall Rate</h3>
             <span class="tooltiptext">Percentage of products received with defects.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">5%</p>
           <p style="color: #f44336;">+2% from last quarter</p>
           <canvas id="defectChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Quality control issues at manufacturing plant.<br>
-            <strong>Future Projection:</strong> Could reach 6% if unaddressed.<br>
-            <strong>Impact:</strong> Increased warranty claims and repair costs.
+            <strong>Root Analysis:</strong> Driver assist tech features like autonomous emergency braking causing recalls, now often fixed over the air.<br>
+            <strong>Future Projection:</strong> Could reach 6% if pattern holds.<br>
+            <strong>Impact:</strong> Decrease in client satisfaction and co-ordination of recall fix application with dealership.
           </p>
         </div>
       </div>
@@ -429,36 +508,6 @@
         <h2>🔧 Operational Insights</h2>
       </div>
       <div class="cards-container">
-        <!-- Card 1: Quality Audit Scores -->
-        <div class="card">
-          <div class="tooltip">
-            <h3>Quality Audit Scores</h3>
-            <span class="tooltiptext">Results from recent quality audits of the supplier's facilities.</span>
-          </div>
-          <p style="font-size: 24px; font-weight: bold;">90%</p>
-          <p style="color: #4caf50;">+2% from last audit</p>
-          <canvas id="auditChart"></canvas>
-          <p class="insight-text">
-            <strong>Root Analysis:</strong> Implementation of new quality protocols.<br>
-            <strong>Future Projection:</strong> Expected to improve to 92% by next audit.<br>
-            <strong>Impact:</strong> Enhances brand reputation and customer trust.
-          </p>
-        </div>
-        <!-- Card 2: Average Turnaround Time -->
-        <div class="card">
-          <div class="tooltip">
-            <h3>Average Turnaround Time</h3>
-            <span class="tooltiptext">Average time between order placement and delivery.</span>
-          </div>
-          <p style="font-size: 24px; font-weight: bold;">10 Days</p>
-          <p style="color: #4caf50;">Improved by 1 Day</p>
-          <canvas id="turnaroundChart"></canvas>
-          <p class="insight-text">
-            <strong>Root Analysis:</strong> Streamlined production processes.<br>
-            <strong>Future Projection:</strong> May improve to 9 days with automation.<br>
-            <strong>Impact:</strong> Faster delivery enhances customer satisfaction.
-          </p>
-        </div>
         <!-- Card 3: Supplier Responsiveness -->
         <div class="card">
           <div class="tooltip">
@@ -477,190 +526,124 @@
         </div>
       </div>
 
-      <!-- Section: Purchasing Metrics -->
-      <div class="section-heading">
-        <h2>🛒 Purchasing Metrics</h2>
-      </div>
-      <div class="cards-container">
-        <!-- Card 1: Purchase Related Income (% Below Invoice) -->
-        <div class="card">
-          <div class="tooltip">
-            <h3>Purchase Related Income (% Below Invoice)</h3>
-            <span class="tooltiptext">Percentage saved below the invoice price due to incentives and discounts.</span>
-          </div>
-          <p style="font-size: 24px; font-weight: bold;">4.5%</p>
-          <p style="color: #4caf50;">Consistent with industry average</p>
-          <canvas id="purchaseIncomeChart"></canvas>
-          <p class="insight-text">
-            <strong>Root Analysis:</strong> Negotiated OEM incentives leading to cost savings.<br>
-            <strong>Future Projection:</strong> Anticipate similar or improved rates with upcoming negotiations.<br>
-            <strong>Impact:</strong> Enhances pricing strategies and competitive positioning.
-          </p>
-        </div>
-        <!-- Card 2: Hold Back Percentage -->
-        <div class="card">
-          <div class="tooltip">
-            <h3>Hold Back Percentage</h3>
-            <span class="tooltiptext">Percentage of invoice price retained by the OEM until certain conditions are met.</span>
-          </div>
-          <p style="font-size: 24px; font-weight: bold;">4%</p>
-          <p style="color: #4caf50;">Retained from OEM orders</p>
-          <!-- Reduced the size of the pie chart -->
-          <canvas id="holdBackChart" width="198" height="198"></canvas>
-          <p class="insight-text">
-            <strong>Root Analysis:</strong> Effective direct ordering strategies with OEMs.<br>
-            <strong>Future Projection:</strong> Potential to negotiate for lower hold back percentages.<br>
-            <strong>Impact:</strong> Increases immediate cash flow and reduces capital tied up.
-          </p>
-        </div>
-        <!-- Card 3: Average Discount per Vehicle -->
-        <div class="card">
-          <div class="tooltip">
-            <h3>Average Discount per Vehicle</h3>
-            <span class="tooltiptext">Average amount saved per vehicle due to discounts.</span>
-          </div>
-          <p style="font-size: 24px; font-weight: bold;">$1,800</p>
-          <p style="color: #4caf50;">Within expected range</p>
-          <canvas id="avgDiscountChart"></canvas>
-          <p class="insight-text">
-            <strong>Root Analysis:</strong> Successful utilization of purchase-related income.<br>
-            <strong>Future Projection:</strong> Discounts may increase with higher volume commitments.<br>
-            <strong>Impact:</strong> Reduces acquisition costs, improving overall profitability.
-          </p>
-        </div>
-        <!-- Card 4: Profit Margin per Supplier -->
-        <div class="card">
-          <div class="tooltip">
-            <h3>Profit Margin per Supplier</h3>
-            <span class="tooltiptext">Profit margins achieved from different suppliers.</span>
-          </div>
-          <p style="font-size: 24px; font-weight: bold;">12%</p>
-          <p style="color: #4caf50;">Stable Margins</p>
-          <canvas id="profitMarginChart"></canvas>
-          <p class="insight-text">
-            <strong>Root Analysis:</strong> Balanced supplier relationships and effective cost management.<br>
-            <strong>Future Projection:</strong> Margins expected to improve with better negotiations.<br>
-            <strong>Impact:</strong> Identifies high-performing suppliers, ensuring sustained profitability.
-          </p>
-        </div>
-        <!-- Card 5: Volume-Based Discounts Utilization -->
-        <div class="card">
-          <div class="tooltip">
-            <h3>Volume-Based Discounts Utilization</h3>
-            <span class="tooltiptext">Extent to which volume-based discounts are being utilized.</span>
-          </div>
-          <p style="font-size: 24px; font-weight: bold;">75%</p>
-          <p style="color: #ff9800;">Potential for improvement</p>
-          <canvas id="volumeDiscountChart"></canvas>
-          <p class="insight-text">
-            <strong>Root Analysis:</strong> Not fully leveraging volume-based discount tiers.<br>
-            <strong>Future Projection:</strong> Aiming to reach 85% utilization with strategic planning.<br>
-            <strong>Impact:</strong> Maximizes savings and strengthens OEM partnerships.
-          </p>
-        </div>
-        <!-- Card 6: Rebate and Incentive Reconciliation Accuracy -->
-        <div class="card">
-          <div class="tooltip">
-            <h3>Rebate and Incentive Reconciliation Accuracy</h3>
-            <span class="tooltiptext">Accuracy in reconciling rebates and incentives from the supplier.</span>
-          </div>
-          <p style="font-size: 24px; font-weight: bold;">95%</p>
-          <p style="color: #4caf50;">High accuracy</p>
-          <!-- Reduced the size of the pie chart -->
-          <canvas id="rebateAccuracyChart" width="216" height="216"></canvas>
-          <p class="insight-text">
-            <strong>Root Analysis:</strong> Efficient tracking systems in place.<br>
-            <strong>Future Projection:</strong> Targeting 99% accuracy with process enhancements.<br>
-            <strong>Impact:</strong> Ensures financial integrity and optimal incentive utilization.
-          </p>
-        </div>
-      </div>
-
       <!-- Section: Vehicle Details -->
       <div class="section-heading">
         <h2>🚗 Vehicle Details</h2>
       </div>
       <div class="cards-container">
         <!-- Vehicle Details Table (Spanning Full Width) -->
-        <div class="card" style="flex: 1 1 100%;">
+        <div class="card" style="flex: 1 1 100%; max-width: 100%;">
           <table class="vehicle-table">
             <tr>
-              <th>Make</th>
               <th>Model</th>
               <th>Year</th>
-              <th>Units Purchased</th>
+              <th>Units Ordered</th>
               <th>Total Spend</th>
+              <th>Incentive Income</th>
             </tr>
-            <!-- Added 10 rows -->
+            
+            <!-- 2024 Vehicles -->
             <tr>
-              <td>General Motors</td>
-              <td>EcoSedan</td>
-              <td>2023</td>
-              <td>5,000</td>
-              <td>$40,000,000</td>
-            </tr>
-            <tr>
-              <td>General Motors</td>
-              <td>MaxSUV</td>
-              <td>2023</td>
-              <td>3,500</td>
-              <td>$35,000,000</td>
-            </tr>
-            <tr>
-              <td>General Motors</td>
-              <td>TransitVan</td>
-              <td>2022</td>
-              <td>4,000</td>
-              <td>$25,000,000</td>
-            </tr>
-            <tr>
-              <td>General Motors</td>
-              <td>HybridHatch</td>
-              <td>2023</td>
-              <td>2,750</td>
-              <td>$20,500,000</td>
-            </tr>
-            <tr>
-              <td>General Motors</td>
               <td>ElectricCoupe</td>
               <td>2024</td>
               <td>1,500</td>
               <td>$22,500,000</td>
+              <td>$5,400,000</td>
             </tr>
             <tr>
-              <td>General Motors</td>
-              <td>LuxurySedan</td>
-              <td>2023</td>
-              <td>800</td>
-              <td>$18,000,000</td>
-            </tr>
-            <tr>
-              <td>General Motors</td>
-              <td>CompactSUV</td>
-              <td>2022</td>
-              <td>2,200</td>
-              <td>$19,800,000</td>
-            </tr>
-            <tr>
-              <td>General Motors</td>
               <td>SportsCar</td>
               <td>2024</td>
               <td>300</td>
               <td>$15,000,000</td>
+              <td>$2,400,000</td>
             </tr>
             <tr>
-              <td>General Motors</td>
-              <td>FamilyVan</td>
-              <td>2023</td>
-              <td>1,000</td>
-              <td>$12,000,000</td>
-            </tr>
-            <tr>
-              <td>General Motors</td>
               <td>OffroadTruck</td>
               <td>2024</td>
               <td>600</td>
               <td>$14,400,000</td>
+              <td>$2,200,000</td>
+            </tr>
+            <tr>
+              <td>ElectricSUV</td>
+              <td>2024</td>
+              <td>1,200</td>
+              <td>$20,000,000</td>
+              <td>$4,800,000</td>
+            </tr>
+            <tr>
+              <td>LuxuryHybrid</td>
+              <td>2024</td>
+              <td>500</td>
+              <td>$13,600,000</td>
+              <td>$2,100,000</td>
+            </tr>
+            <tr>
+              <td>HeavyDutyTruck</td>
+              <td>2024</td>
+              <td>400</td>
+              <td>$20,000,000</td>
+              <td>$3,600,000</td>
+            </tr>
+            <tr>
+              <td>SuperElectric</td>
+              <td>2024</td>
+              <td>200</td>
+              <td>$15,000,000</td>
+              <td>$3,500,000</td>
+            </tr>
+
+            <!-- 2023 Vehicles -->
+            <tr>
+              <td>EcoSedan</td>
+              <td>2023</td>
+              <td>5,000</td>
+              <td>$40,000,000</td>
+              <td>$12,000,000</td>
+            </tr>
+            <tr>
+              <td>MaxSUV</td>
+              <td>2023</td>
+              <td>3,500</td>
+              <td>$35,000,000</td>
+              <td>$10,500,000</td>
+            </tr>
+            <tr>
+              <td>HybridHatch</td>
+              <td>2023</td>
+              <td>2,750</td>
+              <td>$20,500,000</td>
+              <td>$6,150,000</td>
+            </tr>
+            <tr>
+              <td>LuxurySedan</td>
+              <td>2023</td>
+              <td>800</td>
+              <td>$18,000,000</td>
+              <td>$5,400,000</td>
+            </tr>
+            <tr>
+              <td>FamilyVan</td>
+              <td>2023</td>
+              <td>1,000</td>
+              <td>$12,000,000</td>
+              <td>$3,600,000</td>
+            </tr>
+
+            <!-- 2022 Vehicles -->
+            <tr>
+              <td>TransitVan</td>
+              <td>2022</td>
+              <td>4,000</td>
+              <td>$25,000,000</td>
+              <td>$7,500,000</td>
+            </tr>
+            <tr>
+              <td>CompactSUV</td>
+              <td>2022</td>
+              <td>2,200</td>
+              <td>$19,800,000</td>
+              <td>$5,940,000</td>
             </tr>
           </table>
         </div>
@@ -672,7 +655,7 @@
       </div>
       <div class="cards-container">
         <!-- Recommendations Table (Spanning Full Width) -->
-        <div class="card" style="flex: 1 1 100%;">
+        <div class="card" style="flex: 1 1 100%; max-width: 100%;">
           <table class="recommendations-table">
             <tr>
               <th>Recommendation</th>
@@ -693,13 +676,13 @@
               <td><span class="action-icon" data-action="addressOnTime"><i class="fas fa-truck"></i></span><span class="action-text" data-action="addressOnTime">Optimize Logistics</span></td>
             </tr>
             <tr>
-              <td>Reduce SLA Violations to avoid penalties and improve overall operational efficiency.</td>
+              <td>Reduce SLA Compliance to avoid penalties and improve overall operational efficiency.</td>
               <td><span class="priority-chip medium-priority">Medium</span></td>
               <td>75</td>
               <td><span class="action-icon" data-action="reduceSla"><i class="fas fa-file-contract"></i></span><span class="action-text" data-action="reduceSla">Strengthen SLA Monitoring</span></td>
             </tr>
             <tr>
-              <td>Request Quality Control Improvements to reduce defect rates and warranty claims.</td>
+              <td>Request Quality Control Improvements to reduce recall rates and warranty claims.</td>
               <td><span class="priority-chip medium-priority">Medium</span></td>
               <td>80</td>
               <td><span class="action-icon" data-action="improveQuality"><i class="fas fa-search-plus"></i></span><span class="action-text" data-action="improveQuality">Quality Enhancement</span></td>
@@ -775,7 +758,7 @@
         ]
       },
       reduceSla: {
-        title: 'Reducing SLA Violations',
+        title: 'Reducing SLA Compliance',
         steps: [
           { description: 'Analyze violation incidents with Quality Assurance.', duration: 'Expected Duration: 3 days' },
           { description: 'Implement corrective measures.', duration: 'Expected Duration: 5 days' },
@@ -853,59 +836,204 @@
       }
     }
 
-    // Charts Data with Dotted Projections after Q4 2024
-    const spendLabels = ['2020', '2021', '2022', '2023', '2024', '2025'];
-    const spendData = [100, 105, 112, 120.5, 125, 130];
-
+    // Total Spend YTD Chart
     const spendCtx = document.getElementById('spendChart').getContext('2d');
+
+    // Values for each quarter of 2024, increasing by 5% each quarter to reach a total spend of $120,500,000 by Q4 2024
+    const totalSpendQ4 = 120500000;
+    const q4_2024 = totalSpendQ4 / (1.05 ** 3 + 1.05 ** 2 + 1.05 + 1);
+    const spendQuarters = [Math.round(q4_2024)];
+    for (let i = 1; i < 5; i++) spendQuarters.push(Math.round(spendQuarters[i - 1] * 1.05));
+
+    // Splitting each quarter into "Ordered", "Produced", "Delivered" with shifting volume from Ordered to Delivered as quarters progress
+    const splitSpendData = (total, quarter) => {
+      const orderedPercentage = 0.5 - quarter * 0.05;
+      const deliveredPercentage = 0.2 + quarter * 0.05;
+      return {
+        ordered: Math.round(total * orderedPercentage),
+        produced: Math.round(total * 0.3),
+        delivered: Math.round(total * deliveredPercentage)
+      };
+    };
+
+    const splitSpendQuarters = spendQuarters.map((total, index) => splitSpendData(total, index));
+
     const spendChart = new Chart(spendCtx, {
-      type: 'line',
+      type: 'bar',
       data: {
-        labels: spendLabels,
-        datasets: [{
-          label: 'Total Spend ($ millions)',
-          data: spendData,
-          borderColor: 'blue',
-          fill: false,
-          segment: {
-            borderDash: ctx => ctx.p0DataIndex >= 4 ? [5, 5] : undefined
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025 (Projection)'],
+        datasets: [
+          {
+            label: '$ Ordered',
+            data: splitSpendQuarters.map(q => q.ordered),
+            backgroundColor: [
+              'teal',    // Q1 2024
+              'teal',    // Q2 2024
+              'teal',    // Q3 2024
+              'teal',    // Q4 2024
+              'rgba(0, 128, 128, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'teal',    // Q1 2024
+              'teal',    // Q2 2024
+              'teal',    // Q3 2024
+              'teal',    // Q4 2024
+              'teal'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          },
+          {
+            label: '$ Produced',
+            data: splitSpendQuarters.map(q => q.produced),
+            backgroundColor: [
+              'orange',    // Q1 2024
+              'orange',    // Q2 2024
+              'orange',    // Q3 2024
+              'orange',    // Q4 2024
+              'rgba(255, 165, 0, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'orange',    // Q1 2024
+              'orange',    // Q2 2024
+              'orange',    // Q3 2024
+              'orange',    // Q4 2024
+              'orange'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          },
+          {
+            label: '$ Delivered',
+            data: splitSpendQuarters.map(q => q.delivered),
+            backgroundColor: [
+              'blue',    // Q1 2024
+              'blue',    // Q2 2024
+              'blue',    // Q3 2024
+              'blue',    // Q4 2024
+              'rgba(0, 0, 255, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'blue',    // Q1 2024
+              'blue',    // Q2 2024
+              'blue',    // Q3 2024
+              'blue',    // Q4 2024
+              'blue'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
           }
-        }]
+        ]
       },
       options: {
         responsive: true,
         scales: {
+          x: {
+            stacked: true,
+          },
           y: {
+            beginAtZero: true,
+            stacked: true,
             title: {
               display: true,
-              text: 'Spend ($ millions)'
+              text: 'Spend ($)'
             }
           }
         }
       }
     });
 
-    // Units Purchased Chart
+
+    // Units Ordered YTD Chart
     const unitsCtx = document.getElementById('unitsChart').getContext('2d');
+
+    // Values for each quarter of 2024, increasing by 5% each quarter
+    const quarters = [3400];
+    for (let i = 1; i < 5; i++) quarters.push(Math.round(quarters[i - 1] * 1.05));
+
+    // Splitting each quarter into "Ordered", "Produced", "Delivered" with shifting volume from Ordered to Delivered as quarters progress
+    const splitData = (total, quarter) => {
+      const orderedPercentage = 0.5 - quarter * 0.05;
+      const deliveredPercentage = 0.2 + quarter * 0.05;
+      return {
+        ordered: Math.round(total * orderedPercentage),
+        produced: Math.round(total * 0.3),
+        delivered: Math.round(total * deliveredPercentage)
+      };
+    };
+
+    const splitQuarters = quarters.map((total, index) => splitData(total, index));
+
     const unitsChart = new Chart(unitsCtx, {
-      type: 'line',
+      type: 'bar',
       data: {
-        labels: spendLabels,
-        datasets: [{
-          label: 'Units Purchased',
-          data: [12500, 13000, 14500, 15250, 15810, 16317],
-          borderColor: 'green',
-          fill: false,
-          segment: {
-            borderDash: ctx => ctx.p0DataIndex >= 4 ? [5, 5] : undefined
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025 (Projection)'],
+        datasets: [
+          {
+            label: '# Ordered',
+            data: splitQuarters.map(q => q.ordered),
+            backgroundColor: [
+              'teal',    // Q1 2024
+              'teal',    // Q2 2024
+              'teal',    // Q3 2024
+              'teal',    // Q4 2024
+              'rgba(0, 128, 128, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'teal',    // Q1 2024
+              'teal',    // Q2 2024
+              'teal',    // Q3 2024
+              'teal',    // Q4 2024
+              'teal'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          },
+          {
+            label: '# Produced',
+            data: splitQuarters.map(q => q.produced),
+            backgroundColor: [
+              'orange',    // Q1 2024
+              'orange',    // Q2 2024
+              'orange',    // Q3 2024
+              'orange',    // Q4 2024
+              'rgba(255, 165, 0, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'orange',    // Q1 2024
+              'orange',    // Q2 2024
+              'orange',    // Q3 2024
+              'orange',    // Q4 2024
+              'orange'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          },
+          {
+            label: '# Delivered',
+            data: splitQuarters.map(q => q.delivered),
+            backgroundColor: [
+              'blue',    // Q1 2024
+              'blue',    // Q2 2024
+              'blue',    // Q3 2024
+              'blue',    // Q4 2024
+              'rgba(0, 0, 255, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'blue',    // Q1 2024
+              'blue',    // Q2 2024
+              'blue',    // Q3 2024
+              'blue',    // Q4 2024
+              'blue'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
           }
-        }]
+        ]
       },
       options: {
         responsive: true,
         scales: {
+          x: {
+            stacked: true,
+          },
           y: {
             beginAtZero: true,
+            stacked: true,
             title: {
               display: true,
               text: 'Units'
@@ -914,6 +1042,8 @@
         }
       }
     });
+
+
 
     // Incentive Realization Rate Chart
     const incentiveCtx = document.getElementById('incentiveChart').getContext('2d');
@@ -977,14 +1107,14 @@
       }
     });
 
-    // SLA Violations Chart
+    // SLA Compliance Chart
     const slaCtx = document.getElementById('slaChart').getContext('2d');
     const slaChart = new Chart(slaCtx, {
       type: 'bar',
       data: {
         labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
         datasets: [{
-          label: 'SLA Violations',
+          label: 'SLA Compliance',
           data: [4, 6, 7, 12, 15],
           backgroundColor: 'red',
           segment: {
@@ -999,21 +1129,21 @@
             beginAtZero: true,
             title: {
               display: true,
-              text: 'Number of Violations'
+              text: 'Number of Instances'
             }
           }
         }
       }
     });
 
-    // Defect Rate Chart
+    // Recall Rate Chart
     const defectCtx = document.getElementById('defectChart').getContext('2d');
     const defectChart = new Chart(defectCtx, {
       type: 'line',
       data: {
         labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
         datasets: [{
-          label: 'Defect Rate (%)',
+          label: 'Recall Rate (%)',
           data: [3, 3.5, 4, 5, 6],
           borderColor: 'purple',
           fill: false,
@@ -1031,67 +1161,6 @@
             title: {
               display: true,
               text: 'Percentage (%)'
-            }
-          }
-        }
-      }
-    });
-
-    // Quality Audit Scores Chart
-    const auditCtx = document.getElementById('auditChart').getContext('2d');
-    const auditChart = new Chart(auditCtx, {
-      type: 'line',
-      data: {
-        labels: ['2021', '2022', '2023', '2024', '2025'],
-        datasets: [{
-          label: 'Audit Scores (%)',
-          data: [85, 87, 88, 90, 92],
-          borderColor: 'green',
-          fill: false,
-          segment: {
-            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
-          }
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            max: 100,
-            min: 80,
-            title: {
-              display: true,
-              text: 'Percentage (%)'
-            }
-          }
-        }
-      }
-    });
-
-    // Average Turnaround Time Chart
-    const turnaroundCtx = document.getElementById('turnaroundChart').getContext('2d');
-    const turnaroundChart = new Chart(turnaroundCtx, {
-      type: 'line',
-      data: {
-        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
-        datasets: [{
-          label: 'Turnaround Time (Days)',
-          data: [12, 11, 10, 10, 9],
-          borderColor: 'blue',
-          fill: false,
-          segment: {
-            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
-          }
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            reverse: true,
-            title: {
-              display: true,
-              text: 'Days (Lower is Better)'
             }
           }
         }
@@ -1120,118 +1189,147 @@
       }
     });
 
-    // Purchase Related Income Chart
-    const purchaseIncomeCtx = document.getElementById('purchaseIncomeChart').getContext('2d');
-    const purchaseIncomeChart = new Chart(purchaseIncomeCtx, {
+    // OEM Incentive Benchmark Chart
+    const incentiveBenchmarkCtx = document.getElementById('purchaseIncomeChart').getContext('2d');
+    const purchaseIncomeChart = new Chart(incentiveBenchmarkCtx, {
       type: 'bar',
       data: {
-        labels: ['General Motors', 'Ford', 'Chrysler', 'Toyota', 'Others'],
-        datasets: [{
-          label: '% Below Invoice',
-          data: [4.5, 4.0, 3.8, 3.5, 3.0],
-          backgroundColor: ['#2196f3', '#4caf50', '#ff9800', '#f44336', 'purple']
-        }]
+        labels: ['General Motors', 'Ford', 'Chrysler', 'Toyota'],
+        datasets: [
+          {
+            label: 'FMC Incentive',
+            data: [3, 3.0, 2.85, 1.125], // Adjusted splits
+            backgroundColor: ['#2196f3', '#4caf50', '#ff9800', '#f44336'],
+          },
+          {
+            label: 'Client Incentive',
+            data: [1.5, 1.0, 0.95, 0.375], // Adjusted splits
+            backgroundColor: ['#64b5f6', '#81c784', '#ffb74d', '#e57373'],
+          }
+        ]
       },
       options: {
         responsive: true,
+        plugins: {
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          },
+          legend: {
+            position: 'top',
+          }
+        },
         scales: {
+          x: {
+            stacked: true
+          },
           y: {
+            stacked: true,
             max: 5,
             min: 0,
             title: {
               display: true,
-              text: '% Below Invoice'
+              text: '% Incentive'
+            },
+            ticks: {
+              stepSize: 1
             }
           }
         }
       }
     });
 
-    // Hold Back Percentage Chart
-    const holdBackCtx = document.getElementById('holdBackChart').getContext('2d');
-    const holdBackChart = new Chart(holdBackCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Retained', 'Released'],
-        datasets: [{
-          data: [4, 96],
-          backgroundColor: ['#4caf50', '#e0e0e0']
-        }]
-      },
-      options: {
-        responsive: false,
-        aspectRatio: 1,
-        plugins: {
-          legend: {
-            position: 'top',
-          }
-        }
-      }
-    });
-
-    // Average Discount per Vehicle Chart
-    const avgDiscountCtx = document.getElementById('avgDiscountChart').getContext('2d');
-    const avgDiscountChart = new Chart(avgDiscountCtx, {
+    // Income from Incentives Chart
+    const earningsData = [5590453, 5869976, 6163475, 6476096, 6799901]; // Q1-Q4 2024 and Q1 2025
+    const labels = ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025 (Projection)'];
+    const ctx = document.getElementById('avgDiscountChart').getContext('2d');
+    const avgDiscountChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        labels: labels,
         datasets: [{
-          label: 'Discount per Vehicle ($)',
-          data: [1700, 1800, 1750, 1800],
-          backgroundColor: 'teal'
+          label: 'Earnings per Quarter ($)',
+          data: earningsData,
+          backgroundColor: [
+            'teal',    // Q1 2024
+            'teal',    // Q2 2024
+            'teal',    // Q3 2024
+            'teal',    // Q4 2024
+            'rgba(0, 128, 128, 0.2)' // Q1 2025 (Projection) with transparent fill
+          ],
+          borderColor: [
+            'teal',    // Q1 2024
+            'teal',    // Q2 2024
+            'teal',    // Q3 2024
+            'teal',    // Q4 2024
+            'teal'     // Q1 2025 (Projection)
+          ],
+          borderWidth: 2,
+          borderDash: [
+            0, // Q1 2024
+            0, // Q2 2024
+            0, // Q3 2024
+            0, // Q4 2024
+            [5, 5] // Q1 2025 (Projection) - Dotted border
+          ],
         }]
       },
       options: {
         responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.y !== null) {
+                  label += '$' + context.parsed.y.toLocaleString();
+                }
+                return label;
+              }
+            }
+          }
+        },
         scales: {
           y: {
             beginAtZero: true,
-            max: 2000,
+            // Optionally, set max based on data
             title: {
               display: true,
-              text: 'Discount ($)'
+              text: 'Earnings ($)'
+            },
+            ticks: {
+              // Include a dollar sign in the ticks
+              callback: function(value, index, values) {
+                return '$' + value.toLocaleString();
+              }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Quarter'
             }
           }
         }
       }
     });
 
-    // Profit Margin per Supplier Chart
-    const profitMarginCtx = document.getElementById('profitMarginChart').getContext('2d');
-    const profitMarginChart = new Chart(profitMarginCtx, {
-      type: 'bar',
-      data: {
-        labels: ['General Motors', 'Ford', 'Chrysler', 'Toyota'],
-        datasets: [{
-          label: 'Profit Margin (%)',
-          data: [12, 11, 13, 10],
-          backgroundColor: ['#2196f3', '#4caf50', '#ff9800', '#f44336']
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            max: 15,
-            min: 5,
-            title: {
-              display: true,
-              text: 'Profit Margin (%)'
-            }
-          }
-        }
-      }
-    });
-
-    // Volume-Based Discounts Utilization Chart
+    // Volume-Based Discounts Capture Chart
     const volumeDiscountCtx = document.getElementById('volumeDiscountChart').getContext('2d');
     const volumeDiscountChart = new Chart(volumeDiscountCtx, {
       type: 'line',
       data: {
-        labels: ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'],
+        labels: ['Tier 1', 'Tier 2 [Current]', 'Tier 3', 'Tier 4'],
         datasets: [{
-          label: 'Utilization (%)',
-          data: [60, 75, 80, 90],
+          label: 'Capture (%)',
+          data: [60, 75, 80, 100],
           borderColor: 'purple',
           fill: false
         }]
@@ -1244,21 +1342,21 @@
             min: 50,
             title: {
               display: true,
-              text: 'Utilization (%)'
+              text: 'Capture (%)'
             }
           }
         }
       }
     });
 
-    // Rebate and Incentive Reconciliation Accuracy Chart
+    // OEM Incentive Reconciliation Chart
     const rebateAccuracyCtx = document.getElementById('rebateAccuracyChart').getContext('2d');
     const rebateAccuracyChart = new Chart(rebateAccuracyCtx, {
       type: 'pie',
       data: {
-        labels: ['Accurate', 'Inaccurate'],
+        labels: ['Reconciled', 'Missing'],
         datasets: [{
-          data: [95, 5],
+          data: [75, 25],
           backgroundColor: ['#4caf50', '#f44336']
         }]
       },

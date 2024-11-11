@@ -301,9 +301,9 @@
     <div id="content-container">
       <div class="subnav">
         <div class="nav-item logo">Supplier Intelligence</div>
-        <a class="nav-item" href="supplier-blueprint.html">Blueprint</a>
         <div class="nav-item active">Spend</div>
         <a class="nav-item" href="supplier-perf.html">Performance</a>
+        <a class="nav-item" href="supplier-blueprint.html">Blueprint</a>
       </div>
 
       <!-- Filters -->
@@ -545,7 +545,7 @@
         ],
         supplierPerformance: [
           { supplier: 'Transport Pro', performance: 30, spend: 15000000 },
-          { supplier: 'LightningFast Transport', performance: 40, spend: 10000000 },
+          { supplier: 'LightningFast Transport', performance: 70, spend: 10000000 },
           { supplier: 'TransMove Logistics', performance: 35, spend: 8000000 },
         ]
       },
@@ -649,7 +649,7 @@
             },
             x: {
               title: {
-                display: true,
+                display: false,
                 text: 'Supplier'
               }
             }
@@ -753,6 +753,9 @@
             }
           },
           plugins: {
+            legend: {
+              display: false  // Hides the legend
+            },
             tooltip: {
               callbacks: {
                 label: function(tooltipItem) {

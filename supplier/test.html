@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stacked Bar Chart with Adjusted Splits</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <canvas id="purchaseIncomeChart" width="600" height="400"></canvas>
+  
+  <script>
+    const ctx = document.getElementById('purchaseIncomeChart').getContext('2d');
+
+    const purchaseIncomeChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['General Motors', 'Ford', 'Chrysler', 'Toyota'],
+        datasets: [
+          {
+            label: 'FMC Incentive',
+            data: [3, 3.0, 2.85, 1.125], // Adjusted splits
+            backgroundColor: ['#2196f3', '#4caf50', '#ff9800', '#f44336'],
+          },
+          {
+            label: 'Client Incentive',
+            data: [1.5, 1.0, 0.95, 0.375], // Adjusted splits
+            backgroundColor: ['#64b5f6', '#81c784', '#ffb74d', '#e57373'],
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          },
+          legend: {
+            position: 'top',
+          }
+        },
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true,
+            max: 5,
+            min: 0,
+            title: {
+              display: true,
+              text: '% Below Invoice'
+            },
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
