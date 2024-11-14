@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon"
+    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="chatbot.css">
+  <title>Ridecell Supplier Intelligence Hub</title>
+  <style>
+    /* Styles remain the same */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .header .highlight {
+      font-weight: bold;
+      color: #3d76e9;
+    }
+    .summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: #d4f5d1;
+      color: #4caf50;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+    .summary span.unusual {
+      background-color: #ffe6e6;
+      color: #f44336;
+    }
+    .filters {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      background-color: #fff;
+      border-bottom: 1px solid #eaeaea;
+    }
+    .filters label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .filters select {
+      margin-right: 20px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+    .filters select:focus {
+      outline: none;
+      border-color: #3d76e9;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 0px 20px;
+      padding-bottom: 20px;
+    }
+    .metric-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .metric-header {
+      font-size: 16px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .metric-header .normal {
+      background-color: #3d76e9;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-header .unusual {
+      background-color: #f44336;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-value {
+      font-size: 28px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .metric-change {
+      color: #4caf50;
+      margin-bottom: 15px;
+    }
+    .metric-info {
+      font-size: 15px;
+      color: #777;
+      padding-top: 10px;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+    }
+
+    /* subnav Styling */
+    .subnav {
+        display: flex;
+        align-items: center;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .nav-item {
+        font-size: 14px;
+        color: #666666;
+        cursor: pointer;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-item.logo {
+        font-weight: bold;
+        color: #000000;
+        font-size: 22px;
+    }
+
+    .nav-item.active {
+        color: #000000;
+        border-bottom: 4px solid #4CAF50; /* Green underline for active state */
+        background-color: hsl(105deg 35.29% 93.33%);
+        padding: 30px 20px 24px;
+    }
+
+    .link {
+        text-decoration: none;
+        color: #22aaff;
+    }
+
+    #side-panel {
+      width: 170px;
+      background-color: #fff;
+      padding: 20px;
+      border-right: 1px solid #ddd;
+      height: 100vh;
+      overflow-y: auto;
+      position: fixed;
+      left: 78px;
+      top: 137px;
+    }
+
+    #side-panel .filter-group {
+      margin-bottom: 20px;
+    }
+
+    #side-panel .filter-group strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    #side-panel .filter-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #main-container {
+      margin-left: 200px;
+      padding: 20px;
+      overflow: auto;
+      height: calc(100vh - 137px);
+    }
+
+    #table-container table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #table-container th, #table-container td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    #table-container th {
+      background-color: #f9fafb;
+    }
+
+    .risk-chip, .status-chip {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      color: white;
+    }
+
+    .risk-chip {
+      color: white;
+    }
+
+    .status-chip {
+      color: white;
+    }
+
+    a { 
+      text-decoration: none;
+      color: #22aaff;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar-container">
+    <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="subnav">
+        <div class="nav-item logo">Supplier Intelligence</div>
+        <a class="nav-item active">Suppliers</a>
+        <a class="nav-item" href="supplier-spend.html">Spend</a>
+        <a class="nav-item" href="supplier-perf.html">Performance</a>
+        <a class="nav-item" href="insights.html">Insights</a>
+      </div>
+  
+      <div id="side-panel">
+        <div class="filter-group">
+          <strong>Countries</strong>
+          <label><input type="checkbox" name="country" value="US">🇺🇸 United States</label>
+          <label><input type="checkbox" name="country" value="Canada">🇨🇦 Canada</label>
+          <label><input type="checkbox" name="country" value="Mexico">🇲🇽 Mexico</label>
+          <label><input type="checkbox" name="country" value="Australia">🇦🇺 Australia</label>
+          <label><input type="checkbox" name="country" value="New Zealand">🇳🇿 New Zealand</label>
+        </div>
+        <div class="filter-group">
+          <strong>Supplier Categories</strong>
+          <label><input type="checkbox" name="supplierType" value="OEM">🚗 OEM</label>
+          <label><input type="checkbox" name="supplierType" value="Title and Registration">📃 Title and Registration</label>
+          <label><input type="checkbox" name="supplierType" value="Transportation">🚚 Transportation</label>
+          <label><input type="checkbox" name="supplierType" value="Storage">🅿️ Storage</label>
+          <label><input type="checkbox" name="supplierType" value="Inspection">🔍 Inspection</label>
+          <label><input type="checkbox" name="supplierType" value="Upfit">🔼 Upfit</label>
+          <label><input type="checkbox" name="supplierType" value="Repair">🔧 Repair</label>
+          <label><input type="checkbox" name="supplierType" value="Resale">⚖️ Resale</label>
+        </div>
+        <div class="filter-group">
+          <strong>Status</strong>
+          <label><input type="checkbox" name="status" value="Active">🟢 Active</label>
+          <label><input type="checkbox" name="status" value="Pending">🔵 Pending</label>
+          <label><input type="checkbox" name="status" value="In Negotiation">🟠 In Negotiation</label>
+          <label><input type="checkbox" name="status" value="Cancelled">🔴 Cancelled</label>
+          <label><input type="checkbox" name="status" value="Closed">⚫️ Closed</label>
+        </div>
+      </div>
+
+      <div id="main-container">
+        <div id="table-container">
+          <!-- Table will be rendered here -->
+        </div>
+      </div>
+
+      <!-- Floating chat icon -->
+      <div id="chat-icon" onclick="toggleChat()"><img src="robot-icon.png" style="height:80px"></div>
+
+      <!-- Chat window -->
+      <div id="chat-window">
+        <div id="chat-header">
+          <span>FleetCaptain</span>
+          <span id="close-chat" onclick="toggleChat()">✖</span>
+        </div>
+        <div id="chat-messages"></div>
+        <!-- Loading indicator -->
+        <div id="loading-indicator">
+          <div class="spinner"></div>
+        </div>
+        <div id="chat-input-container">
+          <input type="text" id="chat-input" placeholder="Ask a question about this data..." onkeypress="handleKeyPress(event)">
+          <button id="send-button" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+      <script>
+        // Supplier data and functions
+        var suppliersData = [
+          {
+            supplier: 'General Motors',
+            supplierType: 'OEM',
+            country: 'US',
+            startOfContract: '2021-01-15',
+            endOfContract: '2025-01-15',
+            incentives: 'Volume Based',
+            paymentTerms: 'Net 30',
+            risk: 'low',
+            status: 'Active',
+            alerts: 2,
+          },
+          {
+            supplier: 'Toyota',
+            supplierType: 'OEM',
+            country: 'Japan',
+            startOfContract: '2019-05-10',
+            endOfContract: '2024-05-10',
+            incentives: 'Loyalty Based',
+            paymentTerms: 'Net 45',
+            risk: 'medium',
+            status: 'Pending',
+            alerts: 1,
+          },
+          {
+            supplier: 'Ford Motor Company',
+            supplierType: 'OEM',
+            country: 'US',
+            startOfContract: '2018-03-20',
+            endOfContract: '2023-03-20',
+            incentives: 'Volume Based',
+            paymentTerms: 'Net 60',
+            risk: 'high',
+            status: 'In Negotiation',
+            alerts: 3,
+          },
+          // Add more suppliers to reach at least 50 entries
+          // ...
+        ];
+
+        // Fill suppliersData with more fixed suppliers
+        (function populateSuppliers() {
+          var supplierNames = [
+            'Honda', 'Tesla', 'Volkswagen', 'BMW', 'Daimler AG', 'Fiat Chrysler Automobiles', 'Nissan', 'Hyundai', 'Kia Motors', 'Subaru',
+            'Mazda', 'Mitsubishi Motors', 'Suzuki', 'Renault', 'Peugeot', 'Citroen', 'Volvo', 'Jaguar Land Rover', 'Aston Martin',
+            'Bentley Motors', 'Rolls-Royce', 'Ferrari', 'Lamborghini', 'Elite Repairs', 'Quick Fix Auto', 'Precision Auto Repair',
+            'AutoPro Service Center', 'DriveTime Repairs', 'Secure Storage Solutions', 'AutoVault Storage', 'Metro Vehicle Storage',
+            'ParkSafe Facilities', 'EZ Storage', 'Fast Transport', 'Express Logistics', 'Swift Haulage', 'Global Transport Services',
+            'Transworld Logistics', 'Precision Inspection', 'Quality Check Services', 'Auto Inspectors Inc.', 'Certified Vehicle Inspection',
+            'AutoCheck Solutions', 'TitlePro Services', 'Auto Registrations LLC', 'QuickTitle Solutions', 'Vehicle Documentation Services',
+            'TitleExpress', 'Global Upfitters', 'Auto Customization Inc.', 'Upfit Solutions', 'Vehicle Modifications LLC',
+            'Custom Auto Enhancements', 'Metro Resale', 'Auto Resellers Inc.', 'Value Cars', 'Second Hand Motors', 'Auto Auctions Ltd.'
+          ];
+
+          var supplierTypes = ['OEM', 'Repair', 'Storage', 'Transportation', 'Inspection', 'Title and Registration', 'Upfit', 'Resale'];
+          var countries = ['US', 'Canada', 'Mexico', 'Australia', 'New Zealand'];
+          var paymentTermsOptions = ['Net 30', 'Net 45', 'Net 60', 'Net 90'];
+          var risks = ['low', 'medium', 'high'];
+          var statuses = ['Active', 'Pending', 'In Negotiation', 'Cancelled', 'Closed'];
+          var incentivesOptions = ['Volume Based', 'Loyalty Based'];
+
+          for (var i = 0; i < supplierNames.length; i++) {
+            if (suppliersData.length >= 50) break;
+            var supplierType = supplierTypes[i % supplierTypes.length];
+            var supplier = {
+              supplier: supplierNames[i],
+              supplierType: supplierType,
+              country: countries[i % countries.length],
+              startOfContract: '2020-01-01',
+              endOfContract: '2025-12-31',
+              incentives: supplierType === 'OEM' ? incentivesOptions[i % incentivesOptions.length] : '',
+              paymentTerms: paymentTermsOptions[i % paymentTermsOptions.length],
+              risk: risks[i % risks.length],
+              status: statuses[i % statuses.length],
+              alerts: i % 5,
+            };
+            // Skip 'General Motors' as it's already added
+            if (supplier.supplier !== 'General Motors') {
+              suppliersData.push(supplier);
+            }
+          }
+        })();
+
+        function filterSuppliers() {
+          var selectedCountries = Array.from(document.querySelectorAll('input[name="country"]:checked')).map(function(input) {
+            return input.value;
+          });
+          var selectedSupplierTypes = Array.from(document.querySelectorAll('input[name="supplierType"]:checked')).map(function(input) {
+            return input.value;
+          });
+          var selectedStatuses = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(function(input) {
+            return input.value;
+          });
+
+          return suppliersData.filter(function(supplier) {
+            var countryMatch = selectedCountries.length === 0 || selectedCountries.includes(supplier.country);
+            var typeMatch = selectedSupplierTypes.length === 0 || selectedSupplierTypes.includes(supplier.supplierType);
+            var statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(supplier.status);
+            return countryMatch && typeMatch && statusMatch;
+          });
+        }
+
+        function renderTable() {
+          var tableContainer = document.getElementById('table-container');
+          var suppliers = filterSuppliers();
+
+          var tableRows = suppliers.map(function(supplier) {
+            var incentivesCell = supplier.incentives || '-';
+
+            var riskColor = supplier.risk === 'low' ? '#4caf50' :
+                            (supplier.risk === 'medium' ? '#ff9800' : '#f44336');
+            
+            var statusColors = {
+              'Active': '#4caf50',
+              'Pending': 'blue',
+              'In Negotiation': 'orange',
+              'Cancelled': '#f44336',
+              'Closed': '#484848'
+            };
+            
+            var statusColor = statusColors[supplier.status] || '#000000'; // Default to black if status not found
+
+            // Determine the URL based on the supplier's name
+            var supplierURL = '#'; // Default URL
+            if (supplier.supplier === "General Motors") {
+              supplierURL = "profile/general-motors.html";
+            }
+            // You can add more conditions for other suppliers if needed
+            // else if (supplier.supplier === "Another Supplier") {
+            //   supplierURL = "https://www.another.com";
+            // }
+
+            return `<tr>
+              <td><a href="${supplierURL}" rel="noopener noreferrer">${supplier.supplier}</a></td>
+              <td><span class="risk-chip" style="background-color: ${riskColor};">${supplier.risk}</span></td>
+              <td><a href="#">${supplier.alerts}</a></td>
+              <td>${supplier.supplierType}</td>
+              <td>${supplier.country}</td>
+              <td>${supplier.startOfContract}</td>
+              <td>${supplier.endOfContract}</td>
+              <td>${incentivesCell}</td>
+              <td>${supplier.paymentTerms}</td>
+              <td><span class="status-chip" style="background-color: ${statusColor};">${supplier.status}</span></td>
+            </tr>`;
+          }).join('');
+
+          var tableHTML = `<table>
+            <thead>
+              <tr>
+                <th>Supplier Name</th>
+                <th>Risk</th>
+                <th>Alerts</th>
+                <th>Category</th>
+                <th>Country</th>
+                <th>Contract Start</th>
+                <th>Contract End</th>
+                <th>Incentives</th>
+                <th>Payment Terms</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>`;
+
+          tableContainer.innerHTML = tableHTML;
+        }
+
+        // Event listeners for filters
+        var filterInputs = document.querySelectorAll('#side-panel input');
+        filterInputs.forEach(function(input) {
+          input.addEventListener('change', function() {
+            renderTable();
+          });
+        });
+
+        // Initialize Table when the page loads
+        window.onload = function() {
+          renderTable();
+        };
+      </script>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

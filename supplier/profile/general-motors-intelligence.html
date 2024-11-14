@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supplier Profile - General Motors</title>
+  <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <!-- Include Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="../chatbot.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+    }
+    .subnav {
+      display: flex;
+      align-items: center;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .nav-item {
+      font-size: 14px;
+      color: #666666;
+      cursor: pointer;
+      padding: 20px;
+      text-decoration: none;
+    }
+    .nav-item.logo {
+      font-weight: bold;
+      color: #000000;
+      font-size: 22px;
+    }
+    .nav-item.active {
+      color: #000000;
+      border-bottom: 4px solid #4CAF50; /* Green underline for active state */
+      background-color: hsl(105deg 35.29% 93.33%);
+      padding: 30px 20px 24px;
+    }
+    .link {
+      text-decoration: none;
+      color: #22aaff;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      padding: 5px 20px;
+      background: #fafafa;
+      border-bottom: 2px solid #eaeaea;
+    }
+    .profile-header h1 {
+      margin: 0;
+      font-size: 20px;
+      color: #333;
+    }
+    .profile-header p {
+      margin: 5px 0 0 0;
+      color: #777;
+    }
+    .section-heading {
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    .section-heading h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 0 20px 20px 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      flex: 1 1 calc(33% - 40px);
+      box-sizing: border-box;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      position: relative;
+      align-self: flex-start;
+      max-width: 437px;
+    }
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 0px;
+      font-weight: normal;
+    }
+    .card canvas {
+      margin-top: 10px;
+    }
+    .card .insight-text {
+      margin-top: 10px;
+      color: #555;
+    }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* Position above */
+      left: 50%;
+      margin-left: -100px; /* Center the tooltip */
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.8em;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 5;
+      padding-top: 100px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 35%;
+      border-radius: 10px;
+      position: relative;
+    }
+    .close, .modal-close-button {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close {
+      font-size: 28px;
+      color: #aaa;
+    }
+    .close:hover {
+      color: #000;
+    }
+    .modal h2 {
+      margin-top: 0;
+    }
+    .modal .modal-close-button {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+    }
+    .vehicle-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .vehicle-table th, .vehicle-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .vehicle-table th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+    .recommendations-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .recommendations-table th, .recommendations-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: middle;
+    }
+    .recommendations-table th {
+      background-color: #f2f2f2;
+      text-align: center;
+    }
+    .recommendations-table td:first-child {
+      text-align: left;
+    }
+    .priority-chip {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .high-priority {
+      background-color: #f44336;
+    }
+    .medium-priority {
+      background-color: #ff9800;
+    }
+    .low-priority {
+      background-color: #4caf50;
+    }
+    .info-priority {
+      background-color: gray;
+      margin-left: 10px;
+    }
+    .action-icon, .action-text {
+      cursor: pointer;
+      color: #1a73e8;
+      font-size: 20px;
+      margin-right: 5px;
+      display: inline-block;
+    }
+    .action-text {
+      font-size: 14px;
+    }
+    .timeline {
+      list-style-type: none;
+      position: relative;
+      margin: 20px 0;
+      padding: 0;
+    }
+    .timeline:before {
+      content: '';
+      background: #d4d9df;
+      display: inline-block;
+      position: absolute;
+      left: 18px;
+      width: 5px;
+      height: 82%;
+      z-index: 400;
+      border-radius: 1%;
+    }
+    .timeline > li {
+      margin: 20px 0;
+      padding-left: 40px;
+    }
+    .timeline > li:before {
+      content: '';
+      background: white;
+      display: inline-block;
+      position: absolute;
+      border-radius: 50%;
+      border: 3px solid #22aaff;
+      left: 11px;
+      width: 15px;
+      height: 15px;
+      z-index: 400;
+    }
+    .timeline > li.in-progress:before {
+      border-color: #4caf50;
+    }
+    .timeline > li.completed:before {
+      border-color: #4caf50;
+      background-color: #4caf50;
+    }
+    .timeline > li .status {
+      font-size: 12px;
+      color: #777;
+    }
+    .timeline > li .duration {
+      font-size: 12px;
+      color: #555;
+      margin-top: 5px;
+    }
+    .summary {
+      font-size: 14px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: gray;
+      color: white;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      padding: 0 20px;
+    }
+    .tab-buttons button {
+      background: none;
+      border: none;
+      padding: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      border-bottom: 4px solid transparent;
+      display: flex;
+      align-items: center;
+    }
+    .tab-buttons button.active {
+      border-bottom-color: #4CAF50;
+      font-weight: bold;
+    }
+    .tab-buttons button i {
+      margin-right: 8px;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar-container">
+    <img id="navbar" src="../../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="profile-header">
+        <img src="../back.png" onclick="window.location.href = '../suppliers.html'" style="width:48px; cursor: pointer;">
+        <h1>General Motors</h1>
+        <span class="priority-chip low-priority">Active</span>
+        <span class="priority-chip info-priority">OEM</span>
+        <span class="priority-chip info-priority">Contract End: Dec, 2025</span>
+        <span class="priority-chip info-priority">Internal Contact: Jane Smith</span>
+      </div>
+
+      <div class="tab-buttons">
+        <button onclick="openTab(event, 'overview')"><i class="fas fa-info-circle"></i>Overview</button>
+        <button onclick="openTab(event, 'contracts')"><i class="fas fa-file-contract"></i>Contracts</button>
+        <button class="active" onclick="openTab(event, 'intelligence')"><i class="fas fa-lightbulb"></i>Intelligence</button>
+        <button onclick="openTab(event, 'compliance')"><i class="fas fa-shield-alt"></i>Compliance</button>
+        <button onclick="openTab(event, 'audit')"><i class="fas fa-search"></i>Audit</button>
+        <button onclick="openTab(event, 'sustainability')"><i class="fas fa-gift"></i>Incentives</button>
+        <button onclick="openTab(event, 'automations')"><i class="fas fa-robot"></i>Automations</button>
+      </div>
+
+      <!-- Section: Financial Overview -->
+      <div class="section-heading">
+        <h2>🏦 Financial Overview</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: Total Spend YTD -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Total Spend YTD</h3>
+            <span class="tooltiptext">Total amount spent on purchases from this supplier year-to-date.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">$120,500,000</p>
+          <p style="color: red;">5% over target</p>
+          <canvas id="spendChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Increased demand for fuel-efficient models.<br>
+            <strong>Future Projection:</strong> Spend expected to reach $130 million by end of 2025.<br>
+            <strong>Impact:</strong> Requires budget adjustment for growth.
+          </p>
+        </div>
+        <!-- Card 2: Units Ordered YTD -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Units Ordered YTD</h3>
+            <span class="tooltiptext">Total number of units ordered from this supplier year-to-date.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">15,250</p>
+          <p style="color: #4caf50;">+5% increase projected in next quarter</p>
+          <canvas id="unitsChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Gradual increase in units ordered, produced, and delivered observed due to rising market demand for efficient vehicles.<br>
+            <strong>Future Projection:</strong> Q1 2025 shows a projected increase of 5%, continuing the upward trend.
+          </p>
+        </div>
+        <!-- Card 3: Incentive Realization Rate -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Incentive Realization Rate</h3>
+            <span class="tooltiptext">Percentage of eligible incentives successfully realized.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">92%</p>
+          <p style="color: #f44336;">-3% from target</p>
+          <canvas id="incentiveChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Missed volume thresholds for certain models.<br>
+            <strong>Future Projection:</strong> Could decrease further without action.<br>
+            <strong>Impact:</strong> Loss of up to $2 million in incentives.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Purchasing Metrics -->
+      <div class="section-heading">
+        <h2>🛒 Purchasing Metrics</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: OEM Incentive Benchmark (% Incentive) -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>OEM Incentive Benchmark (% Incentive)</h3>
+            <span class="tooltiptext">Percentage saved below the invoice price due to incentives and discounts.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">4.5%</p>
+          <p style="color: #4caf50;">Slightly higher than industry average</p>
+          <canvas id="purchaseIncomeChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Negotiated OEM incentives leading to cost savings.<br>
+            <strong>Future Projection:</strong> Anticipate similar or improved rates with upcoming negotiations.<br>
+            <strong>Impact:</strong> Enhances pricing strategies and competitive positioning.
+          </p>
+        </div>
+        <!-- Card 3: Income from Incentives -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Income from Incentives YTD</h3>
+            <span class="tooltiptext">Income realized due to OEM offers and discounts.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">$24,100,000</p>
+          <p style="color: #4caf50;">Healthy trend</p>
+          <canvas id="avgDiscountChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Effectively generated income attributed to purchase-related discounts.<br>
+            <strong>Future Projection:</strong> Projected 5% increase in discounts for Q1 2025 based on higher volume commitments.<br>
+          </p>
+        </div>
+        <!-- Card 5: Volume-Based Discounts Capture -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Volume-Based Discounts Capture</h3>
+            <span class="tooltiptext">Extent to which volume-based discounts are being utilized.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">75%</p>
+          <p style="color: #ff9800;">Potential for improvement</p>
+          <canvas id="volumeDiscountChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Not fully leveraging volume-based discount tiers.<br>
+            <strong>Future Projection:</strong> Aiming to reach 85% capture with strategic planning.<br>
+            <strong>Impact:</strong> Maximizes savings and strengthens OEM partnerships.
+          </p>
+        </div>
+        <!-- Card 6: OEM Incentive Reconciliation -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>OEM Incentive Reconciliation</h3>
+            <span class="tooltiptext">Accuracy in reconciling rebates and incentives from the supplier.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">75%</p>
+          <p style="color: orange;">Needs improvement</p>
+          <!-- Reduced the size of the pie chart -->
+          <canvas id="rebateAccuracyChart" width="216" height="216"></canvas>
+          <p class="insight-text">
+            <strong>Impact:</strong> Risk of $15,355,625 lost in 2024 due to agreed incentives not being applied.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Performance Metrics -->
+      <div class="section-heading">
+        <h2>📈 Performance Metrics</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 1: On-Time Delivery % -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>On-Time Delivery %</h3>
+            <span class="tooltiptext">Percentage of deliveries received on or before the scheduled date.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">88%</p>
+          <p style="color: #f44336;">-4% from last quarter</p>
+          <canvas id="onTimeChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Logistics delays due to supplier shortages.<br>
+            <strong>Future Projection:</strong> May drop to 85% if not addressed.<br>
+            <strong>Impact:</strong> Customer satisfaction could decline by 10%.
+          </p>
+        </div>
+        <!-- Card 2: SLA Compliance -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>SLA Compliance</h3>
+            <span class="tooltiptext">Number of times the supplier failed to meet the Service Level Agreement.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">12</p>
+          <p style="color: #f44336;">+5 from last quarter</p>
+          <canvas id="slaChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Increased demand causing capacity strains.<br>
+            <strong>Future Projection:</strong> Compliance may rise without process improvements.<br>
+            <strong>Impact:</strong> Potential penalties up to $500,000.
+          </p>
+        </div>
+        <!-- Card 3: Recall Rate -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Recall Rate</h3>
+            <span class="tooltiptext">Percentage of vehicles undergoing OEM recalls.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">5%</p>
+          <p style="color: #f44336;">+2% from last quarter</p>
+          <canvas id="defectChart"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Driver assist tech features like autonomous emergency braking causing recalls, now often fixed over the air.<br>
+            <strong>Future Projection:</strong> Could reach 6% if pattern holds.<br>
+            <strong>Impact:</strong> Decrease in client satisfaction and co-ordination of recall fix application with dealership.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Operational Insights -->
+      <div class="section-heading">
+        <h2>🔧 Operational Insights</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Card 3: Supplier Responsiveness -->
+        <div class="card">
+          <div class="tooltip">
+            <h3>Supplier Responsiveness</h3>
+            <span class="tooltiptext">How quickly the supplier responds to inquiries and issues.</span>
+          </div>
+          <p style="font-size: 24px; font-weight: bold;">Excellent</p>
+          <p style="color: #4caf50;">Consistent Performance</p>
+          <!-- Reduced the size of the pie chart -->
+          <canvas id="responsivenessChart" width="216" height="216"></canvas>
+          <p class="insight-text">
+            <strong>Root Analysis:</strong> Effective communication channels.<br>
+            <strong>Future Projection:</strong> Expected to maintain high levels.<br>
+            <strong>Impact:</strong> Strengthens partnership and operational efficiency.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: Vehicle Details -->
+      <div class="section-heading">
+        <h2>🚗 Vehicle Details</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Vehicle Details Table (Spanning Full Width) -->
+        <div class="card" style="flex: 1 1 100%; max-width: 100%;">
+          <table class="vehicle-table">
+            <tr>
+              <th>Model</th>
+              <th>Year</th>
+              <th>Units Ordered</th>
+              <th>Total Spend</th>
+              <th>Incentive Income</th>
+            </tr>
+            
+            <!-- 2024 Vehicles -->
+            <tr>
+              <td>ElectricCoupe</td>
+              <td>2024</td>
+              <td>1,500</td>
+              <td>$22,500,000</td>
+              <td>$5,400,000</td>
+            </tr>
+            <tr>
+              <td>SportsCar</td>
+              <td>2024</td>
+              <td>300</td>
+              <td>$15,000,000</td>
+              <td>$2,400,000</td>
+            </tr>
+            <tr>
+              <td>OffroadTruck</td>
+              <td>2024</td>
+              <td>600</td>
+              <td>$14,400,000</td>
+              <td>$2,200,000</td>
+            </tr>
+            <tr>
+              <td>ElectricSUV</td>
+              <td>2024</td>
+              <td>1,200</td>
+              <td>$20,000,000</td>
+              <td>$4,800,000</td>
+            </tr>
+            <tr>
+              <td>LuxuryHybrid</td>
+              <td>2024</td>
+              <td>500</td>
+              <td>$13,600,000</td>
+              <td>$2,100,000</td>
+            </tr>
+            <tr>
+              <td>HeavyDutyTruck</td>
+              <td>2024</td>
+              <td>400</td>
+              <td>$20,000,000</td>
+              <td>$3,600,000</td>
+            </tr>
+            <tr>
+              <td>SuperElectric</td>
+              <td>2024</td>
+              <td>200</td>
+              <td>$15,000,000</td>
+              <td>$3,500,000</td>
+            </tr>
+
+            <!-- 2023 Vehicles -->
+            <tr>
+              <td>EcoSedan</td>
+              <td>2023</td>
+              <td>5,000</td>
+              <td>$40,000,000</td>
+              <td>$12,000,000</td>
+            </tr>
+            <tr>
+              <td>MaxSUV</td>
+              <td>2023</td>
+              <td>3,500</td>
+              <td>$35,000,000</td>
+              <td>$10,500,000</td>
+            </tr>
+            <tr>
+              <td>HybridHatch</td>
+              <td>2023</td>
+              <td>2,750</td>
+              <td>$20,500,000</td>
+              <td>$6,150,000</td>
+            </tr>
+            <tr>
+              <td>LuxurySedan</td>
+              <td>2023</td>
+              <td>800</td>
+              <td>$18,000,000</td>
+              <td>$5,400,000</td>
+            </tr>
+            <tr>
+              <td>FamilyVan</td>
+              <td>2023</td>
+              <td>1,000</td>
+              <td>$12,000,000</td>
+              <td>$3,600,000</td>
+            </tr>
+
+            <!-- 2022 Vehicles -->
+            <tr>
+              <td>TransitVan</td>
+              <td>2022</td>
+              <td>4,000</td>
+              <td>$25,000,000</td>
+              <td>$7,500,000</td>
+            </tr>
+            <tr>
+              <td>CompactSUV</td>
+              <td>2022</td>
+              <td>2,200</td>
+              <td>$19,800,000</td>
+              <td>$5,940,000</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section: Actionable Recommendations -->
+      <div class="section-heading">
+        <h2>✅ Actionable Recommendations</h2>
+      </div>
+      <div class="cards-container">
+        <!-- Recommendations Table (Spanning Full Width) -->
+        <div class="card" style="flex: 1 1 100%; max-width: 100%;">
+          <table class="recommendations-table">
+            <tr>
+              <th>Recommendation</th>
+              <th>Priority</th>
+              <th>Impact Score</th>
+              <th>Action</th>
+            </tr>
+            <tr>
+              <td>Improve Incentive Compliance to meet target rates and maximize potential earnings from OEM incentive programs.</td>
+              <td><span class="priority-chip high-priority">High</span></td>
+              <td>85</td>
+              <td><span class="action-icon" data-action="improveIncentive"><i class="fas fa-cogs"></i></span><span class="action-text" data-action="improveIncentive">Develop Compliance Plan</span></td>
+            </tr>
+            <tr>
+              <td>Address On-Time Delivery Issues to enhance customer satisfaction and maintain service level agreements.</td>
+              <td><span class="priority-chip high-priority">High</span></td>
+              <td>90</td>
+              <td><span class="action-icon" data-action="addressOnTime"><i class="fas fa-truck"></i></span><span class="action-text" data-action="addressOnTime">Optimize Logistics</span></td>
+            </tr>
+            <tr>
+              <td>Reduce SLA Compliance to avoid penalties and improve overall operational efficiency.</td>
+              <td><span class="priority-chip medium-priority">Medium</span></td>
+              <td>75</td>
+              <td><span class="action-icon" data-action="reduceSla"><i class="fas fa-file-contract"></i></span><span class="action-text" data-action="reduceSla">Strengthen SLA Monitoring</span></td>
+            </tr>
+            <tr>
+              <td>Request Quality Control Improvements to reduce recall rates and warranty claims.</td>
+              <td><span class="priority-chip medium-priority">Medium</span></td>
+              <td>80</td>
+              <td><span class="action-icon" data-action="improveQuality"><i class="fas fa-search-plus"></i></span><span class="action-text" data-action="improveQuality">Quality Enhancement</span></td>
+            </tr>
+            <tr>
+              <td>Request Production Capacity Increase to meet demand and capture market opportunities.</td>
+              <td><span class="priority-chip low-priority">Low</span></td>
+              <td>65</td>
+              <td><span class="action-icon" data-action="expandCapacity"><i class="fas fa-industry"></i></span><span class="action-text" data-action="expandCapacity">Plan Expansion</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div id="modal" class="modal">
+        <div class="modal-content">
+          <span class="close" id="closeModal">&times;</span>
+          <!-- Modal content will be injected here -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Floating chat icon -->
+    <div id="chat-icon" onclick="toggleChat()"><img src="../robot-icon.png" style="height:80px"></div>
+
+    <!-- Chat window -->
+    <div id="chat-window">
+      <div id="chat-header">
+        <span>FleetCaptain</span>
+        <span id="close-chat" onclick="toggleChat()">✖</span>
+      </div>
+      <div id="chat-messages"></div>
+      <!-- Loading indicator -->
+      <div id="loading-indicator">
+        <div class="spinner"></div>
+      </div>
+      <div id="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Ask a question about this data..." onkeypress="handleKeyPress(event)">
+        <button id="send-button" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Actionable Recommendations Icons
+    const actionElements = document.querySelectorAll('.action-icon, .action-text');
+
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+
+    closeModal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // Define actions and their steps with durations
+    const actions = {
+      improveIncentive: {
+        title: 'Initiating Incentive Compliance Improvement',
+        steps: [
+          { description: 'Initiate communication with Procurement Team.', duration: 'Expected Duration: 2 days' },
+          { description: 'Schedule meeting with General Motors representative.', duration: 'Expected Duration: 3 days' },
+          { description: 'Develop action plan to reach incentive thresholds.', duration: 'Expected Duration: 5 days' }
+        ]
+      },
+      addressOnTime: {
+        title: 'Addressing On-Time Delivery Issues',
+        steps: [
+          { description: 'Notify Logistics Department of delays.', duration: 'Expected Duration: 1 day' },
+          { description: 'Collaborate with supplier to optimize routes.', duration: 'Expected Duration: 4 days' },
+          { description: 'Request Real-Time Tracking from Suppliers.', duration: 'Expected Duration: 7 days' }
+        ]
+      },
+      reduceSla: {
+        title: 'Reducing SLA Compliance',
+        steps: [
+          { description: 'Analyze violation incidents with Quality Assurance.', duration: 'Expected Duration: 3 days' },
+          { description: 'Implement corrective measures.', duration: 'Expected Duration: 5 days' },
+          { description: 'Monitor SLA compliance closely.', duration: 'Expected Duration: Ongoing' }
+        ]
+      },
+      improveQuality: {
+        title: 'Improving Quality Control',
+        steps: [
+          { description: 'Contact Production Manager for process audit.', duration: 'Expected Duration: 2 days' },
+          { description: 'Enhance quality checkpoints.', duration: 'Expected Duration: 6 days' },
+          { description: 'Encourage Supplier Training Initiatives.', duration: 'Expected Duration: 4 days' }
+        ]
+      },
+      expandCapacity: {
+        title: 'Expanding Production Capacity',
+        steps: [
+          { description: 'Assess current production capabilities.', duration: 'Expected Duration: 5 days' },
+          { description: 'Propose expansion plan to management.', duration: 'Expected Duration: 7 days' },
+          { description: 'Secure investment for new facilities.', duration: 'Expected Duration: 14 days' }
+        ]
+      }
+    };
+
+    actionElements.forEach(element => {
+      element.addEventListener('click', () => {
+        const actionKey = element.getAttribute('data-action');
+        const actionDetails = actions[actionKey];
+
+        // Check if actionDetails exists
+        if (!actionDetails) {
+          console.error(`Action details not found for action key: ${actionKey}`);
+          return;
+        }
+
+        // Clear previous content in modal (except close button)
+        const modalContent = modal.querySelector('.modal-content');
+        while (modalContent.childNodes.length > 1) {
+          modalContent.removeChild(modalContent.lastChild);
+        }
+
+        // Populate modal with action details
+        const titleElement = document.createElement('h2');
+        titleElement.textContent = actionDetails.title;
+        modalContent.appendChild(titleElement);
+
+        const stepsList = document.createElement('ul');
+        stepsList.className = 'timeline';
+
+        actionDetails.steps.forEach((step, index) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>Step ${index + 1}:</strong> ${step.description}`;
+          const durationDiv = document.createElement('div');
+          durationDiv.className = 'duration';
+          durationDiv.textContent = step.duration;
+          li.appendChild(durationDiv);
+          if (index === 0) {
+            li.className = 'in-progress';
+            li.innerHTML += '<div class="status">In Progress</div>';
+          } else {
+            li.innerHTML += '<div class="status">Pending</div>';
+          }
+          stepsList.appendChild(li);
+        });
+
+        modalContent.appendChild(stepsList);
+
+        modal.style.display = 'block';
+      });
+    });
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Total Spend YTD Chart
+    const spendCtx = document.getElementById('spendChart').getContext('2d');
+
+    // Values for each quarter of 2024, increasing by 5% each quarter to reach a total spend of $120,500,000 by Q4 2024
+    const totalSpendQ4 = 120500000;
+    const q4_2024 = totalSpendQ4 / (1.05 ** 3 + 1.05 ** 2 + 1.05 + 1);
+    const spendQuarters = [Math.round(q4_2024)];
+    for (let i = 1; i < 5; i++) spendQuarters.push(Math.round(spendQuarters[i - 1] * 1.05));
+
+    // Splitting each quarter into "Ordered", "Produced", "Delivered" with shifting volume from Ordered to Delivered as quarters progress
+    const splitSpendData = (total, quarter) => {
+      const orderedPercentage = 0.5 - quarter * 0.05;
+      const deliveredPercentage = 0.2 + quarter * 0.05;
+      return {
+        ordered: Math.round(total * orderedPercentage),
+        produced: Math.round(total * 0.3),
+        delivered: Math.round(total * deliveredPercentage)
+      };
+    };
+
+    const splitSpendQuarters = spendQuarters.map((total, index) => splitSpendData(total, index));
+
+    const spendChart = new Chart(spendCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025 (Projection)'],
+        datasets: [
+          {
+            label: '$ Ordered',
+            data: splitSpendQuarters.map(q => q.ordered),
+            backgroundColor: [
+              'teal',    // Q1 2024
+              'teal',    // Q2 2024
+              'teal',    // Q3 2024
+              'teal',    // Q4 2024
+              'rgba(0, 128, 128, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'teal',    // Q1 2024
+              'teal',    // Q2 2024
+              'teal',    // Q3 2024
+              'teal',    // Q4 2024
+              'teal'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          },
+          {
+            label: '$ Produced',
+            data: splitSpendQuarters.map(q => q.produced),
+            backgroundColor: [
+              'orange',    // Q1 2024
+              'orange',    // Q2 2024
+              'orange',    // Q3 2024
+              'orange',    // Q4 2024
+              'rgba(255, 165, 0, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'orange',    // Q1 2024
+              'orange',    // Q2 2024
+              'orange',    // Q3 2024
+              'orange',    // Q4 2024
+              'orange'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          },
+          {
+            label: '$ Delivered',
+            data: splitSpendQuarters.map(q => q.delivered),
+            backgroundColor: [
+              'blue',    // Q1 2024
+              'blue',    // Q2 2024
+              'blue',    // Q3 2024
+              'blue',    // Q4 2024
+              'rgba(0, 0, 255, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'blue',    // Q1 2024
+              'blue',    // Q2 2024
+              'blue',    // Q3 2024
+              'blue',    // Q4 2024
+              'blue'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            beginAtZero: true,
+            stacked: true,
+            title: {
+              display: true,
+              text: 'Spend ($)'
+            }
+          }
+        }
+      }
+    });
+
+
+    // Units Ordered YTD Chart
+    const unitsCtx = document.getElementById('unitsChart').getContext('2d');
+
+    // Values for each quarter of 2024, increasing by 5% each quarter
+    const quarters = [3400];
+    for (let i = 1; i < 5; i++) quarters.push(Math.round(quarters[i - 1] * 1.05));
+
+    // Splitting each quarter into "Ordered", "Produced", "Delivered" with shifting volume from Ordered to Delivered as quarters progress
+    const splitData = (total, quarter) => {
+      const orderedPercentage = 0.5 - quarter * 0.05;
+      const deliveredPercentage = 0.2 + quarter * 0.05;
+      return {
+        ordered: Math.round(total * orderedPercentage),
+        produced: Math.round(total * 0.3),
+        delivered: Math.round(total * deliveredPercentage)
+      };
+    };
+
+    const splitQuarters = quarters.map((total, index) => splitData(total, index));
+
+    const unitsChart = new Chart(unitsCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025 (Projection)'],
+        datasets: [
+          {
+            label: '# Ordered',
+            data: splitQuarters.map(q => q.ordered),
+            backgroundColor: [
+              'teal',    // Q1 2024
+              'teal',    // Q2 2024
+              'teal',    // Q3 2024
+              'teal',    // Q4 2024
+              'rgba(0, 128, 128, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'teal',    // Q1 2024
+              'teal',    // Q2 2024
+              'teal',    // Q3 2024
+              'teal',    // Q4 2024
+              'teal'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          },
+          {
+            label: '# Produced',
+            data: splitQuarters.map(q => q.produced),
+            backgroundColor: [
+              'orange',    // Q1 2024
+              'orange',    // Q2 2024
+              'orange',    // Q3 2024
+              'orange',    // Q4 2024
+              'rgba(255, 165, 0, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'orange',    // Q1 2024
+              'orange',    // Q2 2024
+              'orange',    // Q3 2024
+              'orange',    // Q4 2024
+              'orange'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          },
+          {
+            label: '# Delivered',
+            data: splitQuarters.map(q => q.delivered),
+            backgroundColor: [
+              'blue',    // Q1 2024
+              'blue',    // Q2 2024
+              'blue',    // Q3 2024
+              'blue',    // Q4 2024
+              'rgba(0, 0, 255, 0.4)' // Q1 2025 (Projection) with transparent fill
+            ],
+            borderColor: [
+              'blue',    // Q1 2024
+              'blue',    // Q2 2024
+              'blue',    // Q3 2024
+              'blue',    // Q4 2024
+              'blue'     // Q1 2025 (Projection)
+            ],
+            stack: 'Stack 0'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            beginAtZero: true,
+            stacked: true,
+            title: {
+              display: true,
+              text: 'Units'
+            }
+          }
+        }
+      }
+    });
+
+
+
+    // Incentive Realization Rate Chart
+    const incentiveCtx = document.getElementById('incentiveChart').getContext('2d');
+    const incentiveChart = new Chart(incentiveCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'Incentive Realization (%)',
+          data: [95, 94, 93, 92, 90],
+          borderColor: 'red',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 100,
+            min: 85,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // On-Time Delivery % Chart
+    const onTimeCtx = document.getElementById('onTimeChart').getContext('2d');
+    const onTimeChart = new Chart(onTimeCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'On-Time Delivery %',
+          data: [92, 90, 88, 88, 85],
+          borderColor: 'orange',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 100,
+            min: 80,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // SLA Compliance Chart
+    const slaCtx = document.getElementById('slaChart').getContext('2d');
+    const slaChart = new Chart(slaCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'SLA Compliance',
+          data: [4, 6, 7, 12, 15],
+          backgroundColor: 'red',
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Instances'
+            }
+          }
+        }
+      }
+    });
+
+    // Recall Rate Chart
+    const defectCtx = document.getElementById('defectChart').getContext('2d');
+    const defectChart = new Chart(defectCtx, {
+      type: 'line',
+      data: {
+        labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'],
+        datasets: [{
+          label: 'Recall Rate (%)',
+          data: [3, 3.5, 4, 5, 6],
+          borderColor: 'purple',
+          fill: false,
+          segment: {
+            borderDash: ctx => ctx.p0DataIndex >= 3 ? [5, 5] : undefined
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 10,
+            min: 0,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Supplier Responsiveness Chart
+    const responsivenessCtx = document.getElementById('responsivenessChart').getContext('2d');
+    const responsivenessChart = new Chart(responsivenessCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Excellent', 'Good', 'Average', 'Poor'],
+        datasets: [{
+          data: [70, 20, 7, 3],
+          backgroundColor: ['green', 'lightgreen', 'orange', 'red']
+        }]
+      },
+      options: {
+        responsive: false,
+        aspectRatio: 1,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    });
+
+    // OEM Incentive Benchmark Chart
+    const incentiveBenchmarkCtx = document.getElementById('purchaseIncomeChart').getContext('2d');
+    const purchaseIncomeChart = new Chart(incentiveBenchmarkCtx, {
+      type: 'bar',
+      data: {
+        labels: ['General Motors', 'Ford', 'Chrysler', 'Toyota'],
+        datasets: [
+          {
+            label: 'FMC Incentive',
+            data: [3, 3.0, 2.85, 1.125], // Adjusted splits
+            backgroundColor: ['#2196f3', '#4caf50', '#ff9800', '#f44336'],
+          },
+          {
+            label: 'Client Incentive',
+            data: [1.5, 1.0, 0.95, 0.375], // Adjusted splits
+            backgroundColor: ['#64b5f6', '#81c784', '#ffb74d', '#e57373'],
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          },
+          legend: {
+            position: 'top',
+          }
+        },
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true,
+            max: 5,
+            min: 0,
+            title: {
+              display: true,
+              text: '% Incentive'
+            },
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+
+    // Income from Incentives Chart
+    const earningsData = [5590453, 5869976, 6163475, 6476096, 6799901]; // Q1-Q4 2024 and Q1 2025
+    const labels = ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025 (Projection)'];
+    const ctx = document.getElementById('avgDiscountChart').getContext('2d');
+    const avgDiscountChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Earnings per Quarter ($)',
+          data: earningsData,
+          backgroundColor: [
+            'teal',    // Q1 2024
+            'teal',    // Q2 2024
+            'teal',    // Q3 2024
+            'teal',    // Q4 2024
+            'rgba(0, 128, 128, 0.2)' // Q1 2025 (Projection) with transparent fill
+          ],
+          borderColor: [
+            'teal',    // Q1 2024
+            'teal',    // Q2 2024
+            'teal',    // Q3 2024
+            'teal',    // Q4 2024
+            'teal'     // Q1 2025 (Projection)
+          ],
+          borderWidth: 2,
+          borderDash: [
+            0, // Q1 2024
+            0, // Q2 2024
+            0, // Q3 2024
+            0, // Q4 2024
+            [5, 5] // Q1 2025 (Projection) - Dotted border
+          ],
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.y !== null) {
+                  label += '$' + context.parsed.y.toLocaleString();
+                }
+                return label;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            // Optionally, set max based on data
+            title: {
+              display: true,
+              text: 'Earnings ($)'
+            },
+            ticks: {
+              // Include a dollar sign in the ticks
+              callback: function(value, index, values) {
+                return '$' + value.toLocaleString();
+              }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Quarter'
+            }
+          }
+        }
+      }
+    });
+
+    // Volume-Based Discounts Capture Chart
+    const volumeDiscountCtx = document.getElementById('volumeDiscountChart').getContext('2d');
+    const volumeDiscountChart = new Chart(volumeDiscountCtx, {
+      type: 'line',
+      data: {
+        labels: ['Tier 1', 'Tier 2 [Current]', 'Tier 3', 'Tier 4'],
+        datasets: [{
+          label: 'Capture (%)',
+          data: [60, 75, 80, 100],
+          borderColor: 'purple',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            max: 100,
+            min: 50,
+            title: {
+              display: true,
+              text: 'Capture (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // OEM Incentive Reconciliation Chart
+    const rebateAccuracyCtx = document.getElementById('rebateAccuracyChart').getContext('2d');
+    const rebateAccuracyChart = new Chart(rebateAccuracyCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Reconciled', 'Missing'],
+        datasets: [{
+          data: [75, 25],
+          backgroundColor: ['#4caf50', '#f44336']
+        }]
+      },
+      options: {
+        responsive: false,
+        aspectRatio: 1,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    });
+
+  </script>
+  <script>
+    function openTab(evt, tabName) {
+      var i, tabcontent, tabbuttons;
+
+      if (tabName != "intelligence") {
+        window.location.href = "general-motors.html?tabname=" + tabName;
+        return; // Exit the function since we're navigating away
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="../chatbot.js"></script>
+</body>
+</html>

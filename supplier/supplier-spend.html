@@ -295,9 +295,10 @@
     <div id="content-container">
       <div class="subnav">
         <div class="nav-item logo">Supplier Intelligence</div>
-        <div class="nav-item active">Spend</div>
+        <a class="nav-item" href="suppliers.html">Suppliers</a>
+        <a class="nav-item active" href="supplier-spend.html">Spend</a>
         <a class="nav-item" href="supplier-perf.html">Performance</a>
-        <a class="nav-item" href="supplier-blueprint.html">Blueprint</a>
+        <a class="nav-item" href="insights.html">Insights</a>
       </div>
 
       <!-- Filters -->
@@ -1262,7 +1263,7 @@
     function getSupplierLink(supplierName) {
       switch (supplierName) {
         case 'General Motors':
-          return 'supplier-general-motors.html';
+          return 'profile/general-motors.html';
         case 'RapidRepair Inc.':
           return 'supplier-rapidrepair.html';
         case 'Transport Pro':

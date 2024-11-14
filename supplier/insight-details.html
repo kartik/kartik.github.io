@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+    <title>Ridecell Intelligence - Purchase Income Risk</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #fafafa;
+            color: #333;
+        }
+        .container {
+            margin: 0 auto;
+            padding: 20px;
+            max-width: 1400px;
+        }
+        /* Header */
+        .header {
+            background-color: #1a73e8;
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 18px;
+        }
+        /* Navigation */
+        .nav {
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: sticky;
+            top: 80px;
+            z-index: 999;
+        }
+        .nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav a {
+            color: #555;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        .nav a:hover, .nav a.active {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+        /* Main Sections */
+        .section {
+            background-color: white;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section h2 {
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        /* Alerts */
+        .alert {
+            padding: 15px;
+            color: white;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .alert-danger {
+            background-color: #d93025;
+        }
+        .alert-warning {
+            background-color: #f9ab00;
+            color: #333;
+        }
+        .alert-icon {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        table th, table td {
+            border: 1px solid #f0f2f5;
+            padding: 12px;
+            text-align: center;
+        }
+        table th {
+            background-color: #f0f2f5;
+        }
+        /* Charts */
+        .chart {
+            margin-bottom: 30px;
+        }
+        /* Ideas */
+        .ideas ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .ideas ul li {
+            background-color: #e8f0fe;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .ideas ul li .icon {
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 50%;
+            padding: 10px;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        /* Buttons */
+        .action-button {
+            background-color: #6cc04a;
+            color: white;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 30px;
+            font-size: 16px;
+        }
+        .action-button:hover {
+            background-color: #1669bb;
+        }
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #ffffff;
+            text-align: center;
+            color: #999;
+            border-top: 1px solid #f0f2f5;
+        }
+        /* Bottleneck Indicators */
+        .bottleneck {
+            background-color: #ffe0b2;
+            padding: 10px;
+            border-left: 5px solid #fb8c00;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+
+        /* Key Metrics Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        .card-icon {
+            font-size: 30px;
+            color: #1a73e8;
+            margin-bottom: 10px;
+        }
+        .card h3 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+            margin: 0 0 10px;
+        }
+        .card p {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        .card .subtext {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .navbar-container {
+            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+            z-index: 4;
+            position: relative;
+        }
+        .master-container {
+            display: flex;
+            width: 100%;
+            height: calc(100% - 50px);
+        }
+        #tabs {
+            width: 82px;
+            flex-shrink: 0;
+            box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+            z-index: 3;
+            background: white;
+        }
+        #content-container {
+            flex-grow: 1;
+            display: inline-block;
+        }
+
+        #link-navigate {
+            position: absolute;
+            height: 100px;
+            width: 150px;
+            left: 175px;
+            top: 60px;
+        }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .nav .container {
+                flex-direction: column;
+            }
+            .filters {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .filters label, .filters select, .filters input[type="date"] {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+    <!-- Include Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Include Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+</head>
+<body>
+
+    <div class="navbar-container">
+        <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+    </div>
+    <div class="master-container">
+        <div id="tabs">
+            <img src="../tabs.png" style="width: 82px;">
+        </div>
+        <div id="content-container">
+            <a id="link-navigate" href="insights.html"></a>
+            <img src="../subnav_back.png" style="width:100%; display: block; border-bottom: 2px solid #eaeaea;">
+            <!-- Main Container -->
+            <div class="container">
+
+                <!-- Key Metrics Cards Section -->
+                <div class="card-grid">
+                    <div class="card">
+                        <i class="fas fa-money-bill-wave card-icon"></i>
+                        <h3>Current Missing Purchase Income</h3>
+                        <p>$2,500,000</p>
+                        <div class="subtext">Year to Date</div>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-chart-line card-icon"></i>
+                        <h3>Projected Loss by Year-End</h3>
+                        <p>$4,000,000</p>
+                        <div class="subtext">If Unresolved</div>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-file-invoice-dollar card-icon"></i>
+                        <h3>Total Invoices Analyzed</h3>
+                        <p>5,000</p>
+                        <div class="subtext">From Ford</div>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-percent card-icon"></i>
+                        <h3>Contractual Incentives</h3>
+                        <p>10%</p>
+                        <div class="subtext">Not Applied</div>
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-car card-icon"></i>
+                        <h3>Vehicles Purchased</h3>
+                        <p>1,200</p>
+                        <div class="subtext">Year to Date</div>
+                    </div>
+                </div>
+
+                <!-- Problem Detection Section -->
+                <div class="section">
+                    <h2>Identified Issue</h2>
+                    <div class="content">
+                        <div class="alert alert-danger">
+                            <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                            <div>
+                                <strong>Critical Alert:</strong> AI Audit detected that Ford is not fully applying contractual incentives and discounts in their invoices.
+                            </div>
+                        </div>
+                        <div class="chart">
+                            <!-- Placeholder for Missing Purchase Income Chart -->
+                            <canvas id="missingIncomeChart" width="100%" height="40"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <h3>Monthly Discrepancy Data</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Forecasted Income ($)</th>
+                                        <th>Actual Income ($)</th>
+                                        <th>Missing Income ($)</th>
+                                        <th>Cumulative Missing Income ($)</th>
+                                        <th>Percentage Missing (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="incomeTableBody">
+                                    <!-- Data to be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Problem Projection Section -->
+                <div class="section">
+                    <h2>Problem Projection</h2>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon"><i class="fas fa-exclamation-circle"></i></span>
+                        <div>
+                            <strong>Warning:</strong> If unresolved, the missing purchase income could reach <strong>$4,000,000</strong> by year-end.
+                        </div>
+                    </div>
+                    <div class="content">
+                        <div class="chart">
+                            <!-- Placeholder for Projection Chart -->
+                            <canvas id="projectionChart" width="100%" height="40"></canvas>
+                        </div>
+                        <p>The discrepancy between forecasted and actual purchase income is increasing monthly. Immediate action is required to prevent significant financial impact.</p>
+                        <p>Engaging with Ford to address the inconsistencies in applying contractual incentives is crucial to mitigate the projected loss.</p>
+                    </div>
+                </div>
+
+                <!-- Solution Ideas Section -->
+                <div class="section">
+                    <h2>Recommended Actions</h2>
+                    <div class="content">
+                        <div class="ideas">
+                            <ul>
+                                <li>
+                                    <span class="icon"><i class="fas fa-handshake"></i></span>
+                                    <div>
+                                        <strong>Initiate Vendor Discussions:</strong> Schedule meetings with Ford's billing department to address the discrepancies and ensure compliance with contract terms.
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="icon"><i class="fas fa-file-contract"></i></span>
+                                    <div>
+                                        <strong>Contract Review:</strong> Re-examine the contractual agreements to clarify incentive applications and enforce compliance clauses.
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="icon"><i class="fas fa-calculator"></i></span>
+                                    <div>
+                                        <strong>Automate Invoice Verification:</strong> Implement automated systems to cross-verify invoices against contractual terms in real-time.
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="icon"><i class="fas fa-balance-scale"></i></span>
+                                    <div>
+                                        <strong>Legal Consultation:</strong> Engage legal advisors to explore options for recovering missed incentives and enforcing contract adherence.
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="icon"><i class="fas fa-chart-line"></i></span>
+                                    <div>
+                                        <strong>Monitor Future Transactions:</strong> Establish ongoing monitoring to ensure future invoices correctly reflect contractual incentives.
+                                    </div>
+                                </li>
+                            </ul>
+                            <a href="#" class="action-button">Implement Action Plan</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Sample Data
+        const incomeData = [
+            { month: 'January', forecastedIncome: 5000000, actualIncome: 4600000 },
+            { month: 'February', forecastedIncome: 5000000, actualIncome: 4600000 },
+            { month: 'March', forecastedIncome: 5000000, actualIncome: 4600000 },
+            { month: 'April', forecastedIncome: 5000000, actualIncome: 4600000 },
+            { month: 'May', forecastedIncome: 5000000, actualIncome: 4600000 },
+            { month: 'June', forecastedIncome: 5000000, actualIncome: 4500000 },
+        ];
+
+        // Populate Income Table
+        const tableBody = document.getElementById('incomeTableBody');
+        let cumulativeMissingIncome = 0;
+        incomeData.forEach((data) => {
+            const missingIncome = data.forecastedIncome - data.actualIncome;
+            cumulativeMissingIncome += missingIncome;
+            const percentageMissing = ((missingIncome / data.forecastedIncome) * 100).toFixed(2);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.month}</td>
+                <td>$${data.forecastedIncome.toLocaleString()}</td>
+                <td>$${data.actualIncome.toLocaleString()}</td>
+                <td style="color: red;">$${missingIncome.toLocaleString()}</td>
+                <td>$${cumulativeMissingIncome.toLocaleString()}</td>
+                <td>${percentageMissing}%</td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Missing Purchase Income Chart
+        const missingIncomeCtx = document.getElementById('missingIncomeChart').getContext('2d');
+        const missingIncomeChart = new Chart(missingIncomeCtx, {
+            type: 'bar',
+            data: {
+                labels: incomeData.map(data => data.month),
+                datasets: [
+                    {
+                        label: 'Forecasted Income',
+                        data: incomeData.map(data => data.forecastedIncome),
+                        backgroundColor: 'rgba(66, 133, 244, 0.7)',
+                    },
+                    {
+                        label: 'Actual Income',
+                        data: incomeData.map(data => data.actualIncome),
+                        backgroundColor: 'rgba(234, 67, 53, 0.7)',
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month',
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Amount in USD',
+                        },
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+
+        // Projection Chart
+        const projectionCtx = document.getElementById('projectionChart').getContext('2d');
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const cumulativeMissingIncomeData = [0];
+        let cumulativeTotal = 0;
+
+        months.forEach((month, index) => {
+            let missingIncome = 0;
+            if (index < 6) {
+                missingIncome = incomeData[index].forecastedIncome - incomeData[index].actualIncome;
+            } else {
+                missingIncome = 250000; // Projected missing income per month from July to December
+            }
+            cumulativeTotal += missingIncome;
+            cumulativeMissingIncomeData.push(cumulativeTotal);
+        });
+
+        const projectionChart = new Chart(projectionCtx, {
+            type: 'line',
+            data: {
+                labels: ['Start', ...months],
+                datasets: [
+                    {
+                        label: 'Cumulative Missing Income',
+                        data: cumulativeMissingIncomeData,
+                        backgroundColor: 'rgba(251, 188, 5, 0.2)',
+                        borderColor: 'rgba(251, 188, 5, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Missing Income: $${context.parsed.y.toLocaleString()}`;
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month',
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Amount in USD',
+                        },
+                        beginAtZero: true,
+                        suggestedMax: 4500000,
+                    },
+                },
+            },
+        });
+    </script>
+
+</body>
+</html>

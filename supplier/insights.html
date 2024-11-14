@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon"
+    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <title>Ridecell Supplier Intelligence Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .header {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .header .highlight {
+      font-weight: bold;
+      color: #3d76e9;
+    }
+    .summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: #d4f5d1;
+      color: #4caf50;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+    .summary span.unusual {
+      background-color: #ffe6e6;
+      color: #f44336;
+    }
+    .filters {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      background-color: #fff;
+      border-bottom: 1px solid #eaeaea;
+    }
+    .filters label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .filters select {
+      margin-right: 20px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+    .filters select:focus {
+      outline: none;
+      border-color: #3d76e9;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 0px 20px;
+      padding-bottom: 20px;
+    }
+    .metric-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .metric-header {
+      font-size: 16px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .metric-header .normal {
+      background-color: #3d76e9;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-header .unusual {
+      background-color: #f44336;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-value {
+      font-size: 28px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .metric-change {
+      color: #4caf50;
+      margin-bottom: 15px;
+    }
+    .chart-container {
+      width: 100%;
+      height: 200px;
+    }
+    .metric-info {
+      font-size: 15px;
+      color: #777;
+      padding-top: 10px;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+    }
+    .subnav {
+        display: flex;
+        align-items: center;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .nav-item {
+        font-size: 14px;
+        color: #666666;
+        cursor: pointer;
+        padding: 20px;
+        text-decoration: none;
+    }
+    .nav-item.logo {
+        font-weight: bold;
+        color: #000000;
+        font-size: 22px;
+    }
+    .nav-item.active {
+        color: #000000;
+        border-bottom: 4px solid #4CAF50; 
+        background-color: hsl(105deg 35.29% 93.33%);
+        padding: 30px 20px 24px;
+    }
+    .link {
+        text-decoration: none;
+        color: #22aaff;
+    }
+    /* Updated styles for feed tiles */
+    .feed-container {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center; /* Center the tiles */
+      gap: 20px; /* 20px space between tiles */
+    }
+    .feed-tile {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      width: calc(35% - 10px); /* Adjust width to accommodate the gap */
+      box-sizing: border-box;
+    }
+    .feed-heading {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .feed-summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .feed-chart {
+      width: 100%;
+      height: 200px;
+      margin-bottom: 20px;
+    }
+    .feed-buttons {
+      display: flex;
+      justify-content: flex-start;
+    }
+    .feed-button {
+      background-color: transparent;
+      color: #6dc149;
+      padding: 10px 15px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .feed-button .icon {
+      margin-left: 5px;
+      font-size: 16px;
+      color: #6dc149;
+    }
+    .feed-button:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar-container">
+    <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="subnav">
+        <div class="nav-item logo">Supplier Intelligence</div>
+        <a class="nav-item" href="suppliers.html">Suppliers</a>
+        <a class="nav-item" href="supplier-spend.html">Spend</a>
+        <a class="nav-item" href="supplier-perf.html">Performance</a>
+        <a class="nav-item active" href="insights.html">Insights</a>
+      </div>
+  
+      <!-- ADD CONTENT HERE -->
+      <div class="feed-container">
+        <!-- Tile 1 -->
+        <div class="feed-tile">
+          <div class="feed-heading">✨ Purchase Income Risk<br>AI Audit Detected that Ford is not fully applying the contractual incentives to their invoices</div>
+          <div class="feed-summary">
+            Automated Audit of the invoices indicates growing discrepancy between forecasted Purchase Income vs Actual Purchase income. <br><br>This seems to be due to the inconsistency in OEM invoices not accounting for the contractually committed purchase incentives and discounts. This discrepancy currently has an impact of missing <strong>$2,500,000</strong> of Purchase income. <br><br>If this issue is not resolved soon with the OEM, based on vehicle purchasing forecast for the remainder of the year, we project an additional <strong>$4,000,000</strong> of Purchase income for the current year.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart1"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="insight-details.html"><img src="dig.png" style="height: 30px"></a></button>
+          </div>
+        </div>
+
+        <!-- Tile 2 -->
+        <div class="feed-tile">
+          <div class="feed-heading">✨ Tire Supplier Overcharging <br>AI Audit Detected that Big-O-Tires is charging over contractual price for Tire replacements</div>
+          <div class="feed-summary">
+            Automated Audit of the invoices indicates that the Tire Supplier is charging prices for Tires that are consistently above the agreed upon contractual price. <br><br>To date, this has resulted in <strong>$1,800,000</strong> of missed Purchase income. <br><br>If this issue is not resolved soon with the Tire Supplier, based on projections for Tire purchases for the remainder of the year, additional <strong>$3,200,000</strong> of Purchase income could be missed for the current year.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart2"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="dig.png" style="height: 30px"></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Chart.js scripts -->
+  <script>
+    // Chart 1 data
+    const ctx1 = document.getElementById('chart1').getContext('2d');
+    const chart1 = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Forecasted Purchase Income',
+          data: [800000, 850000, 900000, 950000, 1000000, 1050000],
+          backgroundColor: 'rgba(54, 162, 235, 0.5)'
+        }, {
+          label: 'Actual Purchase Income',
+          data: [600000, 650000, 700000, 750000, 800000, 850000],
+          backgroundColor: 'rgba(255, 99, 132, 0.5)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Chart 2 data
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+    const chart2 = new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Contractual Price',
+          data: [100, 100, 100, 100, 100, 100],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          fill: false,
+          tension: 0
+        }, {
+          label: 'Actual Charged Price',
+          data: [110, 115, 120, 125, 130, 135],
+          borderColor: 'rgba(255, 99, 132, 1)',
+          fill: false,
+          tension: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: false
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
