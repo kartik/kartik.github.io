@@ -109,14 +109,14 @@
             justify-content: space-between;
             align-items: center;
             background-color: #fafafa;
-            color: #22aaff;
         }
 
         .card-header h2 {
-            font-size: 1.2em;
+            font-size: 0.9em;
             flex: 1;
             margin-right: 10px;
             font-weight: 400;
+            color: #22aaff;
         }
 
         .card-header .subreddit {
@@ -137,11 +137,24 @@
             font-size: 0.8em;
         }
 
+        .card-selftext {
+            padding: 10px 20px;
+            font-size: 0.8em;
+        }
+
         /* Single Image Styling */
         .card-image img {
             width: 100%;
             height: auto;
             display: block;
+        }
+
+        /* Video Styling */
+        .card-video video {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
         }
 
         /* Gallery Styles */
@@ -175,7 +188,7 @@
             background-color: rgba(0,0,0,0.5);
             border: none;
             color: #fff;
-            padding: 10px;
+            padding: 10px 15px;
             cursor: pointer;
             border-radius: 50%;
             pointer-events: all;
@@ -233,7 +246,6 @@
 
         .comment-upvotes {
             font-size: 0.9em;
-            color: #ff4500;
             display: flex;
             align-items: center;
         }
@@ -327,7 +339,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // Configuration Constants
-        let SUBREDDIT = 'wallstreetbets'; // Default subreddit
+        let SUBREDDIT = 'singularity'; // Default subreddit
         let TIMEFRAME = 'day';            // Default timeframe
         const POST_LIMIT = 20;            // Number of posts to fetch per request
         const MIN_UPVOTES = 10;           // Minimum upvotes for comments
@@ -419,6 +431,7 @@
 
                         const postId = postData.id;
                         const postTitle = postData.title;
+                        const postSelfText = postData.selftext;
                         const subreddit = postData.subreddit;
                         const upvotes = postData.ups;
                         const postURL = postData.url;
@@ -443,7 +456,11 @@
                             });
                         }
 
-                        createPostCard(postId, postTitle, subreddit, upvotes, imageUrl, galleryImages);
+                        // Check if the post is a video
+                        const isVideo = postData.is_video;
+                        const videoUrl = isVideo && postData.media && postData.media.reddit_video && postData.media.reddit_video.fallback_url ? postData.media.reddit_video.fallback_url : null;
+
+                        createPostCard(postId, postTitle, postSelfText, subreddit, upvotes, imageUrl, galleryImages, isVideo, videoUrl);
                         fetchedPosts++;
                         loadedIDArray.push(postId);
                     });
@@ -463,17 +480,27 @@
             });
         }
 
-        function createPostCard(postId, postTitle, subreddit, upvotes, imageUrl, galleryImages) {
-            // Determine if the post has a gallery
+        function createPostCard(postId, postTitle, postSelfText, subreddit, upvotes, imageUrl, galleryImages, isVideo, videoUrl) {
+            // Determine if the post has a gallery or video
             const hasGallery = galleryImages.length > 0;
+            const hasVideo = isVideo && videoUrl;
 
-            // Create gallery HTML if applicable
-            let galleryHtml = '';
-            if (hasGallery) {
+            // Create media HTML
+            let mediaHtml = '';
+            if (hasVideo) {
+                mediaHtml = `
+                    <div class="card-video">
+                        <video controls style="width: 100%; height: auto;">
+                            <source src="${escapeHtml(videoUrl)}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                `;
+            } else if (hasGallery) {
                 const slidesHtml = galleryImages.map((img, index) => `<img src="${escapeHtml(img)}" alt="Gallery Image ${index + 1}">`).join('');
                 const indicatorsHtml = galleryImages.map((_, index) => `<span data-index="${index}" ${index === 0 ? 'class="active"' : ''}></span>`).join('');
 
-                galleryHtml = `
+                mediaHtml = `
                     <div class="card-gallery">
                         <div class="gallery-slides">
                             ${slidesHtml}
@@ -488,7 +515,7 @@
                     </div>
                 `;
             } else if (imageUrl) {
-                galleryHtml = `
+                mediaHtml = `
                     <div class="card-image">
                         <img src="${escapeHtml(imageUrl)}" alt="Post Image">
                     </div>
@@ -503,7 +530,8 @@
                         <span class="subreddit">r/${escapeHtml(subreddit)}</span>
                         <span class="upvotes">${upvotes}</span>
                     </div>
-                    ${galleryHtml}
+                    <div class="card-selftext">${escapeHtml(postSelfText)}</div>
+                    ${mediaHtml}
                     <div class="card-content">
                         <p>Loading comments...</p>
                     </div>
@@ -577,19 +605,26 @@
 
             // Swipe Functionality
             let startX = 0;
+            let startY = 0;
             let isSwiping = false;
 
             slidesContainer.on('touchstart', function(e) {
-                startX = e.originalEvent.touches[0].clientX;
-                isSwiping = true;
+                if (e.originalEvent.touches.length === 1) { // Only handle single touch
+                    startX = e.originalEvent.touches[0].clientX;
+                    startY = e.originalEvent.touches[0].clientY;
+                    isSwiping = true;
+                }
             });
 
             slidesContainer.on('touchmove', function(e) {
                 if (!isSwiping) return;
                 const currentX = e.originalEvent.touches[0].clientX;
+                const currentY = e.originalEvent.touches[0].clientY;
                 const diffX = currentX - startX;
+                const diffY = currentY - startY;
 
-                if (Math.abs(diffX) > 50) { // Threshold
+                // Determine if the swipe is horizontal
+                if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) { // Horizontal swipe
                     if (diffX > 0) {
                         // Swipe Right
                         currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalSlides - 1;
@@ -599,6 +634,7 @@
                     }
                     updateGallery();
                     isSwiping = false;
+                    e.preventDefault(); // Prevent vertical scrolling
                 }
             });
 
@@ -625,7 +661,7 @@
                     } else {
                         const commentsHtml = comments.map(comment => `
                             <div class="comment">
-                                <div class="comment-body">${escapeHtml(comment.body)}</div>
+                                <div class="comment-body">${parseCommentBody(comment.body)}</div>
                                 <div class="comment-upvotes">${comment.ups}</div>
                             </div>
                         `).join('');
@@ -646,6 +682,27 @@
         // Utility function to escape HTML to prevent XSS
         function escapeHtml(text) {
             return $('<div>').text(text).html();
+        }
+
+        // Function to parse comment body and render images where applicable
+        function parseCommentBody(text) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+            // First, escape the entire text to prevent XSS
+            let escapedText = escapeHtml(text);
+
+            // Replace &amp;amp; with & to correct double encoding
+            escapedText = escapedText.replace(/&amp;amp;/g, '&');
+
+            // Now, replace URLs with images or links
+            return escapedText.replace(urlRegex, function(url) {
+                const normalizedUrl = url.replace(/&amp;/g, '&'); // Replace &amp; with &
+                if (imageRegEx.test(normalizedUrl)) {
+                    return `<img src="${escapeHtml(normalizedUrl)}" alt="Comment Image" style="max-width:100%; height:auto; display:block; margin-top:10px;">`;
+                } else {
+                    return `<a href="${escapeHtml(normalizedUrl)}" target="_blank">${escapeHtml(normalizedUrl)}</a>`;
+                }
+            });
         }
     </script>
 </body>
