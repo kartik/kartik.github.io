@@ -162,16 +162,21 @@
             position: relative;
             width: 100%;
             overflow: hidden;
+            /* Remove fixed height to allow dynamic resizing */
         }
 
         .gallery-slides {
             display: flex;
             transition: transform 0.3s ease-in-out;
+            /* Ensure slides take only necessary height */
+            height: auto;
         }
 
         .gallery-slides img {
             width: 100%;
             flex-shrink: 0;
+            height: auto; /* Preserve aspect ratio */
+            object-fit: contain; /* Ensure images fit without distortion */
         }
 
         .gallery-nav {
@@ -192,6 +197,7 @@
             cursor: pointer;
             border-radius: 50%;
             pointer-events: all;
+            transition: background-color 0.3s;
         }
 
         .gallery-nav button:hover {
@@ -339,7 +345,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // Configuration Constants
-        let SUBREDDIT = 'singularity'; // Default subreddit
+        let SUBREDDIT = 'wallstreetbets'; // Default subreddit
         let TIMEFRAME = 'day';            // Default timeframe
         const POST_LIMIT = 20;            // Number of posts to fetch per request
         const MIN_UPVOTES = 10;           // Minimum upvotes for comments
@@ -490,7 +496,7 @@
             if (hasVideo) {
                 mediaHtml = `
                     <div class="card-video">
-                        <video controls style="width: 100%; height: auto;">
+                        <video controls>
                             <source src="${escapeHtml(videoUrl)}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
