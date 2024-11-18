@@ -1,23 +1,746 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
-	<title>Ridecell Intelligence</title>
-	<style type="text/css">
-		html, body {
-			overflow: scroll;
-			margin: 0px;
-			height: 100%;
-			width: 100%;
-		}
-
-		iframe { 
-			height: 110%;
-			width: 100%;
-		 }
-	</style>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon"
+    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <title>Ridecell Supplier Intelligence Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Existing styles */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .header {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .header .highlight {
+      font-weight: bold;
+      color: #3d76e9;
+    }
+    .summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: #d4f5d1;
+      color: #4caf50;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+    .summary span.unusual {
+      background-color: #ffe6e6;
+      color: #f44336;
+    }
+    .filters {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-chip {
+      display: flex;
+      align-items: center;
+      background-color: #e0e0e0;
+      color: #333;
+      padding: 8px 12px;
+      margin: 5px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .filter-chip i {
+      margin-right: 8px;
+    }
+    .filter-chip.active {
+      background-color: #6dc149;
+      color: white;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 0px 20px;
+      padding-bottom: 20px;
+    }
+    .metric-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .metric-header {
+      font-size: 16px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .metric-header .normal {
+      background-color: #3d76e9;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-header .unusual {
+      background-color: #f44336;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-value {
+      font-size: 28px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .metric-change {
+      color: #4caf50;
+      margin-bottom: 15px;
+    }
+    .chart-container {
+      width: 100%;
+      height: 200px;
+    }
+    .metric-info {
+      font-size: 15px;
+      color: #777;
+      padding-top: 10px;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+    }
+    .subnav {
+        display: flex;
+        align-items: center;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .nav-item {
+        font-size: 14px;
+        color: #666666;
+        cursor: pointer;
+        padding: 20px;
+        text-decoration: none;
+    }
+    .nav-item.logo {
+        font-weight: bold;
+        color: #000000;
+        font-size: 22px;
+    }
+    .nav-item.active {
+        color: #000000;
+        border-bottom: 4px solid #4CAF50; 
+        background-color: hsl(105deg 35.29% 93.33%);
+        padding: 30px 20px 24px;
+    }
+    .link {
+        text-decoration: none;
+        color: #22aaff;
+    }
+    /* Updated styles for feed tiles */
+    .feed-container {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px; 
+    }
+    .feed-tile {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      width: calc(30% - 10px);
+      box-sizing: border-box;
+      position: relative;
+    }
+    .feed-heading {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .feed-summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .feed-chart {
+      width: 100%;
+      height: 200px;
+    }
+    .feed-buttons {
+      display: flex;
+      justify-content: flex-start;
+    }
+    .feed-button {
+      background-color: transparent;
+      color: #6dc149;
+      padding: 0px 10px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .feed-button .icon {
+      margin-left: 5px;
+      font-size: 16px;
+      color: #6dc149;
+    }
+    .feed-button:hover {
+      text-decoration: underline;
+    }
+    /* Category chips within tiles */
+    .category-chips {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .category-chip {
+      display: flex;
+      align-items: center;
+      border: 1px solid #e0e0e0;
+      color: #333;
+      padding: 5px 10px;
+      margin-right: 5px;
+      border-radius: 15px;
+      font-size: 12px;
+    }
+    .category-chip i {
+      margin-right: 5px;
+    }
+  </style>
 </head>
 <body>
-	<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://embed.figma.com/proto/uH7n6olYJyaRnX9KHZKbgB/108-Exec-Hub?node-id=1-81662&node-type=frame&scaling=contain&content-scaling=responsive&page-id=0%3A1&starting-point-node-id=1%3A3279&embed-host=share"></iframe>
+  <div class="navbar-container">
+    <img id="navbar" src="navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="subnav">
+        <div class="nav-item logo">Intelligence Hub</div>
+        <a class="nav-item" href="index.html">Navigate</a>
+        <a class="nav-item" href="analyze_graph.html">Analyze</a>
+        <a class="nav-item active" href="optimize.html">Optimize</a>
+      </div>
+
+      <!-- Category Filters -->
+      <div class="filters">
+        <div class="filter-chip active" data-category="For You">
+          <i class="fas fa-star"></i>
+          For You
+        </div>
+        <div class="filter-chip" data-category="OEM">
+          <i class="fas fa-industry"></i>
+          OEM
+        </div>
+        <div class="filter-chip" data-category="Suppliers">
+          <i class="fas fa-truck"></i>
+          Suppliers
+        </div>
+        <div class="filter-chip" data-category="Income">
+          <i class="fas fa-dollar-sign"></i>
+          Income
+        </div>
+        <div class="filter-chip" data-category="Costs">
+          <i class="fas fa-money-bill-wave"></i>
+          Costs
+        </div>
+        <div class="filter-chip" data-category="Ops">
+          <i class="fas fa-cogs"></i>
+          Ops
+        </div>
+        <div class="filter-chip" data-category="Idle Days">
+          <i class="fas fa-clock"></i>
+          Idle Days
+        </div>
+        <div class="filter-chip" data-category="CSAT">
+          <i class="fas fa-smile"></i>
+          CSAT
+        </div>
+        <div class="filter-chip" data-category="LTV Optimization">
+          <i class="fas fa-chart-line"></i>
+          LTV Optimization
+        </div>
+      </div>
+
+      <!-- Feed Tiles -->
+      <div class="feed-container">
+        <!-- Tile 1 -->
+        <div class="feed-tile" data-categories="OEM,Income">
+          <div class="category-chips">
+            <div class="category-chip">
+              <i class="fas fa-industry"></i>
+              OEM
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-dollar-sign"></i>
+              Income
+            </div>
+          </div>
+          <div class="feed-heading">Purchase Income Risk</div>
+          <div class="feed-summary">
+            AI Audit detected that Ford is not fully applying the contractual incentives to their invoices.
+            Automated audit of the invoices indicates growing discrepancy between forecasted Purchase Income vs Actual Purchase Income. <br><br>This seems to be due to the inconsistency in OEM invoices not accounting for the contractually committed purchase incentives and discounts. This discrepancy currently has an impact of missing <strong>$2,500,000</strong> of purchase income. <br><br>If this issue is not resolved soon with the OEM, based on vehicle purchasing forecast for the remainder of the year, we project an additional <strong>$4,000,000</strong> of purchase income for the current year.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart1"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="/supplier/insight-details.html"><img src="dig.png" style="height: 30px"></a></button>
+          </div>
+        </div>
+
+        <!-- Tile 2 -->
+        <div class="feed-tile" data-categories="Suppliers,Costs">
+          <div class="category-chips">
+            <div class="category-chip">
+              <i class="fas fa-truck"></i>
+              Suppliers
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-money-bill-wave"></i>
+              Costs
+            </div>
+          </div>
+          <div class="feed-heading">Tire Supplier Overcharging</div>
+          <div class="feed-summary">
+            AI Audit detected that Big-O-Tires is charging over contractual price for tire replacements.
+            Automated audit of the invoices indicates that the tire supplier is charging prices for tires that are consistently above the agreed upon contractual price. <br><br>To date, this has resulted in <strong>$1,800,000</strong> of missed purchase income. <br><br>If this issue is not resolved soon with the tire supplier, based on projections for tire purchases for the remainder of the year, additional <strong>$3,200,000</strong> of purchase income could be missed for the current year.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart2"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="insight-details.html"><img src="dig.png" style="height: 30px"></a></button>
+          </div>
+        </div>
+
+        <!-- Tile 3 -->
+        <div class="feed-tile" data-categories="For You,Suppliers,Costs">
+          <div class="category-chips">
+            <div class="category-chip">
+              <i class="fas fa-star"></i>
+              For You
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-truck"></i>
+              Suppliers
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-money-bill-wave"></i>
+              Costs
+            </div>
+          </div>
+          <div class="feed-heading">In Lease Cost Savings: AI Audit Detected Overcharging by OEMs on Parts Delivered to Garages</div>
+          <div class="feed-summary">
+            Automated audit indicates substantial overcharges on parts that were previously agreed upon at discounted rates through bulk deals with OEMs, but billed at full price by the vendors. It is recommended to enforce strict invoice auditing to promptly recover any overpayments.
+            <br><br>Projected impact of <strong>$1.2M</strong> lost by December if the trend continues.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart3"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details3.html"><img src="dig.png" style="height: 30px"></a></button>
+          </div>
+        </div>
+
+        <!-- Tile 4 -->
+        <div class="feed-tile" data-categories="For You,OEM,Ops,Idle Days">
+          <div class="category-chips">
+            <div class="category-chip">
+              <i class="fas fa-star"></i>
+              For You
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-industry"></i>
+              OEM
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-cogs"></i>
+              Ops
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-clock"></i>
+              Idle Days
+            </div>
+          </div>
+          <div class="feed-heading">Infleeting Cost Overrun Alert: Unanticipated Early Delivery Leading to Increased Costs</div>
+          <div class="feed-summary">
+            Weekly surplus of 2,000 vehicles is building up due to earlier than expected deliveries from the OEM and not enough planned allocations. Immediate action is required to adjust allocations and boost demand. <br><br>Projected impact of <strong>8,000</strong> excess vehicles and over <strong>$500,000</strong> in extra costs if the trend continues.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart4"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details.html"><img src="dig.png" style="height: 30px"></a></button>
+          </div>
+        </div>
+
+        <!-- Tile 5 -->
+        <div class="feed-tile" data-categories="For You,CSAT,Idle Days,OEM">
+          <div class="category-chips">
+            <div class="category-chip">
+              <i class="fas fa-star"></i>
+              For You
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-smile"></i>
+              CSAT
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-clock"></i>
+              Idle Days
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-industry"></i>
+              OEM
+            </div>
+          </div>
+          <div class="feed-heading">Infleeting C-Sat and Idle Days Alert: Significant Order to Delivery Delay Due to OEM Delivery Delays</div>
+          <div class="feed-summary">
+            Order-to-delivery times are increasing, leading to more customer complaints and possible SLA breaches. This may result in higher costs and lost customer trust. Implement alternative logistics and communicate proactively with customers. <br><br>Projected impact of <strong>8</strong> additional days on delivery time by week 4 if the trend continues.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart5"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="insight-details.html"><img src="dig.png" style="height: 30px"></a></button>
+          </div>
+        </div>
+
+        <!-- Tile 6 -->
+        <div class="feed-tile" data-categories="For You,Ops,Idle Days">
+          <div class="category-chips">
+            <div class="category-chip">
+              <i class="fas fa-star"></i>
+              For You
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-cogs"></i>
+              Ops
+            </div>
+            <div class="category-chip">
+              <i class="fas fa-clock"></i>
+              Idle Days
+            </div>
+          </div>
+          <div class="feed-heading">In Lease Idle Days Alert: Amazon Imbalance, Excess in Texas, North East Shortage of Vehicles</div>
+          <div class="feed-summary">
+            Amazon's vehicle allocation is imbalanced, with a surplus in Texas and shortages in the North East, causing logistical inefficiencies, delivery delays, and added relocation costs. Immediate action is needed to avoid excess costs, with <strong>10%</strong> more idle vehicles in Texas and <strong>28%</strong> delayed deliveries in the North East projected if unresolved.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart6"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details2.html"><img src="dig.png" style="height: 30px"></a></button>
+          </div>
+        </div>
+
+        <!-- Tile 7 -->
+        <div class="feed-tile" data-categories="LTV Optimization">
+          <div class="category-chips">
+            <div class="category-chip">
+              <i class="fas fa-chart-line"></i>
+              LTV Optimization
+            </div>
+          </div>
+          <div class="feed-heading">Drop in PHEV Demand</div>
+          <div class="feed-summary">
+            Due to a decrease in demand for PHEV coupled with an expected decline in resale value, it is advised to sell the <strong>2,340</strong> PHEVs in the fleet and replace with hybrids or pure BEV vehicles.
+          </div>
+          <div class="feed-chart">
+            <canvas id="chart7"></canvas>
+          </div>
+          <div class="feed-buttons">
+            <button class="feed-button"><img src="share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="insight-details.html"><img src="dig.png" style="height: 30px"></a></button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Chart.js scripts -->
+  <script>
+    // Function to create charts
+    function createChart(canvasId, config) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      new Chart(ctx, config);
+    }
+
+    // Chart 1 data
+    createChart('chart1', {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Forecasted Purchase Income',
+          data: [800000, 850000, 900000, 950000, 1000000, 1050000],
+          backgroundColor: 'rgba(54, 162, 235, 0.5)'
+        }, {
+          label: 'Actual Purchase Income',
+          data: [600000, 650000, 700000, 750000, 800000, 850000],
+          backgroundColor: 'rgba(255, 99, 132, 0.5)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Chart 2 data
+    createChart('chart2', {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Contractual Price',
+          data: [100, 100, 100, 100, 100, 100],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          fill: false,
+          tension: 0
+        }, {
+          label: 'Actual Charged Price',
+          data: [110, 115, 120, 125, 130, 135],
+          borderColor: 'rgba(255, 99, 132, 1)',
+          fill: false,
+          tension: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: false
+          }
+        }
+      }
+    });
+
+    // Chart 3 data
+    createChart('chart3', {
+      type: 'bar',
+      data: {
+        labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Overcharge Amount ($)',
+          data: [0, 300000, 600000, 900000, 1200000],
+          backgroundColor: 'rgba(255, 159, 64, 0.5)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Chart 4 data
+    createChart('chart4', {
+      type: 'line',
+      data: {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        datasets: [{
+          label: 'Weekly Delivery (Vehicles)',
+          data: [2000, 2000, 2000, 2000],
+          borderColor: 'rgba(75, 192, 192, 1)',
+          fill: false,
+          tension: 0
+        }, {
+          label: 'Cumulative Surplus',
+          data: [2000, 4000, 6000, 8000],
+          borderColor: 'rgba(153, 102, 255, 1)',
+          fill: false,
+          tension: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Chart 5 data
+    createChart('chart5', {
+      type: 'bar',
+      data: {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        datasets: [{
+          label: 'Delivery Delay (Days)',
+          data: [2, 4, 6, 8],
+          backgroundColor: 'rgba(255, 206, 86, 0.5)'
+        }, {
+          label: 'Customer Complaints',
+          data: [10, 30, 60, 90],
+          type: 'line',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          fill: false,
+          tension: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Chart 6 data
+    createChart('chart6', {
+      type: 'bar',
+      data: {
+        labels: ['Houston, TX', 'Dallas, TX', 'Austin, TX', 'San Antonio, TX', 'Fort Worth, TX', 'El Paso, TX', 'Boston, MA', 'New York, NY', 'Philadelphia, PA', 'Newark, NJ', 'Pittsburgh, PA', 'Providence, RI'],
+        datasets: [{
+          label: 'Surplus/Deficit',
+          data: [320, 280, 150, 185, 145, 89, -280, -245, -190, -165, -140, -120],
+          backgroundColor: function(context) {
+            var index = context.dataIndex;
+            var value = context.dataset.data[index];
+            return value > 0 ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)';
+          }
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        scales: {
+          x: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Chart 7 data
+    createChart('chart7', {
+      type: 'line',
+      data: {
+        labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'],
+        datasets: [{
+          label: 'PHEV Demand',
+          data: [1000, 900, 700, 500, 300, 100],
+          borderColor: 'rgba(255, 99, 132, 1)',
+          fill: false,
+          tension: 0
+        }, {
+          label: 'PHEV Supply',
+          data: [800, 800, 800, 800, 800, 800],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          fill: false,
+          tension: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Filter functionality
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const feedTiles = document.querySelectorAll('.feed-tile');
+
+    function applyFilter(selectedCategory) {
+      feedTiles.forEach(tile => {
+        const tileCategories = tile.getAttribute('data-categories').split(',');
+        const categoriesTrimmed = tileCategories.map(cat => cat.trim());
+        if (categoriesTrimmed.includes(selectedCategory)) {
+          tile.style.display = 'block';
+        } else {
+          tile.style.display = 'none';
+        }
+      });
+    }
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        // Remove 'active' class from all chips
+        filterChips.forEach(c => c.classList.remove('active'));
+        // Add 'active' class to the clicked chip
+        chip.classList.add('active');
+
+        // Get selected category
+        const selectedCategory = chip.getAttribute('data-category');
+
+        // Apply filter
+        applyFilter(selectedCategory);
+      });
+    });
+
+    // On page load, apply initial filter for 'For You' category
+    applyFilter('For You');
+  </script>
 </body>
 </html>
