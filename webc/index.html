@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 600px;
             margin: 20px auto;
             padding: 10px;
         }
@@ -345,7 +345,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // Configuration Constants
-        let SUBREDDIT = 'wallstreetbets'; // Default subreddit
+        let SUBREDDIT = 'singularity+wallstreetbets+investing+chatgpt'; // Default subreddit
         let TIMEFRAME = 'day';            // Default timeframe
         const POST_LIMIT = 20;            // Number of posts to fetch per request
         const MIN_UPVOTES = 10;           // Minimum upvotes for comments
@@ -528,7 +528,7 @@
                 `;
             }
 
-            // Create card element
+            // Create card element with parsed selftext
             const card = $(`
                 <div class="card" data-post-id="${postId}">
                     <div class="card-header">
@@ -536,7 +536,7 @@
                         <span class="subreddit">r/${escapeHtml(subreddit)}</span>
                         <span class="upvotes">${upvotes}</span>
                     </div>
-                    <div class="card-selftext">${escapeHtml(postSelfText)}</div>
+                    <div class="card-selftext">${parseSelfText(postSelfText)}</div>
                     ${mediaHtml}
                     <div class="card-content">
                         <p>Loading comments...</p>
@@ -690,6 +690,27 @@
             return $('<div>').text(text).html();
         }
 
+        // Function to parse selftext and render images or links where applicable
+        function parseSelfText(text) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+            // First, escape the entire text to prevent XSS
+            let escapedText = escapeHtml(text);
+
+            // Replace &amp;amp; and &amp; with & to correct encoding issues
+            escapedText = escapedText.replace(/&amp;amp;/g, '&').replace(/&amp;/g, '&');
+
+            // Now, replace URLs with images or links
+            return escapedText.replace(urlRegex, function(url) {
+                const normalizedUrl = url.replace(/&amp;/g, '&'); // Replace &amp; with &
+                if (imageRegEx.test(normalizedUrl)) {
+                    return `<img src="${escapeHtml(normalizedUrl)}" alt="Post Image" style="max-width:100%; height:auto; display:block; margin-top:10px;">`;
+                } else {
+                    return `<a href="${escapeHtml(normalizedUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(normalizedUrl)}</a>`;
+                }
+            });
+        }
+
         // Function to parse comment body and render images where applicable
         function parseCommentBody(text) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -706,7 +727,7 @@
                 if (imageRegEx.test(normalizedUrl)) {
                     return `<img src="${escapeHtml(normalizedUrl)}" alt="Comment Image" style="max-width:100%; height:auto; display:block; margin-top:10px;">`;
                 } else {
-                    return `<a href="${escapeHtml(normalizedUrl)}" target="_blank">${escapeHtml(normalizedUrl)}</a>`;
+                    return `<a href="${escapeHtml(normalizedUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(normalizedUrl)}</a>`;
                 }
             });
         }
