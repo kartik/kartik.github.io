@@ -173,25 +173,26 @@
         text-decoration: none;
         color: #22aaff;
     }
-    /* Updated styles for feed tiles */
-    .feed-container {
-      padding: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px; 
-    }
-    .feed-tile {
-      background-color: white;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      width: calc(30% - 10px);
-      box-sizing: border-box;
-      position: relative;
-      animation: fadeInUp 0.5s ease-in-out;
-      animation-fill-mode: backwards;
-    }
+.feed-container {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  max-width: 930px;
+  margin: 0 auto;
+}
+
+.feed-tile {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  animation: fadeInUp 0.5s ease-in-out;
+  animation-fill-mode: backwards;
+}
+
+
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -222,7 +223,7 @@
     .feed-button {
       background-color: transparent;
       color: #6dc149;
-      padding: 0px 10px;
+      margin-top: 15px;
       border: none;
       cursor: pointer;
       display: flex;
@@ -338,7 +339,7 @@
           <div class="feed-buttons">
             <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
             <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><a href="supplier/insight-details.html"><img src="/supplier/dig.png" style="height: 30px"></a></button>
+            <button class="feed-button"><a href="supplier/insight-details.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
 
@@ -363,9 +364,9 @@
             <canvas id="chart2"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/dig.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/dig.png" style="height: 30px"></button>
           </div>
         </div>
 
@@ -385,18 +386,18 @@
               Costs
             </div>
           </div>
-          <div class="feed-heading">In Lease Cost Savings: AI Audit Detected Overcharging by OEMs on Parts Delivered to Garages</div>
+          <div class="feed-heading">In Lease Cost Savings: Audit Detected Overcharging by OEMs on Parts Delivered to Garages</div>
           <div class="feed-summary">
-            Automated audit indicates substantial overcharges on parts that were previously agreed upon at discounted rates through bulk deals with OEMs, but billed at full price by the vendors. <br><br>It is recommended to enforce strict invoice auditing to promptly recover any overpayments.
+            AI Audit indicates substantial overcharges on parts that were previously agreed upon at discounted rates through bulk deals with OEMs, but billed at full price by the vendors. <br><br>It is recommended to enforce strict invoice auditing to promptly recover any overpayments.
             <br><br>Projected impact of <strong>$2.1M</strong> lost by December if the trend continues.
           </div>
           <div class="feed-chart">
             <canvas id="chart3"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><a href="details3.html"><img src="/supplier/dig.png" style="height: 30px"></a></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details3.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
 
@@ -428,9 +429,9 @@
             <canvas id="chart4"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><a href="details.html"><img src="/supplier/dig.png" style="height: 30px"></a></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
 
@@ -462,9 +463,9 @@
             <canvas id="chart5"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/dig.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/dig.png" style="height: 30px"></button>
           </div>
         </div>
 
@@ -496,9 +497,9 @@
             <canvas id="chart6"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><a href="details2.html"><img src="/supplier/dig.png" style="height: 30px"></a></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details2.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
 
@@ -520,9 +521,9 @@
             <canvas id="chart7"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/dig.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/dig.png" style="height: 30px"></button>
           </div>
         </div>
 
@@ -548,9 +549,9 @@
             <canvas id="chart8"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><a href="details8.html"><img src="/supplier/dig.png" style="height: 30px"></a></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details8.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
 
@@ -576,9 +577,9 @@
             <canvas id="chart9"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><a href="details9.html"><img src="/supplier/dig.png" style="height: 30px"></a></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details9.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
 
@@ -603,9 +604,9 @@
             <canvas id="chart10"></canvas>
           </div>
           <div class="feed-buttons">
-            <button class="feed-button"><img src="/supplier/share.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="/supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><a href="details10.html"><img src="/supplier/dig.png" style="height: 30px"></a></button>
+            <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
+            <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="details10.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
 
