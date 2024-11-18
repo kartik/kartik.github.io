@@ -2,17 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon"
-    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
-  <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <title>Ridecell Supplier Intelligence Hub</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Existing styles */
     body {
       font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
@@ -173,26 +169,24 @@
         text-decoration: none;
         color: #22aaff;
     }
-.feed-container {
-  padding: 20px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30px;
-  max-width: 930px;
-  margin: 0 auto;
-}
+    .feed-container {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      max-width: 930px;
+      margin: 0 auto;
+    }
 
-.feed-tile {
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  animation: fadeInUp 0.5s ease-in-out;
-  animation-fill-mode: backwards;
-}
-
-
+    .feed-tile {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+      animation: fadeInUp 0.5s ease-in-out;
+      animation-fill-mode: backwards;
+    }
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -237,7 +231,6 @@
     .feed-button:hover {
       text-decoration: underline;
     }
-    /* Category chips within tiles */
     .category-chips {
       display: flex;
       flex-wrap: wrap;
@@ -314,7 +307,7 @@
         </div>
       </div>
 
-      <!-- Feed Tiles -->
+      <!-- FEED CONTAINER -->
       <div class="feed-container">
         <!-- Tile 1 -->
         <div class="feed-tile" data-categories="OEM,Opportunity">
@@ -331,7 +324,7 @@
           <div class="feed-heading">Purchase Income Risk</div>
           <div class="feed-summary">
             AI Audit detected that Ford is not fully applying the contractual incentives to their invoices.
-            Automated audit of the invoices indicates growing discrepancy between forecasted Purchase Income vs Actual Purchase Income. <br><br>This seems to be due to the inconsistency in OEM invoices not accounting for the contractually committed purchase incentives and discounts. This discrepancy currently has an impact of missing <strong>$2,500,000</strong> of purchase income. <br><br>If this issue is not resolved soon with the OEM, based on vehicle purchasing forecast for the remainder of the year, we project an additional <strong>$4,000,000</strong> of purchase income for the current year.
+            Automated audit of the invoices indicates growing discrepancy between forecasted Purchase Income vs Actual Purchase Income. <br><br>This seems to be due to the inconsistency in OEM invoices not accounting for the contractually committed purchase incentives and discounts. This discrepancy currently has an impact of missing <strong>$2.5M</strong> of purchase income. <br><br>If this issue is not resolved soon with the OEM, based on vehicle purchasing forecast for the remainder of the year, we project an additional <strong>$4M</strong> of purchase income for the current year.
           </div>
           <div class="feed-chart">
             <canvas id="chart1"></canvas>
@@ -527,7 +520,7 @@
           <div class="feed-buttons">
             <button class="feed-button"><img src="supplier/share.png" style="height: 30px"></button>
             <button class="feed-button"><img src="supplier/comment.png" style="height: 30px"></button>
-            <button class="feed-button"><img src="supplier/dig.png" style="height: 30px"></button>
+            <button class="feed-button"><a href="phev-details.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
 
@@ -613,11 +606,7 @@
             <button class="feed-button"><a href="details10.html"><img src="supplier/dig.png" style="height: 30px"></a></button>
           </div>
         </div>
-
-
-
-      </div>
-
+      </div> <!-- /FEED CONTAINER -->
     </div>
   </div>
 
