@@ -285,7 +285,7 @@
                     <div class="card">
                         <i class="fas fa-money-bill-wave card-icon"></i>
                         <h3>Total Overcharges Detected</h3>
-                        <p>$475,000</p>
+                        <p>$2.1M</p>
                         <div class="subtext">Projected by December</div>
                     </div>
                     <div class="card">
@@ -309,7 +309,7 @@
                     <div class="card">
                         <i class="fas fa-user-shield card-icon"></i>
                         <h3>Recoverable Amount</h3>
-                        <p>$300,000</p>
+                        <p>$1.7M</p>
                         <div class="subtext">Pending Claims</div>
                     </div>
                 </div>
@@ -355,7 +355,7 @@
                     <div class="alert alert-warning">
                         <span class="alert-icon"><i class="fas fa-exclamation-circle"></i></span>
                         <div>
-                            <strong>Warning:</strong> If unchecked, overcharges could reach <strong>$475,000</strong> by December.
+                            <strong>Warning:</strong> If unchecked, overcharges could reach <strong>$2.1M</strong> by December.
                         </div>
                     </div>
                     <div class="content">
@@ -419,13 +419,14 @@
     <script>
         // Sample Data
         const invoiceData = [
-            { month: 'July', totalInvoices: 300, overchargedInvoices: 30, overchargeAmount: 50000 },
-            { month: 'August', totalInvoices: 320, overchargedInvoices: 35, overchargeAmount: 55000 },
-            { month: 'September', totalInvoices: 310, overchargedInvoices: 40, overchargeAmount: 60000 },
-            { month: 'October', totalInvoices: 330, overchargedInvoices: 45, overchargeAmount: 65000 },
-            { month: 'November', totalInvoices: 340, overchargedInvoices: 50, overchargeAmount: 70000 },
-            { month: 'December', totalInvoices: 350, overchargedInvoices: 55, overchargeAmount: 75000 },
+            { month: 'July', totalInvoices: 300, overchargedInvoices: 30, overchargeAmount: 100000 },
+            { month: 'August', totalInvoices: 320, overchargedInvoices: 35, overchargeAmount: 200000 },
+            { month: 'September', totalInvoices: 310, overchargedInvoices: 40, overchargeAmount: 300000 },
+            { month: 'October', totalInvoices: 330, overchargedInvoices: 45, overchargeAmount: 400000 },
+            { month: 'November', totalInvoices: 340, overchargedInvoices: 50, overchargeAmount: 500000 },
+            { month: 'December', totalInvoices: 350, overchargedInvoices: 55, overchargeAmount: 600000 },
         ];
+
 
         // Populate Invoice Table
         const tableBody = document.getElementById('invoiceTableBody');
