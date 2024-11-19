@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon"
+    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="supplier.css">
+  <link rel="stylesheet" href="../chatbot.css">
+  <title>Ridecell Supplier Intelligence Hub - RapidRepair Inc.</title>
+  
+</head>
+<body>
+  <div class="navbar-container">
+    <img id="navbar" src="../../navbar.png" alt="Navbar" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../../tabs.png" alt="Tabs" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <img src="../back.png" onclick="window.location.href = '../suppliers.html'" style="width:48px; cursor: pointer;">
+        <h1>RapidRepair Inc.</h1>
+        <span class="priority-chip low-priority">Active</span>
+        <span class="priority-chip info-priority">Maintenance Services</span>
+        <span class="priority-chip info-priority">Contract End: Dec, 2024</span>
+        <span class="priority-chip info-priority">Internal Contact: John Doe</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="active" onclick="openTab('overview')"><i class="fas fa-info-circle"></i>Overview</button>
+          <button onclick="openTab('contracts')"><i class="fas fa-file-contract"></i>Contracts</button>
+          <button onclick="openTab('intelligence')"><i class="fas fa-lightbulb"></i>Intelligence</button>
+          <button onclick="openTab('compliance')"><i class="fas fa-shield-alt"></i>Compliance</button>
+          <button onclick="openTab('audit')"><i class="fas fa-search"></i>Audit</button>
+          <button onclick="openTab('automations')"><i class="fas fa-robot"></i>Automations</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+          <div class="section">
+            <h2>Info</h2>
+            <div class="cards-container">
+              <!-- Contacts Card -->
+              <div class="metric-card medium-card">
+                <h3><i class="fas fa-user"></i> Supplier Contacts</h3>
+                <button class="edit-button" onclick="openContactForm()"><i class="fas fa-edit"></i></button>
+                <div class="contact-list" id="contact-list">
+                  <!-- Contacts will be loaded here -->
+                </div>
+                <button class="add-button" onclick="openContactForm()"><i class="fas fa-plus"></i> Add Contact</button>
+              </div>
+              <!-- Headquarters Card -->
+              <div class="metric-card medium-card">
+                <h3><i class="fas fa-map-marker-alt"></i> Headquarters</h3>
+                <p>456 SF Road, San Francisco, CA</p>
+                <h3><i class="fas fa-tags"></i> Supplier Category</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>Vehicle Maintenance Services</p>
+                <h3><i class="fas fa-briefcase"></i> Business Summary</h3>
+                <p>RapidRepair Inc. specializes in providing comprehensive vehicle maintenance and repair services for fleets across the United States, ensuring minimal downtime and high-quality workmanship.</p>
+              </div>
+              <!-- Services Card -->
+              <div class="metric-card medium-card">
+                <h3><i class="fas fa-boxes"></i> Services</h3>
+                <ul id="service-list">
+                  <!-- Services will be loaded here -->
+                </ul>
+                <button class="add-service-button" onclick="openServiceForm()"><i class="fas fa-plus"></i> Add Service</button>
+              </div>
+            </div>
+          </div>
+          <!-- Locations Section -->
+          <div class="section">
+            <h2>Locations</h2>
+            <div id="map" style="width: 100%; height: 400px;"></div>
+          </div>
+          <!-- Communication Log -->
+          <div class="section">
+            <h2>Communication Log</h2>
+            <ul>
+              <li>
+                <button class="edit-button"><i class="fas fa-arrow-right"></i></button>
+                <strong>July 2024:</strong> Discussed expansion of services to new regions
+              </li>
+              <li>
+                <button class="edit-button"><i class="fas fa-arrow-right"></i></button>
+                <strong>June 2024:</strong> Addressed service delay in Houston branch
+              </li>
+              <li>
+                <button class="edit-button"><i class="fas fa-arrow-right"></i></button>
+                <strong>May 2024:</strong> Quarterly performance review meeting
+              </li>
+            </ul>
+          </div>
+          <!-- Risk Assessment -->
+          <div class="section">
+            <h2>Risk Assessment</h2>
+            <div class="cards-container">
+              <div class="metric-card small-card">
+                <h3><i class="fas fa-tachometer-alt"></i> Risk Score</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>Low (30/100)</p>
+              </div>
+              <div class="metric-card small-card">
+                <h3><i class="fas fa-chart-area"></i> Financial Risk</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>Low</p>
+              </div>
+              <div class="metric-card small-card">
+                <h3><i class="fas fa-industry"></i> Operational Risk</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>Low</p>
+              </div>
+              <div class="metric-card small-card">
+                <h3><i class="fas fa-balance-scale"></i> Compliance Risk <span class="status-chip needs-attention">Alert</span></h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>Medium (pending certification renewal)</p>
+              </div>
+            </div>
+          </div>
+          <!-- Financial Data -->
+          <div class="section">
+            <h2>Financial Data</h2>
+            <div class="cards-container">
+              <div class="metric-card small-card">
+                <h3><i class="fas fa-chart-line"></i> Annual Revenue</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>$50 million</p>
+              </div>
+              <div class="metric-card small-card">
+                <h3><i class="fas fa-percentage"></i> Debt-to-Equity Ratio</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>0.2 (healthy)</p>
+              </div>
+              <div class="metric-card small-card">
+                <h3><i class="fas fa-credit-card"></i> Credit Score</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>A+ (from Experian)</p>
+              </div>
+              <div class="metric-card small-card">
+                <h3><i class="fas fa-history"></i> Payment History</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>Excellent, no delayed payments</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contracts Tab -->
+        <div id="contracts" class="tab-content">
+          <div class="section">
+            <h2>Active Contracts</h2>
+            <div class="contract-tree">
+              <!-- Parent Contract -->
+              <div class="parent-contract">
+                <div class="metric-card contract-card" onclick="selectContract('Master')">
+                  <h3>Master Service Agreement</h3>
+                  <button class="edit-button"><i class="fas fa-edit"></i></button>
+                  <p>Value: $5 million over 3 years</p>
+                  <p>Term: Jan 2022 – Dec 2024</p>
+                  <p>Renewal Date: Dec 2024</p>
+                </div>
+                <!-- Child Contracts -->
+                <div class="child-contracts">
+                  <div class="metric-card contract-card" onclick="selectContract('Oil')">
+                    <h3>Oil & Fluid Services Contract</h3>
+                    <button class="edit-button"><i class="fas fa-edit"></i></button>
+                    <p>Value: $2 million over 2 years</p>
+                    <p>Term: Jan 2022 – Dec 2023</p>
+                    <p>Renewal Date: Dec 2023</p>
+                  </div>
+                  <div class="metric-card contract-card" onclick="selectContract('Tire')">
+                    <h3>Tire Services Contract</h3>
+                    <button class="edit-button"><i class="fas fa-edit"></i></button>
+                    <p>Value: $1 million over 2 years</p>
+                    <p>Term: Jan 2022 – Dec 2023</p>
+                    <p>Renewal Date: Dec 2023</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Upload Tiles -->
+            <div class="child-contracts">
+              <div class="metric-card small-card" style="border: 1px dashed;">
+                <div class="upload-area">
+                  <p>Drop to upload contract here</p>
+                </div>
+              </div>
+              <div class="metric-card small-card"  style="border: 1px dashed;">
+                <div class="upload-area">
+                  <p>Link from Dropbox/Docusign</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compliance Tab -->
+        <div id="compliance" class="tab-content">
+          <div class="section">
+            <h2>Regulatory Compliance</h2>
+            <ul>
+              <li>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                Safety Regulations: Compliant with OSHA standards
+              </li>
+              <li>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                Environmental Standards: Meets EPA guidelines for waste disposal
+              </li>
+              <li>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                Labor Laws: Verified compliance with labor regulations
+              </li>
+            </ul>
+          </div>
+          <div class="section">
+            <h2>Certifications</h2>
+            <table>
+              <tr>
+                <th>Certification</th>
+                <th>Expiration Date</th>
+              </tr>
+              <tr>
+                <td>ISO 9001 (Quality Management)</td>
+                <td>Dec 2024</td>
+              </tr>
+              <tr>
+                <td>ISO 14001 (Environmental Management)</td>
+                <td>March 2025</td>
+              </tr>
+              <tr>
+                <td>Automotive Service Excellence (ASE)</td>
+                <td>July 2025</td>
+              </tr>
+              <tr>
+                <td>Health, Safety & Environmental (HSE) Compliance</td>
+                <td>Under Review</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Audit Tab -->
+        <div id="audit" class="tab-content">
+          <div class="section">
+            <h2>Audit History</h2>
+            <div class="cards-container">
+              <div class="metric-card">
+                <h3><i class="fas fa-calendar-check"></i> Last Audit Date</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>June 2024</p>
+              </div>
+              <div class="metric-card">
+                <h3><i class="fas fa-exclamation-circle"></i> Findings <span class="status-chip needs-attention">Alert</span></h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>Pending renewal of HSE compliance certification</p>
+              </div>
+              <div class="metric-card">
+                <h3><i class="fas fa-calendar-alt"></i> Next Scheduled Audit</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <p>December 2024</p>
+              </div>
+              <div class="metric-card">
+                <h3><i class="fas fa-tools"></i> Corrective Actions</h3>
+                <button class="edit-button"><i class="fas fa-edit"></i></button>
+                <ul>
+                  <li>Action: Complete HSE certification renewal process (in progress)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Automations Tab -->
+        <div id="automations" class="tab-content">
+          <div class="section">
+            <h2>Automations</h2>
+            <div class="cards-container">
+              <div class="metric-card">
+                <h3><i class="fas fa-clock"></i> Service Scheduling Automation</h3>
+                <button class="edit-button"><i class="fas fa-arrow-right"></i></button>
+                <p>Automatically schedule routine maintenance services based on vehicle usage data.</p>
+              </div>
+              <div class="metric-card">
+                <h3><i class="fas fa-wrench"></i> Predictive Maintenance Alerts</h3>
+                <button class="edit-button"><i class="fas fa-arrow-right"></i></button>
+                <p>Use AI to predict potential vehicle issues and alert for preemptive repairs.</p>
+              </div>
+              <div class="metric-card">
+                <h3><i class="fas fa-chart-pie"></i> Service Performance Analytics</h3>
+                <button class="edit-button"><i class="fas fa-arrow-right"></i></button>
+                <p>Automatically generate reports on service efficiency and downtime reduction.</p>
+              </div>
+              <div class="metric-card">
+                <h3><i class="fas fa-shield-alt"></i> Compliance Monitoring</h3>
+                <button class="edit-button"><i class="fas fa-arrow-right"></i></button>
+                <p>Automate monitoring of compliance certifications and alert for renewals.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Other tabs remain unchanged -->
+        <!-- Include other tab contents if necessary -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating chat icon -->
+  <div id="chat-icon" onclick="toggleChat()"><img src="../robot-icon.png" style="height:80px"></div>
+
+  <!-- Chat window -->
+  <div id="chat-window">
+    <div id="chat-header">
+      <span>FleetCaptain</span>
+      <span id="close-chat" onclick="toggleChat()">✖</span>
+    </div>
+    <div id="chat-messages"></div>
+    <!-- Loading indicator -->
+    <div id="loading-indicator">
+      <div class="spinner"></div>
+    </div>
+    <div id="chat-input-container">
+      <input type="text" id="chat-input" placeholder="Ask a question about this data..." onkeypress="handleKeyPress(event)">
+      <button id="send-button" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- Contact Form Modal -->
+  <div id="contact-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeContactForm()">&times;</span>
+      <h2>Add/Edit Contact</h2>
+      <form id="contact-form">
+        <input type="hidden" id="contact-index">
+        <label for="contact-name">Name*</label>
+        <input type="text" id="contact-name" required>
+        <label for="contact-email">Email*</label>
+        <input type="email" id="contact-email" required>
+        <label for="contact-phone">Phone</label>
+        <input type="text" id="contact-phone">
+        <label for="contact-title">Title</label>
+        <input type="text" id="contact-title">
+        <label for="contact-type">Type</label>
+        <select id="contact-type">
+          <option value="Commercial">Commercial</option>
+          <option value="Operational">Operational</option>
+          <option value="Client Specific">Client Specific</option>
+        </select>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Service Form Modal -->
+  <div id="service-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeServiceForm()">&times;</span>
+      <h2>Add/Edit Service</h2>
+      <form id="service-form">
+        <input type="hidden" id="service-index">
+        <label for="service-name">Service Name</label>
+        <input type="text" id="service-name" required>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function getParameterByName(name) {
+      name = name.replace(/[\[\]]/g, "\\$&");
+      var url = window.location.href;
+      var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    // Get the tab name from the URL parameter
+    document.addEventListener('DOMContentLoaded', () => {
+        var tabName = getParameterByName('tabname');
+        console.log(tabName);
+        if (tabName) {
+            // Trigger openTab with the tabName
+            openTab(tabName);
+        }
+    });
+
+    function openTab(tabName) {
+      var i, tabcontent, tabbuttons;
+
+      if (tabName === "intelligence") {
+          window.location.href = "rapidrepair-intelligence.html";
+          return; // Exit the function since we're navigating away
+      }
+
+      // Hide all tab contents
+      tabcontent = document.getElementsByClassName("tab-content");
+      for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].classList.remove("active");
+      }
+
+      // Remove "active" class from all buttons
+      tabbuttons = document.querySelectorAll(".tab-buttons button");
+      for (i = 0; i < tabbuttons.length; i++) {
+          tabbuttons[i].classList.remove("active");
+      }
+      
+      // Set the correct tab content to active
+      var selectedTab = document.getElementById(tabName);
+      if (selectedTab) {
+          selectedTab.classList.add("active");
+      }
+
+      // Set the correct button to active
+      var targetButton = document.querySelector(`.tab-buttons button[onclick="openTab('${tabName}')"]`);
+      if (targetButton) {
+          targetButton.classList.add("active");
+      }
+    }
+
+    // Contacts Data
+    var contacts = [
+      {
+        name: 'Bob Johnson',
+        email: 'bob.johnson@rapidrepair.com',
+        phone: '(555) 987-6543',
+        title: 'Operations Lead',
+        type: 'Operational'
+      },
+      {
+        name: 'Carol Lee',
+        email: 'carol.lee@rapidrepair.com',
+        phone: '(555) 555-5555',
+        title: 'Client Relations',
+        type: 'Client Specific'
+      }
+    ];
+
+    // Services Data
+    var services = ['Oil Changes', 'Fluid Services', 'Tire Services'];
+
+    var additionalServices = ['Brake Services', 'Battery Services', 'Filter Replacement', 'Inspections', 'Emissions Testing'];
+
+    // Load Contacts
+    function loadContacts() {
+      var contactList = document.getElementById('contact-list');
+      contactList.innerHTML = '';
+      contacts.forEach(function(contact, index) {
+        var contactItem = document.createElement('div');
+        contactItem.className = 'contact-item';
+        contactItem.innerHTML = `
+          <p><strong>Name:</strong> ${contact.name}</p>
+          <p><strong>Email:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>
+          <p><strong>Phone:</strong> ${contact.phone}</p>
+          <p><strong>Title:</strong> ${contact.title}</p>
+          <p><strong>Type:</strong> ${contact.type}</p>
+          <button class="edit-button" onclick="editContact(${index})"><i class="fas fa-edit"></i></button>
+        `;
+        contactList.appendChild(contactItem);
+      });
+    }
+
+    // Load Services
+    function loadServices() {
+      var serviceList = document.getElementById('service-list');
+      serviceList.innerHTML = '';
+      services.forEach(function(service, index) {
+        var li = document.createElement('li');
+        li.textContent = service;
+        li.appendChild(createServiceEditButton(index));
+        serviceList.appendChild(li);
+      });
+    }
+
+    function createServiceEditButton(index) {
+      var button = document.createElement('button');
+      button.className = 'edit-button';
+      button.innerHTML = '<i class="fas fa-edit"></i>';
+      button.onclick = function() {
+        editService(index);
+      };
+      return button;
+    }
+
+    // Open Contact Form
+    function openContactForm() {
+      document.getElementById('contact-modal').style.display = 'block';
+      document.getElementById('contact-form').reset();
+      document.getElementById('contact-index').value = '';
+    }
+
+    // Close Contact Form
+    function closeContactForm() {
+      document.getElementById('contact-modal').style.display = 'none';
+    }
+
+    // Save Contact
+    document.getElementById('contact-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      var index = document.getElementById('contact-index').value;
+      var contact = {
+        name: document.getElementById('contact-name').value,
+        email: document.getElementById('contact-email').value,
+        phone: document.getElementById('contact-phone').value,
+        title: document.getElementById('contact-title').value,
+        type: document.getElementById('contact-type').value
+      };
+      if (index) {
+        contacts[index] = contact;
+      } else {
+        contacts.push(contact);
+      }
+      loadContacts();
+      closeContactForm();
+    });
+
+    // Edit Contact
+    function editContact(index) {
+      var contact = contacts[index];
+      document.getElementById('contact-index').value = index;
+      document.getElementById('contact-name').value = contact.name;
+      document.getElementById('contact-email').value = contact.email;
+      document.getElementById('contact-phone').value = contact.phone;
+      document.getElementById('contact-title').value = contact.title;
+      document.getElementById('contact-type').value = contact.type;
+      document.getElementById('contact-modal').style.display = 'block';
+    }
+
+    // Open Service Form
+    function openServiceForm() {
+      document.getElementById('service-modal').style.display = 'block';
+      document.getElementById('service-form').reset();
+      document.getElementById('service-index').value = '';
+    }
+
+    // Close Service Form
+    function closeServiceForm() {
+      document.getElementById('service-modal').style.display = 'none';
+    }
+
+    // Save Service
+    document.getElementById('service-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      var index = document.getElementById('service-index').value;
+      var serviceName = document.getElementById('service-name').value;
+      if (index) {
+        services[index] = serviceName;
+      } else {
+        services.push(serviceName);
+      }
+      loadServices();
+      closeServiceForm();
+    });
+
+    // Edit Service
+    function editService(index) {
+      var serviceName = services[index];
+      document.getElementById('service-index').value = index;
+      document.getElementById('service-name').value = serviceName;
+      document.getElementById('service-modal').style.display = 'block';
+    }
+
+    // Map Initialization
+    function initMap() {
+      // The locations
+      const locations = [
+        {lat: 34.0522, lng: -118.2437, city: 'Los Angeles', address: '123 LA Street, Los Angeles, CA', services: ['Oil Changes', 'Brake Services']},
+        {lat: 37.7749, lng: -122.4194, city: 'San Francisco', address: '456 SF Road, San Francisco, CA', services: ['Tire Services', 'Battery Services']},
+        {lat: 32.7157, lng: -117.1611, city: 'San Diego', address: '789 SD Blvd, San Diego, CA', services: ['Fluid Services', 'Filter Replacement']},
+        {lat: 36.7783, lng: -119.4179, city: 'Fresno', address: '101 Fresno Ave, Fresno, CA', services: ['Inspections', 'Emissions Testing']},
+        {lat: 38.5816, lng: -121.4944, city: 'Sacramento', address: '202 Sacramento St, Sacramento, CA', services: ['Oil Changes', 'Tire Services']},
+        // Add more locations as needed
+      ];
+
+      // The map, centered at California center
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 6,
+        center: {lat: 36.7783, lng: -119.4179}, // Center of California
+      });
+
+      // Add markers
+      locations.forEach(location => {
+        const marker = new google.maps.Marker({
+          position: {lat: location.lat, lng: location.lng},
+          map: map,
+          title: location.city
+        });
+
+        const infowindow = new google.maps.InfoWindow({
+          content: `
+            <div>
+              <h3>${location.city}</h3>
+              <p><strong>Address:</strong> ${location.address}</p>
+              <p><strong>Services:</strong> ${location.services.join(', ')}</p>
+            </div>
+          `
+        });
+
+        marker.addListener('click', function() {
+          infowindow.open(map, marker);
+        });
+      });
+    }
+
+    // Contracts Data
+    const contractData = {
+      'Master': {
+        documents: [
+          { name: 'Master Service Agreement', type: 'contract' },
+          { name: 'Insurance Certificate', type: 'certificate' }
+        ]
+      },
+      'Oil': {
+        documents: [
+          { name: 'Oil Services Contract', type: 'contract' },
+          { name: 'Oil Services Price List', type: 'pricing' }
+        ]
+      },
+      'Tire': {
+        documents: [
+          { name: 'Tire Services Contract', type: 'contract' },
+          { name: 'Tire Services Price List', type: 'pricing' }
+        ]
+      }
+    };
+
+    function selectContract(contractName) {
+      // Get the documents for the selected contract
+      const documents = contractData[contractName].documents;
+
+      // Get the document list element
+      const documentList = document.getElementById('document-list');
+
+      // Clear the previous documents
+      documentList.innerHTML = '';
+
+      // Add animation class
+      documentList.classList.add('fade-in');
+
+      // Populate the document list
+      documents.forEach(doc => {
+        const li = document.createElement('li');
+        li.innerHTML = `<button class="edit-button"><i class="fas fa-arrow-down"></i></button> ${doc.name}`;
+        documentList.appendChild(li);
+      });
+
+      // Remove animation class after animation ends
+      documentList.addEventListener('animationend', () => {
+        documentList.classList.remove('fade-in');
+      });
+    }
+
+    // Initialize Contacts and Services
+    loadContacts();
+    loadServices();
+
+    // Close Modals when clicking outside
+    window.onclick = function(event) {
+      var contactModal = document.getElementById('contact-modal');
+      var serviceModal = document.getElementById('service-modal');
+      if (event.target == contactModal) {
+        contactModal.style.display = "none";
+      }
+      if (event.target == serviceModal) {
+        serviceModal.style.display = "none";
+      }
+    }
+  </script>
+  <!-- Load the Google Maps API -->
+  <script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEV5Cc-vgKHI1NuYVxwk8K2HNFvx_a7fs&callback=initMap">
+  </script>
+</body>
+</html>

@@ -54,22 +54,22 @@ body {
 .nav-item i {
   margin-right: 8px;
 }
-    .profile-header {
-      display: flex;
-      align-items: center;
-      padding: 5px 20px;
-      background: #fafafa;
-      border-bottom: 2px solid #eaeaea;
-    }
-    .profile-header h1 {
-      margin: 0;
-      font-size: 20px;
-      color: #333;
-    }
-    .profile-header p {
-      margin: 5px 0 0 0;
-      color: #777;
-    }
+.profile-header {
+  display: flex;
+  align-items: center;
+  padding: 5px 20px;
+  background: #fafafa;
+  border-bottom: 2px solid #eaeaea;
+}
+.profile-header h1 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+.profile-header p {
+  margin: 5px 0 0 0;
+  color: #777;
+}
 .tab-container {
   padding: 0 20px;
 }
@@ -234,7 +234,6 @@ body {
     margin-right: 0;
   }
 }
-
 .priority-chip {
   display: inline-block;
   padding: 5px 10px;
@@ -276,34 +275,27 @@ p {
 .status-chip.needs-attention {
   background-color: #f44336;
 }
-
 /* Animations */
 .fade-in {
   animation: fadeIn 0.5s;
 }
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
 .slide-in {
   animation: slideIn 0.5s;
 }
-
 @keyframes slideIn {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-
 .contract-card {
   transition: background-color 0.3s;
 }
-
 .contract-card:hover {
   background-color: #f0f0f0;
 }
-
 #contract-details {
   max-width: 60%;
   background: white;
@@ -311,11 +303,152 @@ p {
   margin: 0px auto;
   font-family: serif;
 }
-
 #inactive-arrow {
   margin-left: 10px;
 }
-
 .small-card {
   max-width: 15%;
 }
+.medium-card {
+  max-width: 25%;
+}
+/* New Styles for Contacts */
+.contact-list {
+  margin-top: 10px;
+}
+.contact-item {
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+.add-button, .add-service-button {
+  margin-top: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.add-button i, .add-service-button i {
+  margin-right: 5px;
+}
+.add-button:hover, .add-service-button:hover {
+  background-color: #45a049;
+}
+/* Styles for Contract Tree */
+.contract-tree {
+  display: flex;
+  flex-direction: column;
+}
+.parent-contract {
+  position: relative;
+}
+.child-contracts {
+  display: flex;
+}
+.child-contracts .metric-card {
+  margin-right: 20px;
+}
+/* Map Container */
+#map {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+/* Service List */
+.metric-card ul {
+  margin-top: 10px;
+}
+
+
+/* Modal Overlay */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+  transition: opacity 0.3s ease;
+}
+
+/* Modal Content Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 10% auto; /* 10% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  max-width: 500px; /* Maximum width */
+  border-radius: 8px;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Close Button */
+.modal .close {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal .close:hover,
+.modal .close:focus {
+  color: #000;
+  text-decoration: none;
+}
+
+/* Form Styles Inside Modal */
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content label {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-content button[type="submit"] {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #007BFF; /* Primary color */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.modal-content button[type="submit"]:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 600px) {
+  .modal-content {
+    width: 95%;
+    margin: 20% auto;
+  }
+}
+
