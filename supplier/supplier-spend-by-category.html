@@ -347,6 +347,8 @@
         </div>
       </div>
 
+      <h2 style="border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin: 20px; margin-bottom: 0px; font-size: 22px;"> Type  </h2>
+
       <!-- By Category View -->
       <div id="category-view">
         <div class="swimlane-container vertical">
@@ -483,6 +485,29 @@
               </div>
             </div>
           </div>
+
+          <h2 style="border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin: 20px; margin-bottom: 0px; font-size: 22px;">Diversity</h2>
+
+          <!-- New Swimlane for Diversity -->
+          <div class="swimlane">
+            <!-- Tiles in a row -->
+            <div class="tile-row">
+              <div class="tile">
+                <h3>Spend Split by Diversity Type</h3>
+                <canvas id="diversity-pie-chart"></canvas>
+              </div>
+              <div class="tile">
+                <h3>Top 10 Customers by Spend on Diverse Suppliers</h3>
+                <table id="diversity-table"></table>
+              </div>
+              <div class="tile">
+                <h3>Top 10 Suppliers by Spend</h3>
+                <canvas id="diversity-bar-chart" height="300"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- End of Diversity Swimlane -->
+
         </div>
       </div>
 
@@ -781,13 +806,190 @@
         case 'General Motors':
           return 'profile/general-motors.html';
         case 'RapidRepair Inc.':
-          return 'supplier-rapidrepair.html';
+          return 'profile/rapidrepair.html';
         case 'Transport Pro':
           return 'supplier-transport-pro.html';
         default:
           return '#';
       }
     }
+
+    // Data for Diversity
+    var diversityData = {
+      spendByType: {
+        labels: ['Women-Owned', 'Minority-Owned', 'Veteran-Owned', 'Disability-Owned', 'Small Business'],
+        data: [20000000, 15000000, 5000000, 3000000, 7000000]
+      },
+      topCustomersMinority: [
+        { customer: 'Amazon', spendAmount: 7000000 },
+        { customer: 'PepsiCo', spendAmount: 5000000 },
+        { customer: 'Walmart', spendAmount: 3000000 },
+        { customer: 'IKEA', spendAmount: 3000000 },
+        { customer: 'Google', spendAmount: 3000000 },
+        { customer: 'Apple', spendAmount: 3000000 },
+        { customer: 'Coca-Cola', spendAmount: 3000000 },
+        { customer: 'Tesla', spendAmount: 3000000 },
+        { customer: 'Johnson Controls', spendAmount: 3000000 },
+        { customer: 'Microsoft', spendAmount: 3000000 }
+      ],
+      topSuppliersBySpend: [
+        { supplier: 'Aspire Ventures', spendAmount: 5000000, diversityType: 'Women-Owned' },
+        { supplier: 'Phoenix Supply Co.', spendAmount: 4500000, diversityType: 'Minority-Owned' },
+        { supplier: 'Patriot Solutions', spendAmount: 3500000, diversityType: 'Veteran-Owned' },
+        { supplier: 'Inspire Services LLC', spendAmount: 3000000, diversityType: 'Disability-Owned' },
+        { supplier: 'NextGen Innovations', spendAmount: 2500000, diversityType: 'Small Business' },
+        { supplier: 'Summit Distribution', spendAmount: 2000000, diversityType: 'Minority-Owned' },
+        { supplier: 'Bright Horizons Group', spendAmount: 1500000, diversityType: 'Women-Owned' },
+        { supplier: 'Valor Industries', spendAmount: 1000000, diversityType: 'Veteran-Owned' },
+        { supplier: 'Pioneer Trading LLC', spendAmount: 800000, diversityType: 'Small Business' },
+        { supplier: 'Equity Enterprises', spendAmount: 700000, diversityType: 'Disability-Owned' }
+      ]
+    };
+
+    // Function to render Diversity Pie Chart
+    function renderDiversityPieChart() {
+      var ctx = document.getElementById('diversity-pie-chart').getContext('2d');
+      var data = diversityData.spendByType;
+      var chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            data: data.data,
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#cc65fe', '#ff9f40']
+          }]
+        },
+        options: {
+          title: {
+            display: true,
+            text: 'Spend Split by Diversity Type'
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  var label = data.labels[tooltipItem.dataIndex];
+                  var value = data.data[tooltipItem.dataIndex];
+                  return label + ': ' + formatCurrency(value);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Function to render Diversity Table
+    function renderDiversityTable() {
+      var table = document.getElementById('diversity-table');
+      // Clear any existing content
+      table.innerHTML = '';
+      // Create table headers
+      var headerRow = document.createElement('tr');
+      var headers = ['Customer', 'Spend Amount'];
+      headers.forEach(function(header) {
+        var th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      });
+      table.appendChild(headerRow);
+
+      // Populate table rows
+      diversityData.topCustomersMinority.forEach(function(customer) {
+        var row = document.createElement('tr');
+        var customerCell = document.createElement('td');
+        customerCell.innerHTML = '<a href="#" style="text-decoration: none; color: #22aaff">' + customer.customer + '</a>';
+        var spendCell = document.createElement('td');
+        spendCell.textContent = formatCurrency(customer.spendAmount);
+        row.appendChild(customerCell);
+        row.appendChild(spendCell);
+        table.appendChild(row);
+      });
+    }
+
+    // Function to render Diversity Bar Chart
+    function renderDiversityBarChart() {
+      var ctx = document.getElementById('diversity-bar-chart').getContext('2d');
+      var data = diversityData.topSuppliersBySpend;
+
+      var labels = data.map(function(item) { return item.supplier; });
+      var spendData = data.map(function(item) { return item.spendAmount; });
+      var diversityTypes = data.map(function(item) { return item.diversityType; });
+
+      var backgroundColors = diversityTypes.map(function(type) {
+        switch (type) {
+          case 'Women-Owned':
+            return '#FF6384';
+          case 'Minority-Owned':
+            return '#36A2EB';
+          case 'Veteran-Owned':
+            return '#FFCE56';
+          case 'Disability-Owned':
+            return '#cc65fe';
+          case 'Small Business':
+            return '#ff9f40';
+          default:
+            return '#CCCCCC';
+        }
+      });
+
+      var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Spend Amount',
+            data: spendData,
+            backgroundColor: backgroundColors
+          }]
+        },
+        options: {
+          title: {
+            display: true,
+            text: 'Top 10 Suppliers by Spend'
+          },
+          plugins: {
+            legend: {
+              display: false  // Hides the legend
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  var value = spendData[tooltipItem.dataIndex];
+                  var diversityType = diversityTypes[tooltipItem.dataIndex];
+                  return labels[tooltipItem.dataIndex] + ' (' + diversityType + '): ' + formatCurrency(value);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Spend Amount'
+              },
+              ticks: {
+                callback: function(value) {
+                  return formatCurrency(value);
+                }
+              }
+            },
+            x: {
+              title: {
+                display: false,
+                text: 'Supplier'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Render Diversity Charts and Table
+    renderDiversityPieChart();
+    renderDiversityTable();
+    renderDiversityBarChart();
 
   </script>
 </body>
