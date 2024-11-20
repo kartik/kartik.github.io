@@ -645,8 +645,8 @@
   var supplierNames = [
     'Honda', 'Tesla', 'Volkswagen', 'BMW', 'Daimler AG', 'Fiat Chrysler Automobiles', 'Nissan', 'Hyundai', 'Kia Motors', 'Subaru',
     'Mazda', 'Mitsubishi Motors', 'Suzuki', 'Renault', 'Peugeot', 'Citroen', 'Volvo', 'Jaguar Land Rover', 'Aston Martin',
-    'Bentley Motors', 'Rolls-Royce', 'Ferrari', 'Lamborghini', 'Elite Repairs', 'Quick Fix Auto', 'RapidRepair Inc.',
-    'AutoPro Service Center', 'DriveTime Repairs', 'Secure Storage Solutions', 'AutoVault Storage', 'Metro Vehicle Storage',
+    'Bentley Motors', 'Rolls-Royce', 'Ferrari', 'Lamborghini', 'Elite Repairs', 'Quick Fix Auto', 'Secure Storage Solutions',
+    'AutoPro Service Center', 'DriveTime Repairs', 'RapidRepair Inc.', 'AutoVault Storage', 'Metro Vehicle Storage',
     'ParkSafe Facilities', 'EZ Storage', 'Fast Transport', 'Express Logistics', 'Swift Haulage', 'Global Transport Services',
     'Transworld Logistics', 'Precision Inspection', 'Quality Check Services', 'Auto Inspectors Inc.', 'Certified Vehicle Inspection',
     'AutoCheck Solutions', 'TitlePro Services', 'Auto Registrations LLC', 'QuickTitle Solutions', 'Vehicle Documentation Services',
@@ -758,7 +758,6 @@
         return `<tr>
           <td><a href="${supplierURL}" rel="noopener noreferrer">${supplier.supplier}</a></td>
           <td><span class="risk-chip" style="background-color: ${riskColor};">${supplier.risk}</span></td>
-          <td><a href="#">${supplier.alerts}</a></td>
           <td>${supplier.supplierType}</td>
           <td>${supplier.country}</td>
           <td>${supplier.startOfContract}</td>
@@ -775,7 +774,6 @@
           <tr>
             <th>Supplier Name</th>
             <th>Risk</th>
-            <th>Alerts</th>
             <th>Category</th>
             <th>Country</th>
             <th>Contract Start</th>
