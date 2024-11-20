@@ -8,6 +8,7 @@
   <link rel="shortcut icon"
     href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="chatbot.css">
   <title>Ridecell Supplier Intelligence Hub</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -515,6 +516,26 @@
     </div>
   </div>
 
+  <!-- Floating chat icon -->
+  <div id="chat-icon" onclick="toggleChat()"><img src="robot-icon.png" style="height:80px"></div>
+
+  <!-- Chat window -->
+  <div id="chat-window">
+    <div id="chat-header">
+      <span>FleetCaptain</span>
+      <span id="close-chat" onclick="toggleChat()">✖</span>
+    </div>
+    <div id="chat-messages"></div>
+    <!-- Loading indicator -->
+    <div id="loading-indicator">
+      <div class="spinner"></div>
+    </div>
+    <div id="chat-input-container">
+      <input type="text" id="chat-input" placeholder="Ask a question about this data..." onkeypress="handleKeyPress(event)">
+      <button id="send-button" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
   <!-- Include scripts to render charts and tables -->
   <script>
     document.getElementById("byLifecycleButton").addEventListener("click", function() {
@@ -993,5 +1014,7 @@
     renderDiversityBarChart();
 
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="chatbot.js"></script>
 </body>
 </html>
