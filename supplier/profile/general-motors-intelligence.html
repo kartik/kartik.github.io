@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Supplier Profile - General Motors</title>
+  <title>Ridecell Supplier Intelligence Hub - General Motors</title>
   <link rel="shortcut icon" href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
   <!-- Include Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -366,6 +366,7 @@
         <button class="active" onclick="openTab(event, 'intelligence')"><i class="fas fa-lightbulb"></i>Intelligence</button>
         <button onclick="openTab(event, 'compliance')"><i class="fas fa-shield-alt"></i>Compliance</button>
         <button onclick="openTab(event, 'audit')"><i class="fas fa-search"></i>Audit</button>
+        <button onclick="openTab(event, 'transactions')"><i class="fas fa-exchange-alt"></i>Transactions</button>
         <button onclick="openTab(event, 'sustainability')"><i class="fas fa-gift"></i>Incentives</button>
         <button onclick="openTab(event, 'automations')"><i class="fas fa-robot"></i>Automations</button>
       </div>
@@ -378,7 +379,7 @@
         <!-- Card 1: Total Spend YTD -->
         <div class="card">
           <div class="tooltip">
-            <h3>Total Spend YTD</h3>
+            <h3><a class="link" href="general-motors-transactions.html?transactionType=invoice&invoiceStatus=paid">Total Spend YTD →</a></h3>
             <span class="tooltiptext">Total amount spent on purchases from this supplier year-to-date.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">$120,500,000</p>
@@ -393,7 +394,7 @@
         <!-- Card 2: Units Ordered YTD -->
         <div class="card">
           <div class="tooltip">
-            <h3>Units Ordered YTD</h3>
+            <h3><a class="link" href="general-motors-transactions.html?transactionType=invoice&transactionSubType=units">Units Ordered YTD →</a></h3>
             <span class="tooltiptext">Total number of units ordered from this supplier year-to-date.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">15,250</p>
@@ -473,7 +474,7 @@
         <!-- Card 6: OEM Incentive Reconciliation -->
         <div class="card">
           <div class="tooltip">
-            <h3>OEM Incentive Reconciliation</h3>
+            <h3><a class="link" href="general-motors-transactions.html?transactionType=incentive&incentiveReconciliation=missing">OEM Incentive Reconciliation →</a></h3>
             <span class="tooltiptext">Accuracy in reconciling rebates and incentives from the supplier.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">75%</p>
@@ -1411,10 +1412,15 @@
     function openTab(evt, tabName) {
       var i, tabcontent, tabbuttons;
 
+      if (tabName === "transactions") {
+          window.location.href = "general-motors-transactions.html";
+          return; // Exit the function since we're navigating away
+      }
       if (tabName != "intelligence") {
         window.location.href = "general-motors.html?tabname=" + tabName;
         return; // Exit the function since we're navigating away
       }
+      
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>

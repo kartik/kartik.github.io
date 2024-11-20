@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon"
+    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <title>Ridecell Supplier Intelligence Hub - General Motors</title>
+  <link rel="stylesheet" href="../chatbot.css">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .header .highlight {
+      font-weight: bold;
+      color: #3d76e9;
+    }
+    .summary {
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: #d4f5d1;
+      color: #4caf50;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+    .summary span.unusual {
+      background-color: #ffe6e6;
+      color: #f44336;
+    }
+    .filters {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      background-color: #fff;
+      border-bottom: 1px solid #eaeaea;
+    }
+    .filters label {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .filters select {
+      margin-right: 20px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+    .filters select:focus {
+      outline: none;
+      border-color: #3d76e9;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding: 20px;
+    }
+    .metric-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .metric-header {
+      font-size: 16px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .metric-header .normal {
+      background-color: #3d76e9;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-header .unusual {
+      background-color: #f44336;
+      color: white;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 5px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .metric-value {
+      font-size: 28px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .metric-change {
+      color: #4caf50;
+      margin-bottom: 15px;
+    }
+    .metric-info {
+      font-size: 15px;
+      color: #777;
+      padding-top: 10px;
+    }
+    .navbar-container {
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+    #tabs {
+      width: 78px;
+      flex-shrink: 0;
+      box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+      z-index: 3;
+      background: white;
+    }
+    #content-container {
+      flex-grow: 1;
+      display: inline-block;
+      background: #f4f4f9;
+    }
+    .subnav {
+      display: flex;
+      align-items: center;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+      justify-content: space-between;
+      padding-right: 20px;
+    }
+    .nav-item {
+      font-size: 14px;
+      color: #666666;
+      cursor: pointer;
+      padding: 20px;
+      text-decoration: none;
+    }
+    .nav-item.logo {
+      font-weight: bold;
+      color: #000000;
+      font-size: 22px;
+    }
+    .nav-item.active {
+      color: #000000;
+      border-bottom: 4px solid #4CAF50;
+      background-color: hsl(105deg 35.29% 93.33%);
+      padding: 30px 20px 24px;
+    }
+    .link {
+      text-decoration: none;
+      color: #22aaff;
+    }
+    #side-panel {
+      padding: 20px;
+      position: absolute;
+      left: 78px;
+      top: 185px;
+      width: 180px;
+    }
+    #side-panel .filter-group {
+      margin-bottom: 20px;
+    }
+    #side-panel .filter-group strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    #side-panel .filter-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #main-container {
+      margin-left: 205px;
+      padding: 20px;
+    }
+    #table-container table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+    }
+    #table-container th, #table-container td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    #table-container th {
+      background-color: #f9fafb;
+    }
+    .status-chip {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+    }
+    a {
+      text-decoration: none;
+      color: #22aaff;
+    }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 5;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 800px;
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+    .close-button {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close-button:hover,
+    .close-button:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .modal h2 {
+      margin-top: 0;
+    }
+    .modal section {
+      margin-bottom: 20px;
+    }
+    .filter-badge {
+      display: inline-block;
+      background-color: #e0f7fa;
+      color: #00796b;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .stats {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 20px;
+    }
+    .stat-card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      flex: 1;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .stat-card h3 {
+      margin: 0 0 10px 0;
+    }
+    .stat-card p {
+      font-size: 24px;
+      margin: 0;
+      font-weight: bold;
+    }
+    .summary {
+      font-size: 14px;
+    }
+    .summary span {
+      display: inline-block;
+      background-color: gray;
+      color: white;
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      padding: 0 20px;
+    }
+    .tab-buttons button {
+      background: none;
+      border: none;
+      padding: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      border-bottom: 4px solid transparent;
+      display: flex;
+      align-items: center;
+    }
+    .tab-buttons button.active {
+      border-bottom-color: #4CAF50;
+      font-weight: bold;
+    }
+    .tab-buttons button i {
+      margin-right: 8px;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      padding: 5px 20px;
+      background: #fafafa;
+      border-bottom: 2px solid #eaeaea;
+    }
+    .profile-header h1 {
+      margin: 0;
+      font-size: 20px;
+      color: #333;
+    }
+    .profile-header p {
+      margin: 5px 0 0 0;
+      color: #777;
+    }
+    .priority-chip {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .high-priority {
+      background-color: #f44336;
+    }
+    .medium-priority {
+      background-color: #ff9800;
+    }
+    .low-priority {
+      background-color: #4caf50;
+    }
+    .info-priority {
+      background-color: gray;
+      margin-left: 10px;
+    }
+    </style>
+</head>
+<body>
+  <div class="navbar-container">
+    <img id="navbar" src="../../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="profile-header">
+        <img src="../back.png" onclick="window.location.href = '../suppliers.html'" style="width:48px; cursor: pointer;">
+        <h1>General Motors</h1>
+        <span class="priority-chip low-priority">Active</span>
+        <span class="priority-chip info-priority">OEM</span>
+        <span class="priority-chip info-priority">Contract End: Dec, 2025</span>
+        <span class="priority-chip info-priority">Internal Contact: Jane Smith</span>
+      </div>
+
+      <div class="tab-buttons">
+        <button onclick="openTab(event, 'overview')"><i class="fas fa-info-circle"></i>Overview</button>
+        <button onclick="openTab(event, 'contracts')"><i class="fas fa-file-contract"></i>Contracts</button>
+        <button onclick="openTab(event, 'intelligence')"><i class="fas fa-lightbulb"></i>Intelligence</button>
+        <button onclick="openTab(event, 'compliance')"><i class="fas fa-shield-alt"></i>Compliance</button>
+        <button onclick="openTab(event, 'audit')"><i class="fas fa-search"></i>Audit</button>
+        <button class="active" onclick="openTab(event, 'transactions')"><i class="fas fa-exchange-alt"></i>Transactions</button>
+        <button onclick="openTab(event, 'sustainability')"><i class="fas fa-gift"></i>Incentives</button>
+        <button onclick="openTab(event, 'automations')"><i class="fas fa-robot"></i>Automations</button>
+      </div>
+      <div>
+        <div id="side-panel">
+          <div class="filter-group">
+            <strong>Transaction Type</strong>
+            <label><input type="checkbox" name="transactionType" value="Invoice"> Invoice</label>
+            <label><input type="checkbox" name="transactionType" value="Incentive"> Incentive</label>
+          </div>
+          <div class="filter-group">
+            <strong>Transaction SubType</strong>
+            <label><input type="checkbox" name="transactionSubType" value="Units"> Units</label>
+            <label><input type="checkbox" name="transactionSubType" value="Parts"> Parts</label>
+          </div>
+          <div class="filter-group">
+            <strong>Invoice Status</strong>
+            <label><input type="checkbox" name="invoiceStatus" value="Paid"> Paid</label>
+            <label><input type="checkbox" name="invoiceStatus" value="Pending"> Pending</label>
+            <label><input type="checkbox" name="invoiceStatus" value="Refunded"> Refunded</label>
+          </div>
+          <div class="filter-group">
+            <strong>Incentive Reconciliation</strong>
+            <label><input type="checkbox" name="incentiveReconciliation" value="Reconciled"> Reconciled</label>
+            <label><input type="checkbox" name="incentiveReconciliation" value="Missing"> Missing</label>
+          </div>
+        </div>
+        <div id="main-container">
+          <div id="filter-badges"></div>
+          <div class="stats">
+            <div class="stat-card">
+              <h3>Transactions</h3>
+              <p id="total-transactions">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Units</h3>
+              <p id="total-units">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Invoiced Amount</h3>
+              <p id="total-invoiced-amount">$0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Incentive Revenue</h3>
+              <p id="total-incentive-amount">$0</p>
+            </div>
+          </div>
+          <div id="table-container">
+            <!-- Table will be rendered here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div id="modal" class="modal">
+        <div class="modal-content">
+          <span class="close-button" id="close-modal">&times;</span>
+          <h2>Transaction Details</h2>
+          <div id="modal-content">
+            <!-- Modal details will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Floating chat icon -->
+  <div id="chat-icon" onclick="toggleChat()"><img src="../robot-icon.png" style="height:80px"></div>
+
+  <!-- Chat window -->
+  <div id="chat-window">
+    <div id="chat-header">
+      <span>FleetCaptain</span>
+      <span id="close-chat" onclick="toggleChat()">✖</span>
+    </div>
+    <div id="chat-messages"></div>
+    <!-- Loading indicator -->
+    <div id="loading-indicator">
+      <div class="spinner"></div>
+    </div>
+    <div id="chat-input-container">
+      <input type="text" id="chat-input" placeholder="Ask a question about this data..." onkeypress="handleKeyPress(event)">
+      <button id="send-button" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
+  <script>
+    const contactFirstNames = ['John', 'Jane', 'Bob', 'Alice', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Jennifer'];
+    const contactLastNames = ['Doe', 'Smith', 'Johnson', 'Williams', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor'];
+
+    function generateRandomData() {
+      const transactions = [];
+      const dateRangeStart = new Date('2024-01-01');
+      const dateRangeEnd = new Date('2024-11-15');
+
+      // Generate 30 invoices
+      const totalInvoiceAmount = 120500000;
+      const totalUnitsOrdered = 15250;
+      let invoiceAmountRemaining = totalInvoiceAmount;
+      let unitsRemaining = totalUnitsOrdered;
+      const invoiceStatuses = ['Paid', 'Pending', 'Refunded'];
+      const invoiceSubTypes = ['Units', 'Parts'];
+
+      for (let i = 0; i < 30; i++) {
+        const transaction = {};
+        transaction.transactionId = 'INV' + (10000 + i);
+
+        // Dates
+        const timeDiff = dateRangeEnd.getTime() - dateRangeStart.getTime();
+        const randomTime = dateRangeStart.getTime() + (i / 30) * timeDiff;
+        transaction.transactionDate = new Date(randomTime);
+        transaction.dueDate = new Date(transaction.transactionDate);
+        transaction.dueDate.setDate(transaction.transactionDate.getDate() + 30);
+
+        // Transaction details
+        transaction.transactionType = 'Invoice';
+        transaction.status = 'Paid'; // All invoices are 'Paid' to sum up to total amount
+
+        // Alternate between 'Units' and 'Parts' for subtype
+        transaction.transactionSubType = i < 25 ? 'Units' : 'Parts';
+
+        if (transaction.transactionSubType === 'Units') {
+          let units;
+          if (i < 24) {
+            units = Math.floor(totalUnitsOrdered / 25);
+            unitsRemaining -= units;
+          } else {
+            units = unitsRemaining; // Assign remaining units to last transaction
+          }
+          transaction.units = units;
+        } else {
+          transaction.units = '';
+        }
+
+        let amount;
+        if (i < 29) {
+          amount = Math.floor(totalInvoiceAmount / 30);
+          invoiceAmountRemaining -= amount;
+        } else {
+          amount = invoiceAmountRemaining; // Assign remaining amount to last transaction
+        }
+        transaction.amount = amount;
+
+        // Supplier Contact
+        const firstName = contactFirstNames[i % contactFirstNames.length];
+        const lastName = contactLastNames[i % contactLastNames.length];
+        transaction.supplierContact = `${firstName} ${lastName}`;
+
+        transactions.push(transaction);
+      }
+
+      // Generate 20 incentives
+      const totalIncentiveAmount = 24100000;
+      const incentiveStatuses = ['Reconciled', 'Missing'];
+      let incentiveAmountRemaining = totalIncentiveAmount;
+
+      for (let i = 0; i < 20; i++) {
+        const transaction = {};
+        transaction.transactionId = 'INC' + (20000 + i);
+
+        // Dates
+        const timeDiff = dateRangeEnd.getTime() - dateRangeStart.getTime();
+        const randomTime = dateRangeStart.getTime() + (i / 20) * timeDiff;
+        transaction.transactionDate = new Date(randomTime);
+        transaction.dueDate = new Date(transaction.transactionDate);
+        transaction.dueDate.setDate(transaction.transactionDate.getDate() + 30);
+
+        // Transaction details
+        transaction.transactionType = 'Incentive';
+        transaction.transactionSubType = 'Units';
+        transaction.units = '';
+
+        // First 5 incentives are 'Missing', rest are 'Reconciled'
+        if (i < 5) {
+          transaction.status = 'Missing';
+          transaction.amount = Math.floor(6025000 / 5);
+          incentiveAmountRemaining -= transaction.amount;
+        } else if (i < 19) {
+          transaction.status = 'Reconciled';
+          transaction.amount = Math.floor((totalIncentiveAmount - 6025000) / 14);
+          incentiveAmountRemaining -= transaction.amount;
+        } else {
+          transaction.status = 'Reconciled';
+          transaction.amount = incentiveAmountRemaining; // Assign remaining amount to last transaction
+        }
+
+        // Supplier Contact
+        const firstName = contactFirstNames[(i + 30) % contactFirstNames.length];
+        const lastName = contactLastNames[(i + 30) % contactLastNames.length];
+        transaction.supplierContact = `${firstName} ${lastName}`;
+
+        transactions.push(transaction);
+      }
+
+      // Sort transactions by transactionDate descending
+      transactions.sort((a, b) => b.transactionDate - a.transactionDate);
+
+      return transactions;
+    }
+
+    const transactionsData = generateRandomData();
+
+    // Handle query parameters for filters
+    function getQueryParams() {
+      const params = {};
+      window.location.search.substring(1).split('&').forEach(function(pair) {
+        const [key, value] = pair.split('=');
+        if (key && value) {
+          params[decodeURIComponent(key)] = decodeURIComponent(value).split(',');
+        }
+      });
+      return params;
+    }
+
+    const queryParams = getQueryParams();
+
+    // Apply filters
+function applyFilters() {
+  let filteredTransactions = transactionsData.slice();
+
+  // Apply filters based on the current state of checkboxes
+  const selectedTransactionTypes = Array.from(document.querySelectorAll('input[name="transactionType"]:checked')).map(i => i.value);
+  if (selectedTransactionTypes.length > 0) {
+    filteredTransactions = filteredTransactions.filter(t => selectedTransactionTypes.includes(t.transactionType));
+  }
+
+  const selectedTransactionSubTypes = Array.from(document.querySelectorAll('input[name="transactionSubType"]:checked')).map(i => i.value);
+  if (selectedTransactionSubTypes.length > 0) {
+    filteredTransactions = filteredTransactions.filter(t => selectedTransactionSubTypes.includes(t.transactionSubType));
+  }
+
+  const selectedInvoiceStatuses = Array.from(document.querySelectorAll('input[name="invoiceStatus"]:checked')).map(i => i.value);
+  if (selectedInvoiceStatuses.length > 0) {
+    filteredTransactions = filteredTransactions.filter(t => {
+      if (t.transactionType === 'Invoice') {
+        return selectedInvoiceStatuses.includes(t.status);
+      }
+      return true;
+    });
+  }
+
+  const selectedIncentiveReconciliations = Array.from(document.querySelectorAll('input[name="incentiveReconciliation"]:checked')).map(i => i.value);
+  if (selectedIncentiveReconciliations.length > 0) {
+    filteredTransactions = filteredTransactions.filter(t => {
+      if (t.transactionType === 'Incentive') {
+        return selectedIncentiveReconciliations.includes(t.status);
+      }
+      return true;
+    });
+  }
+
+  return filteredTransactions;
+}
+
+
+    // Render filter badges
+    function renderFilterBadges() {
+      const filterBadgesContainer = document.getElementById('filter-badges');
+      filterBadgesContainer.innerHTML = '';
+      const filters = ['transactionType', 'transactionSubType', 'invoiceStatus', 'incentiveReconciliation'];
+      filters.forEach(filter => {
+        const selectedOptions = Array.from(document.querySelectorAll(`input[name="${filter}"]:checked`)).map(i => i.value);
+        selectedOptions.forEach(option => {
+          const badge = document.createElement('div');
+          badge.className = 'filter-badge';
+          badge.textContent = `${filter}: ${option}`;
+          filterBadgesContainer.appendChild(badge);
+        });
+      });
+    }
+
+    // Render statistics
+    function renderStatistics(filteredTransactions) {
+      const totalTransactions = filteredTransactions.length;
+      const totalUnits = filteredTransactions.reduce((sum, t) => sum + (t.units ? t.units : 0), 0);
+      const totalInvoicedAmount = filteredTransactions.filter(t => t.transactionType === 'Invoice').reduce((sum, t) => sum + t.amount, 0);
+      const totalIncentiveAmount = filteredTransactions.filter(t => t.transactionType === 'Incentive').reduce((sum, t) => sum + t.amount, 0);
+
+      document.getElementById('total-transactions').textContent = totalTransactions;
+      document.getElementById('total-units').textContent = totalUnits;
+      document.getElementById('total-invoiced-amount').textContent = '$' + totalInvoicedAmount.toLocaleString();
+      document.getElementById('total-incentive-amount').textContent = '$' + totalIncentiveAmount.toLocaleString();
+    }
+
+    // Render table
+    function renderTable() {
+      const filteredTransactions = applyFilters();
+      //renderFilterBadges();
+      renderStatistics(filteredTransactions);
+
+      const tableContainer = document.getElementById('table-container');
+
+      const tableRows = filteredTransactions.map(function(transaction) {
+        const statusColors = {
+          'Paid': '#4caf50',
+          'Pending': '#ff9800',
+          'Refunded': '#f44336',
+          'Reconciled': '#4caf50',
+          'Missing': '#f44336'
+        };
+
+        const statusColor = statusColors[transaction.status] || '#000000';
+
+        return `<tr>
+          <td>${transaction.transactionId}</td>
+          <td>${transaction.transactionDate.toISOString().split('T')[0]}</td>
+          <td>${transaction.dueDate.toISOString().split('T')[0]}</td>
+          <td>${transaction.transactionType}</td>
+          <td>${transaction.transactionSubType}</td>
+          <td>${transaction.units}</td>
+          <td><span class="status-chip" style="background-color: ${statusColor};">${transaction.status}</span></td>
+          <td>$${transaction.amount.toLocaleString()}</td>
+          <td><a href="#">${transaction.supplierContact}</a></td>
+          <td><a href="#" class="view-more" data-id="${transaction.transactionId}">View More</a></td>
+        </tr>`;
+      }).join('');
+
+      const tableHTML = `<table>
+        <thead>
+          <tr>
+            <th>Transaction ID</th>
+            <th>Transaction Date</th>
+            <th>Due Date</th>
+            <th>Transaction Type</th>
+            <th>Transaction SubType</th>
+            <th>Units</th>
+            <th>Status</th>
+            <th>Amount</th>
+            <th>Supplier Contact</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>`;
+
+      tableContainer.innerHTML = tableHTML;
+
+      // Add event listeners to "View More" links
+      const viewMoreLinks = document.querySelectorAll('.view-more');
+      viewMoreLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const transactionId = this.getAttribute('data-id');
+          const transaction = transactionsData.find(t => t.transactionId === transactionId);
+          openModal(transaction);
+        });
+      });
+    }
+
+    // Event listeners for filters
+const filterInputs = document.querySelectorAll('#side-panel input');
+filterInputs.forEach(function(input) {
+  input.addEventListener('change', function() {
+    renderTable();
+  });
+});
+
+    // Initialize Table when the page loads
+window.onload = function() {
+  // Set checkboxes based on query parameters
+  for (let param in queryParams) {
+    queryParams[param].forEach(value => {
+      const formattedValue = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+      const checkbox = document.querySelector(`input[name="${param}"][value="${formattedValue}"]`);
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+    });
+  }
+  renderTable();
+};
+
+    // Modal functionality
+    const modal = document.getElementById('modal');
+    const closeModalBtn = document.getElementById('close-modal');
+
+    function openModal(transaction) {
+      const modalContent = document.getElementById('modal-content');
+
+      // Generate line item details that do not change between page refreshes
+      function generateLineItems(transactionId) {
+        const lineItems = [];
+        const numItems = 3;
+        for (let i = 1; i <= numItems; i++) {
+          const item = {
+            description: `Item ${i} for ${transactionId}`,
+            quantity: Math.floor(Math.random() * 10) + 1,
+            price: (Math.random() * 1000 + 100).toFixed(2)
+          };
+          lineItems.push(item);
+        }
+        return lineItems;
+      }
+
+      const lineItems = generateLineItems(transaction.transactionId);
+
+      const lineItemsHTML = lineItems.map(item => `
+        <li>
+          <strong>Description:</strong> ${item.description},
+          <strong>Quantity:</strong> ${item.quantity},
+          <strong>Price:</strong> $${item.price}
+        </li>
+      `).join('');
+
+      modalContent.innerHTML = `
+        <p><strong>Transaction ID:</strong> ${transaction.transactionId}</p>
+        <p><strong>Transaction Date:</strong> ${transaction.transactionDate.toISOString().split('T')[0]}</p>
+        <p><strong>Due Date:</strong> ${transaction.dueDate.toISOString().split('T')[0]}</p>
+        <p><strong>Transaction Type:</strong> ${transaction.transactionType}</p>
+        <p><strong>Transaction SubType:</strong> ${transaction.transactionSubType}</p>
+        <p><strong>Units:</strong> ${transaction.units}</p>
+        <p><strong>Status:</strong> ${transaction.status}</p>
+        <p><strong>Amount:</strong> $${transaction.amount.toLocaleString()}</p>
+        <p><strong>Supplier Contact:</strong> ${transaction.supplierContact}</p>
+        <h3>Line Item Details</h3>
+        <ul>
+          ${lineItemsHTML}
+        </ul>
+      `;
+      modal.style.display = 'block';
+    }
+
+    closeModalBtn.onclick = function() {
+      modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    }
+  </script>
+  <script>
+    function openTab(evt, tabName) {
+      var i, tabcontent, tabbuttons;
+
+      if (tabName === "intelligence") {
+          window.location.href = "general-motors-intelligence.html";
+          return; // Exit the function since we're navigating away
+      }
+      if (tabName != "intelligence") {
+        window.location.href = "general-motors.html?tabname=" + tabName;
+        return; // Exit the function since we're navigating away
+      }
+      
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="../chatbot.js"></script>
+</body>
+</html>

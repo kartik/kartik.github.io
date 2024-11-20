@@ -40,6 +40,7 @@
           <button onclick="openTab('intelligence')"><i class="fas fa-lightbulb"></i>Intelligence</button>
           <button onclick="openTab('compliance')"><i class="fas fa-shield-alt"></i>Compliance</button>
           <button onclick="openTab('audit')"><i class="fas fa-search"></i>Audit</button>
+          <button onclick="openTab('transactions')"><i class="fas fa-exchange-alt"></i>Transactions</button>
           <button onclick="openTab('sustainability')"><i class="fas fa-gift"></i>Incentives</button>
           <button onclick="openTab('automations')"><i class="fas fa-robot"></i>Automations</button>
         </div>
@@ -427,6 +428,10 @@
 
       if (tabName === "intelligence") {
           window.location.href = "general-motors-intelligence.html";
+          return; // Exit the function since we're navigating away
+      }
+      if (tabName === "transactions") {
+          window.location.href = "general-motors-transactions.html";
           return; // Exit the function since we're navigating away
       }
 
