@@ -380,7 +380,7 @@
     </div>
     <div id="content-container">
       <div class="profile-header">
-        <img src="../back.png" onclick="window.location.href = '../suppliers.html'" style="width:48px; cursor: pointer;">
+        <img src="../back.png" onclick="window.history.back();" style="width:48px; cursor: pointer;">
         <h1>General Motors</h1>
         <span class="priority-chip low-priority">Active</span>
         <span class="priority-chip info-priority">OEM</span>
@@ -405,11 +405,11 @@
             <label><input type="checkbox" name="transactionType" value="Invoice"> Invoice</label>
             <label><input type="checkbox" name="transactionType" value="Incentive"> Incentive</label>
           </div>
-          <div class="filter-group">
+<!--           <div class="filter-group">
             <strong>Transaction SubType</strong>
             <label><input type="checkbox" name="transactionSubType" value="Units"> Units</label>
             <label><input type="checkbox" name="transactionSubType" value="Parts"> Parts</label>
-          </div>
+          </div> -->
           <div class="filter-group">
             <strong>Invoice Status</strong>
             <label><input type="checkbox" name="invoiceStatus" value="Paid"> Paid</label>
@@ -705,8 +705,6 @@ function applyFilters() {
           <td>${transaction.transactionDate.toISOString().split('T')[0]}</td>
           <td>${transaction.dueDate.toISOString().split('T')[0]}</td>
           <td>${transaction.transactionType}</td>
-          <td>${transaction.transactionSubType}</td>
-          <td>${transaction.units}</td>
           <td><span class="status-chip" style="background-color: ${statusColor};">${transaction.status}</span></td>
           <td>$${transaction.amount.toLocaleString()}</td>
           <td><a href="#">${transaction.supplierContact}</a></td>
@@ -721,8 +719,6 @@ function applyFilters() {
             <th>Transaction Date</th>
             <th>Due Date</th>
             <th>Transaction Type</th>
-            <th>Transaction SubType</th>
-            <th>Units</th>
             <th>Status</th>
             <th>Amount</th>
             <th>Supplier Contact</th>

@@ -352,7 +352,7 @@
     </div>
     <div id="content-container">
       <div class="profile-header">
-        <img src="../back.png" onclick="window.location.href = '../suppliers.html'" style="width:48px; cursor: pointer;">
+        <img src="../back.png" onclick="window.history.back();" style="width:48px; cursor: pointer;">
         <h1>General Motors</h1>
         <span class="priority-chip low-priority">Active</span>
         <span class="priority-chip info-priority">OEM</span>
@@ -383,11 +383,10 @@
             <span class="tooltiptext">Total amount spent on purchases from this supplier year-to-date.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">$120,500,000</p>
-          <p style="color: red;">5% over target</p>
+          <p style="color: red;font-style: italic;">Spend expected to reach $130 million by Q1 of 2025, which is 5% over target</p>
           <canvas id="spendChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Increased demand for fuel-efficient models.<br>
-            <strong>Future Projection:</strong> Spend expected to reach $130 million by end of 2025.<br>
+            <strong>Root:</strong> Increased demand for fuel-efficient models.<br>
             <strong>Impact:</strong> Requires budget adjustment for growth.
           </p>
         </div>
@@ -398,11 +397,10 @@
             <span class="tooltiptext">Total number of units ordered from this supplier year-to-date.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">15,250</p>
-          <p style="color: #4caf50;">+5% increase projected in next quarter</p>
+          <p style="color: #4caf50;font-style: italic;">Q1 2025 shows a projected increase of 6%, continuing the upward trend</p>
           <canvas id="unitsChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Gradual increase in units ordered, produced, and delivered observed due to rising market demand for efficient vehicles.<br>
-            <strong>Future Projection:</strong> Q1 2025 shows a projected increase of 5%, continuing the upward trend.
+            <strong>Root:</strong> Gradual increase in units ordered, produced, and delivered observed due to rising market demand for efficient vehicles.
           </p>
         </div>
         <!-- Card 3: Incentive Realization Rate -->
@@ -412,11 +410,10 @@
             <span class="tooltiptext">Percentage of eligible incentives successfully realized.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">92%</p>
-          <p style="color: #f44336;">-3% from target</p>
+          <p style="color: #f44336;font-style: italic;">3% below target, which could decrease further without running automated reconciliation checks</p>
           <canvas id="incentiveChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Missed volume thresholds for certain models.<br>
-            <strong>Future Projection:</strong> Could decrease further without action.<br>
+            <strong>Root:</strong> Missed volume thresholds for certain models.<br>
             <strong>Impact:</strong> Loss of up to $2 million in incentives.
           </p>
         </div>
@@ -434,11 +431,10 @@
             <span class="tooltiptext">Percentage saved below the invoice price due to incentives and discounts.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">4.5%</p>
-          <p style="color: #4caf50;">Slightly higher than industry average</p>
+          <p style="color: #4caf50;font-style: italic;">Slightly higher than industry average but can be improved further with upcoming negotiations</p>
           <canvas id="purchaseIncomeChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Negotiated OEM incentives leading to cost savings.<br>
-            <strong>Future Projection:</strong> Anticipate similar or improved rates with upcoming negotiations.<br>
+            <strong>Root:</strong> Negotiated incentives leading to cost savings.<br>
             <strong>Impact:</strong> Enhances pricing strategies and competitive positioning.
           </p>
         </div>
@@ -449,11 +445,10 @@
             <span class="tooltiptext">Income realized due to OEM offers and discounts.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">$24,100,000</p>
-          <p style="color: #4caf50;">Healthy trend</p>
+          <p style="color: #4caf50;font-style: italic;">Projected 5% increase in discounts for Q1 2025 based on higher volume commitments</p>
           <canvas id="avgDiscountChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Effectively generated income attributed to purchase-related discounts.<br>
-            <strong>Future Projection:</strong> Projected 5% increase in discounts for Q1 2025 based on higher volume commitments.<br>
+            <strong>Root:</strong> Effectively generated income attributed to purchase-related discounts.<br>
           </p>
         </div>
         <!-- Card 5: Volume-Based Discounts Capture -->
@@ -463,11 +458,10 @@
             <span class="tooltiptext">Extent to which volume-based discounts are being utilized.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">75%</p>
-          <p style="color: #ff9800;">Potential for improvement</p>
+          <p style="color: #ff9800;font-style: italic;">Next tier (80% of full discount) can be captured by ordering 3213 more vehicles</p>
           <canvas id="volumeDiscountChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Not fully leveraging volume-based discount tiers.<br>
-            <strong>Future Projection:</strong> Aiming to reach 85% capture with strategic planning.<br>
+            <strong>Root:</strong> Not fully leveraging volume-based discount tiers.<br>
             <strong>Impact:</strong> Maximizes savings and strengthens OEM partnerships.
           </p>
         </div>
@@ -478,7 +472,7 @@
             <span class="tooltiptext">Accuracy in reconciling rebates and incentives from the supplier.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">75%</p>
-          <p style="color: orange;">Needs improvement</p>
+          <p style="color: red;font-style: italic;">Projected missed reconciliation to increase to 33% in the next quarter, leading to additional $3.2M miss</p>
           <!-- Reduced the size of the pie chart -->
           <canvas id="rebateAccuracyChart" width="216" height="216"></canvas>
           <p class="insight-text">
@@ -499,11 +493,10 @@
             <span class="tooltiptext">Percentage of deliveries received on or before the scheduled date.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">88%</p>
-          <p style="color: #f44336;">-4% from last quarter</p>
+          <p style="color: #f44336;font-style: italic;">Projected to drop further to 85% if not addressed with transport suppliers between factory and dealership</p>
           <canvas id="onTimeChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Logistics delays due to supplier shortages.<br>
-            <strong>Future Projection:</strong> May drop to 85% if not addressed.<br>
+            <strong>Root:</strong> Logistics delays due to supplier shortages.<br>
             <strong>Impact:</strong> Customer satisfaction could decline by 10%.
           </p>
         </div>
@@ -514,11 +507,10 @@
             <span class="tooltiptext">Number of times the supplier failed to meet the Service Level Agreement.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">12</p>
-          <p style="color: #f44336;">+5 from last quarter</p>
+          <p style="color: #f44336;font-style: italic;">Significant rise from Q1 2024 to Q1 2025 due to missed delivery estimates </p>
           <canvas id="slaChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Increased demand causing capacity strains.<br>
-            <strong>Future Projection:</strong> Compliance may rise without process improvements.<br>
+            <strong>Root:</strong> Increased demand causing capacity strains.<br>
             <strong>Impact:</strong> Potential penalties up to $500,000.
           </p>
         </div>
@@ -529,11 +521,10 @@
             <span class="tooltiptext">Percentage of vehicles undergoing OEM recalls.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">5%</p>
-          <p style="color: #f44336;">+2% from last quarter</p>
+          <p style="color: #ff9800;font-style: italic;">Projected to reach 6% from the current pattern</p>
           <canvas id="defectChart"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Driver assist tech features like autonomous emergency braking causing recalls, now often fixed over the air.<br>
-            <strong>Future Projection:</strong> Could reach 6% if pattern holds.<br>
+            <strong>Root:</strong> Driver assist tech features like autonomous emergency braking causing recalls, now often fixed over the air.<br>
             <strong>Impact:</strong> Decrease in client satisfaction and co-ordination of recall fix application with dealership.
           </p>
         </div>
@@ -551,12 +542,11 @@
             <span class="tooltiptext">How quickly the supplier responds to inquiries and issues.</span>
           </div>
           <p style="font-size: 24px; font-weight: bold;">Excellent</p>
-          <p style="color: #4caf50;">Consistent Performance</p>
+          <p style="color: #4caf50;font-style: italic;">Reliable in terms of issue resolution and proactive communication</p>
           <!-- Reduced the size of the pie chart -->
           <canvas id="responsivenessChart" width="216" height="216"></canvas>
           <p class="insight-text">
-            <strong>Root Analysis:</strong> Effective communication channels.<br>
-            <strong>Future Projection:</strong> Expected to maintain high levels.<br>
+            <strong>Root:</strong> Effective communication channels.<br>
             <strong>Impact:</strong> Strengthens partnership and operational efficiency.
           </p>
         </div>
@@ -1165,7 +1155,7 @@
             beginAtZero: true,
             title: {
               display: true,
-              text: 'Number of Instances'
+              text: 'Number per Thousand'
             }
           }
         }
