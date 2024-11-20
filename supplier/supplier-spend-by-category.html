@@ -302,6 +302,7 @@
       <div class="subnav">
         <div class="nav-item logo">Supplier Intelligence</div>
         <a class="nav-item" href="suppliers.html">Suppliers</a>
+        <a class="nav-item" href="contacts.html">Contacts</a>
         <a class="nav-item active" href="supplier-spend.html">Spend</a>
         <a class="nav-item" href="supplier-perf.html">Performance</a>
         <a class="nav-item" href="insights.html">Insights</a>
@@ -497,7 +498,7 @@
                 <canvas id="diversity-pie-chart"></canvas>
               </div>
               <div class="tile">
-                <h3>Top 10 Customers by Spend on Diverse Suppliers</h3>
+                <h3>Top 10 Clients by Spend on Diverse Suppliers</h3>
                 <table id="diversity-table"></table>
               </div>
               <div class="tile">
@@ -886,7 +887,7 @@
       table.innerHTML = '';
       // Create table headers
       var headerRow = document.createElement('tr');
-      var headers = ['Customer', 'Spend Amount'];
+      var headers = ['Client', 'Spend Amount'];
       headers.forEach(function(header) {
         var th = document.createElement('th');
         th.textContent = header;

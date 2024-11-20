@@ -188,7 +188,7 @@
       cursor: pointer;
     }
     #main-container {
-      margin-left: 200px;
+      margin-left: 190px;
       padding: 20px;
     }
     #table-container table {
@@ -273,7 +273,6 @@
     }
     .form-group label {
       display: block;
-      font-weight: bold;
       margin-bottom: 5px;
     }
     .form-group input[type="text"],
@@ -286,7 +285,7 @@
       box-sizing: border-box;
     }
     /* Button Styles */
-    #add-supplier-button {
+    #add-supplier-button, .submit-button {
       padding: 10px 20px;
       font-size: 14px;
       background-color: #4CAF50;
@@ -294,6 +293,12 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
+    }
+    .submit-button {
+      width: 250px;
+      text-align: center;
+      margin: 20px auto 0px;
+      display: block;
     }
     #add-supplier-button:hover {
       background-color: #45a049;
@@ -326,6 +331,11 @@
       border-color: #aaa;
       color: #666;
     }
+
+    hr {
+      margin-bottom: 40px;
+      margin-top: 40px;
+    }
     </style>
 </head>
 <body>
@@ -340,7 +350,8 @@
       <div class="subnav">
         <div style="display: flex; align-items: center;">
           <div class="nav-item logo">Supplier Intelligence</div>
-          <a class="nav-item active">Suppliers</a>
+          <a class="nav-item active" href="suppliers.html">Suppliers</a>
+          <a class="nav-item" href="contacts.html">Contacts</a>
           <a class="nav-item" href="supplier-spend.html">Spend</a>
           <a class="nav-item" href="supplier-perf.html">Performance</a>
           <a class="nav-item" href="insights.html">Insights</a>
@@ -351,7 +362,7 @@
       <div>
         <div id="side-panel">
           <div class="filter-group">
-            <input type="text" id="supplier-search" placeholder="Search...">
+            <input type="text" id="supplier-search" placeholder="Search..." style="border-radius: 20px;border: 1px solid silver;padding: 2px 5px;">
           </div>
           <div class="filter-group">
             <strong>Countries</strong>
@@ -364,7 +375,7 @@
           <div class="filter-group">
             <strong>Supplier Categories</strong>
             <label><input type="checkbox" name="supplierType" value="OEM">🚗 OEM</label>
-            <label><input type="checkbox" name="supplierType" value="Title and Registration">📃 Title and Registration</label>
+            <label><input type="checkbox" name="supplierType" value="Title and Registration">📃 Title / Reg</label>
             <label><input type="checkbox" name="supplierType" value="Transportation">🚚 Transportation</label>
             <label><input type="checkbox" name="supplierType" value="Storage">🅿️ Storage</label>
             <label><input type="checkbox" name="supplierType" value="Inspection">🔍 Inspection</label>
@@ -405,7 +416,7 @@
           <form id="add-supplier-form">
             <!-- Section 1: Info -->
             <section>
-              <h3>Section 1: Info</h3>
+              <h3>1.Info</h3>
               <div class="form-group">
                 <label for="supplier-name">Supplier Name</label>
                 <input type="text" id="supplier-name" name="supplierName" required>
@@ -431,6 +442,18 @@
                 </select>
               </div>
               <div class="form-group">
+                <label for="supplier-diversity">Diversity Classification</label>
+                <select id="supplier-diversity" name="supplierDiversity" required>
+                  <option value="">Select Diversity</option>
+                  <option value="">None</option>
+                  <option value="">Women</option>
+                  <option value="">Minority</option>
+                  <option value="">Veteran</option>
+                  <option value="">Disability</option>
+                  <option value="">Small Business</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label for="business-summary">Business Summary</label>
                 <textarea id="business-summary" name="businessSummary"></textarea>
               </div>
@@ -451,8 +474,8 @@
               </div>
               <div class="form-group">
                 <label>Hierarchy</label>
-                <input type="radio" name="hierarchy" value="Parent" id="hierarchy-parent"> <label for="hierarchy-parent" style="display: inline; font-weight: normal;">Parent</label>
-                <input type="radio" name="hierarchy" value="Child" id="hierarchy-child"> <label for="hierarchy-child" style="display: inline; font-weight: normal;">Child</label>
+                <input type="radio" name="hierarchy" value="Parent" id="hierarchy-parent"> <label for="hierarchy-parent" style="display: inline;">Parent</label>
+                <input type="radio" name="hierarchy" value="Child" id="hierarchy-child"> <label for="hierarchy-child" style="display: inline;">Child</label>
               </div>
               <div class="form-group" id="parent-supplier-group" style="display: none;">
                 <label for="parent-supplier">Parent Supplier</label>
@@ -466,9 +489,10 @@
                 <button type="button" id="add-contact-button">Add Contact</button>
               </div>
             </section>
+            <hr>
             <!-- Section 2: Contracts -->
             <section>
-              <h3>Section 2: Contracts</h3>
+              <h3>2. Contracts</h3>
               <div class="upload-box" onclick="document.getElementById('contract-upload').click();">
                 Drop to upload contract here
                 <input type="file" id="contract-upload" name="contractUpload" style="display: none;">
@@ -477,25 +501,28 @@
                 Link from Dropbox/Docusign
               </div>
             </section>
+            <hr>
             <!-- Section 3: Certifications -->
             <section>
-              <h3>Section 3: Certifications</h3>
+              <h3>3. Certifications</h3>
               <div class="upload-box" onclick="document.getElementById('certifications-upload').click();">
                 Drop to upload certifications here
                 <input type="file" id="certifications-upload" name="certificationsUpload" style="display: none;">
               </div>
             </section>
+            <hr>
             <!-- Section 4: Documents -->
             <section>
-              <h3>Section 4: Documents</h3>
+              <h3>4. Documents</h3>
               <div class="upload-box" onclick="document.getElementById('documents-upload').click();">
                 Drop to upload documents here
                 <input type="file" id="documents-upload" name="documentsUpload" style="display: none;">
               </div>
             </section>
+            <hr>
             <!-- Section 5: Banking and Payments -->
             <section>
-              <h3>Section 5: Banking and Payments</h3>
+              <h3>5. Banking and Payments</h3>
               <div class="form-group">
                 <label for="bank-name">Bank Name</label>
                 <input type="text" id="bank-name" name="bankName">
@@ -532,14 +559,16 @@
                 <input type="text" id="preferred-currency" name="preferredCurrency">
               </div>
             </section>
+            <hr>
             <!-- Section 6: More Information -->
             <section class="collapsible">
-              <h3>Section 6: More Information</h3>
+              <h3>6. Advanced ↓</h3>
               <div class="collapsible-content">
-                <!-- Additional fields can go here -->
+                <button type="button">Add Custom Fields</button>
               </div>
             </section>
-            <button type="submit">Submit</button>
+            <hr>
+            <button type="submit" class="submit-button">Submit</button>
           </form>
         </div>
       </div>
@@ -612,50 +641,63 @@
     ];
 
     // Fill suppliersData with more fixed suppliers
-    (function populateSuppliers() {
-      var supplierNames = [
-        'Honda', 'Tesla', 'Volkswagen', 'BMW', 'Daimler AG', 'Fiat Chrysler Automobiles', 'Nissan', 'Hyundai', 'Kia Motors', 'Subaru',
-        'Mazda', 'Mitsubishi Motors', 'Suzuki', 'Renault', 'Peugeot', 'Citroen', 'Volvo', 'Jaguar Land Rover', 'Aston Martin',
-        'Bentley Motors', 'Rolls-Royce', 'Ferrari', 'Lamborghini', 'Elite Repairs', 'Quick Fix Auto', 'RapidRepair Inc.',
-        'AutoPro Service Center', 'DriveTime Repairs', 'Secure Storage Solutions', 'AutoVault Storage', 'Metro Vehicle Storage',
-        'ParkSafe Facilities', 'EZ Storage', 'Fast Transport', 'Express Logistics', 'Swift Haulage', 'Global Transport Services',
-        'Transworld Logistics', 'Precision Inspection', 'Quality Check Services', 'Auto Inspectors Inc.', 'Certified Vehicle Inspection',
-        'AutoCheck Solutions', 'TitlePro Services', 'Auto Registrations LLC', 'QuickTitle Solutions', 'Vehicle Documentation Services',
-        'TitleExpress', 'Global Upfitters', 'Auto Customization Inc.', 'Upfit Solutions', 'Vehicle Modifications LLC',
-        'Custom Auto Enhancements', 'Metro Resale', 'Auto Resellers Inc.', 'Value Cars', 'Second Hand Motors', 'Auto Auctions Ltd.'
-      ];
+(function populateSuppliers() {
+  var supplierNames = [
+    'Honda', 'Tesla', 'Volkswagen', 'BMW', 'Daimler AG', 'Fiat Chrysler Automobiles', 'Nissan', 'Hyundai', 'Kia Motors', 'Subaru',
+    'Mazda', 'Mitsubishi Motors', 'Suzuki', 'Renault', 'Peugeot', 'Citroen', 'Volvo', 'Jaguar Land Rover', 'Aston Martin',
+    'Bentley Motors', 'Rolls-Royce', 'Ferrari', 'Lamborghini', 'Elite Repairs', 'Quick Fix Auto', 'RapidRepair Inc.',
+    'AutoPro Service Center', 'DriveTime Repairs', 'Secure Storage Solutions', 'AutoVault Storage', 'Metro Vehicle Storage',
+    'ParkSafe Facilities', 'EZ Storage', 'Fast Transport', 'Express Logistics', 'Swift Haulage', 'Global Transport Services',
+    'Transworld Logistics', 'Precision Inspection', 'Quality Check Services', 'Auto Inspectors Inc.', 'Certified Vehicle Inspection',
+    'AutoCheck Solutions', 'TitlePro Services', 'Auto Registrations LLC', 'QuickTitle Solutions', 'Vehicle Documentation Services',
+    'TitleExpress', 'Global Upfitters', 'Auto Customization Inc.', 'Upfit Solutions', 'Vehicle Modifications LLC',
+    'Custom Auto Enhancements', 'Metro Resale', 'Auto Resellers Inc.', 'Value Cars', 'Second Hand Motors', 'Auto Auctions Ltd.'
+  ];
 
-      var supplierTypes = ['OEM', 'Repair', 'Storage', 'Transportation', 'Inspection', 'Title and Registration', 'Upfit', 'Resale'];
-      var countries = ['US', 'Canada', 'Mexico', 'Australia', 'New Zealand'];
-      var paymentTermsOptions = ['Net 30', 'Net 45', 'Net 60', 'Net 90'];
-      var risks = ['low', 'medium', 'high'];
-      var statuses = ['Active', 'Pending', 'In Negotiation', 'Cancelled', 'Closed'];
-      var incentivesOptions = ['Volume Based', 'Loyalty Based'];
-      var ownershipDiversities = ['Women', 'Minority', 'Veteran', 'Disability', 'Small Business'];
+  var validOEMs = [
+    'Honda', 'Tesla', 'Volkswagen', 'BMW', 'Daimler AG', 'Fiat Chrysler Automobiles', 'Nissan', 'Hyundai', 'Kia Motors', 'Subaru',
+    'Mazda', 'Mitsubishi Motors', 'Suzuki', 'Renault', 'Peugeot', 'Citroen', 'Volvo', 'Jaguar Land Rover', 'Aston Martin',
+    'Bentley Motors', 'Rolls-Royce', 'Ferrari', 'Lamborghini'
+  ];
 
-      for (var i = 0; i < supplierNames.length; i++) {
-        if (suppliersData.length >= 50) break;
-        var supplierType = supplierTypes[i % supplierTypes.length];
-        var ownershipDiversity = ownershipDiversities[i % ownershipDiversities.length];
-        var supplier = {
-          supplier: supplierNames[i],
-          supplierType: supplierType,
-          country: countries[i % countries.length],
-          startOfContract: '2020-01-01',
-          endOfContract: '2025-12-31',
-          incentives: supplierType === 'OEM' ? incentivesOptions[i % incentivesOptions.length] : '',
-          paymentTerms: paymentTermsOptions[i % paymentTermsOptions.length],
-          risk: risks[i % risks.length],
-          status: statuses[i % statuses.length],
-          alerts: i % 5,
-          ownershipDiversity: (supplierType === 'OEM') ? 'None' : ownershipDiversity,
-        };
-        // Skip 'General Motors' as it's already added
-        if (supplier.supplier !== 'General Motors') {
-          suppliersData.push(supplier);
-        }
-      }
-    })();
+  var supplierTypes = ['Repair', 'Storage', 'Transportation', 'Inspection', 'Title and Registration', 'Upfit', 'Resale'];
+  var countries = ['US', 'Canada', 'Mexico', 'Australia', 'New Zealand'];
+  var paymentTermsOptions = ['Net 30', 'Net 45', 'Net 60', 'Net 90'];
+  var risks = ['low', 'medium', 'high'];
+  var statuses = ['Active', 'Pending', 'In Negotiation', 'Cancelled', 'Closed'];
+  var incentivesOptions = ['Volume Based', 'Loyalty Based'];
+  var ownershipDiversities = ['Women', 'Minority', 'Veteran', 'Disability', 'Small Business'];
+
+  for (var i = 0; i < supplierNames.length; i++) {
+    if (suppliersData.length >= 50) break;
+
+    // Explicitly classify OEMs
+    var supplierType = validOEMs.includes(supplierNames[i]) ? 'OEM' : supplierTypes[i % supplierTypes.length];
+
+    var ownershipDiversity = supplierType === 'OEM' ? 'None' : ownershipDiversities[i % ownershipDiversities.length];
+
+    var supplier = {
+      supplier: supplierNames[i],
+      supplierType: supplierType,
+      country: countries[i % countries.length],
+      startOfContract: '2020-01-01',
+      endOfContract: '2025-12-31',
+      incentives: supplierType === 'OEM' ? incentivesOptions[i % incentivesOptions.length] : '',
+      paymentTerms: paymentTermsOptions[i % paymentTermsOptions.length],
+      risk: risks[i % risks.length],
+      status: statuses[i % statuses.length],
+      alerts: i % 5,
+      ownershipDiversity: ownershipDiversity,
+    };
+
+    // Skip 'General Motors' as it's already added
+    if (supplier.supplier !== 'General Motors') {
+      suppliersData.push(supplier);
+    }
+  }
+})();
+
+
 
     function filterSuppliers() {
       var selectedCountries = Array.from(document.querySelectorAll('input[name="country"]:checked')).map(function(input) {

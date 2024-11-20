@@ -1,0 +1,244 @@
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.navbar-container {
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+  z-index: 4;
+  position: relative;
+}
+.container {
+  display: flex;
+  width: 100%;
+  height: calc(100% - 50px);
+}
+#tabs {
+  width: 78px;
+  flex-shrink: 0;
+  box-shadow: 2px 0px 2px rgba(0, 0, 0, 0.1);
+  z-index: 3;
+  background: white;
+}
+#content-container {
+  flex-grow: 1;
+  display: inline-block;
+}
+.subnav {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  justify-content: space-between;
+  padding-right: 20px;
+}
+.nav-item {
+  font-size: 14px;
+  color: #666666;
+  cursor: pointer;
+  padding: 20px;
+  text-decoration: none;
+}
+.nav-item.logo {
+  font-weight: bold;
+  color: #000000;
+  font-size: 22px;
+}
+.nav-item.active {
+  color: #000000;
+  border-bottom: 4px solid #4CAF50;
+  background-color: hsl(105deg 35.29% 93.33%);
+  padding: 30px 20px 24px;
+}
+#compose-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#compose-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+#side-panel {
+  padding: 20px;
+}
+.filter-group {
+  margin-bottom: 20px;
+}
+.filter-group strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+.filter-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+#main-container {
+  flex-grow: 1;
+  padding: 20px;
+}
+#contacts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+#contacts-table th, #contacts-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  font-size: 12px;
+  white-space: nowrap;
+}
+#contacts-table th {
+  background-color: #f9fafb;
+}
+.link {
+  color: #22aaff;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 5;
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+.modal-content {
+  background-color: #fefefe;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 800px;
+  overflow-y: auto;
+  max-height: 80vh;
+  position: relative;
+}
+.close-button {
+  color: #aaa;
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+#selected-contacts {
+  margin-bottom: 20px;
+}
+.contact-chip {
+  display: inline-block;
+  background-color: #e0e0e0;
+  padding: 5px 10px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+.contact-chip .remove-contact {
+  margin-left: 10px;
+  cursor: pointer;
+  color: red;
+}
+#chat-container {
+  border: 1px solid #ccc;
+  padding: 10px;
+  height: 300px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+.chat-message {
+  margin-bottom: 20px;
+}
+.chat-message .sender {
+  font-weight: bold;
+}
+.chat-message .timestamp {
+  font-size: 10px;
+  color: #999;
+  margin-left: 5px;
+}
+.chat-message.left {
+  text-align: left;
+}
+.chat-message.right {
+  text-align: right;
+}
+#compose-input {
+  display: flex;
+  align-items: center;
+}
+#send-options {
+  margin-right: 10px;
+}
+#send-method {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+#message-input {
+  flex-grow: 1;
+  padding: 8px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+#attachment-send {
+  display: flex;
+  align-items: center;
+}
+#attachment-send .attachment-icon {
+  font-size: 20px;
+  color: #666;
+  margin-right: 10px;
+  cursor: pointer;
+}
+#attachment-send .attachment-icon:hover {
+  color: #000;
+}
+#attachment-send input[type="file"] {
+  display: none;
+}
+#send-button {
+  padding: 8px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#send-button:hover {
+  background-color: #45a049;
+}
+.unread-dot {
+  height: 10px;
+  width: 10px;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  display: inline-block;
+}
+button {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 0px;
+}

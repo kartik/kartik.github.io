@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon"
+    href="https://ridecell.com/wp-content/themes/ridecell2017/favicon.ico" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="contacts.css">
+  <title>Ridecell Supplier Intelligence Hub</title>
+</head>
+<body>
+  <!-- Navigation and Header -->
+  <div class="navbar-container">
+    <img id="navbar" src="../navbar.png" style="width:100%; display: block;">
+  </div>
+  <div class="container">
+    <div id="tabs">
+      <img src="../tabs.png" style="width: 78px;">
+    </div>
+    <div id="content-container">
+      <div class="subnav">
+        <div style="display: flex; align-items: center;">
+          <div class="nav-item logo">Supplier Intelligence</div>
+          <a class="nav-item" href="suppliers.html">Suppliers</a>
+          <a class="nav-item active" href="contacts.html">Contacts</a>
+          <a class="nav-item" href="supplier-spend.html">Spend</a>
+          <a class="nav-item" href="supplier-perf.html">Performance</a>
+          <a class="nav-item" href="insights.html">Insights</a>
+        </div>
+        <button id="compose-button" disabled>Compose</button>
+      </div>
+
+      <div style="display: flex;">
+        <!-- Side Panel for Filters -->
+        <div id="side-panel">
+          <div class="filter-group">
+            <input type="text" id="search-input" placeholder="Search..." style="border-radius: 20px;border: 1px solid silver;padding: 2px 5px;">
+          </div>
+          <div class="filter-group">
+            <strong>Countries</strong>
+            <label><input type="checkbox" name="country" value="United States">🇺🇸 United States</label>
+            <label><input type="checkbox" name="country" value="Canada">🇨🇦 Canada</label>
+            <label><input type="checkbox" name="country" value="Mexico">🇲🇽 Mexico</label>
+            <label><input type="checkbox" name="country" value="Australia">🇦🇺 Australia</label>
+            <label><input type="checkbox" name="country" value="New Zealand">🇳🇿 New Zealand</label>
+          </div>
+          <div class="filter-group">
+            <strong>Supplier Categories</strong>
+            <label><input type="checkbox" name="supplierType" value="OEM">🚗 OEM</label>
+            <label><input type="checkbox" name="supplierType" value="Title and Registration">📃 Title / Reg</label>
+            <label><input type="checkbox" name="supplierType" value="Transportation">🚚 Transportation</label>
+            <label><input type="checkbox" name="supplierType" value="Storage">🅿️ Storage</label>
+            <label><input type="checkbox" name="supplierType" value="Inspection">🔍 Inspection</label>
+            <label><input type="checkbox" name="supplierType" value="Upfit">🔼 Upfit</label>
+            <label><input type="checkbox" name="supplierType" value="Repair">🔧 Repair</label>
+            <label><input type="checkbox" name="supplierType" value="Resale">⚖️ Resale</label>
+          </div>
+          <div class="filter-group">
+            <strong>Contact Type</strong>
+            <label><input type="checkbox" name="contactType" value="Commercial">Commercial</label>
+            <label><input type="checkbox" name="contactType" value="Operational">Operational</label>
+            <label><input type="checkbox" name="contactType" value="Client Specific">Client Specific</label>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-container">
+          <!-- Contact Table -->
+          <div id="table-container">
+            <table id="contacts-table">
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="select-all"></th>
+                  <th>Contact Name</th>
+                  <th>Title</th>
+                  <th>Supplier Name</th>
+                  <th>Contact Type</th>
+                  <th>Client</th>
+                  <th>Region</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compose Modal -->
+      <div id="compose-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-button" id="close-compose">&times;</span>
+          <h2>Messages</h2>
+          <div id="selected-contacts">
+            <!-- Selected contacts will be displayed here -->
+          </div>
+          <div id="chat-container">
+            <!-- Chat messages will be displayed here -->
+          </div>
+          <div id="compose-input">
+            <textarea id="message-input" placeholder="Type your message..."></textarea>
+            <div id="attachment-send">
+              <label for="file-upload" class="attachment-icon">
+                <i class="fa fa-paperclip"></i>
+              </label>
+              <input id="file-upload" type="file" />
+              <div id="send-options">
+                <select id="send-method">
+                  <option value="Both">Both</option>
+                  <option value="Email" selected>Email</option>
+                  <option value="Text">Text</option>
+                </select>
+              </div>
+              <button id="send-button">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JavaScript -->
+      <script src="contacts.js"></script>
+    </div>
+  </div>
+</body>
+</html>
