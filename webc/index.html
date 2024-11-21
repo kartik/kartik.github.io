@@ -35,12 +35,9 @@
         /* Control Panel Styles */
         .control-panel {
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
             margin-bottom: 20px;
             gap: 10px;
-            position: fixed;
-            z-index: 99;
         }
 
         .subreddit-input {
@@ -92,7 +89,7 @@
 
         /* Card Styles */
         #postsContainer {
-            margin-top: 60px;
+            margin-top: 0px;
         }
         .card {
             background-color: #fff;
@@ -349,7 +346,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // Configuration Constants
-        let SUBREDDIT = 'singularity+wallstreetbets+investing+chatgpt'; // Default subreddit
+        let SUBREDDIT = 'singularity'; // Default subreddit
         let TIMEFRAME = 'day';            // Default timeframe
         const POST_LIMIT = 20;            // Number of posts to fetch per request
         const MIN_UPVOTES = 10;           // Minimum upvotes for comments
@@ -484,7 +481,8 @@
                 },
                 error: function(err) {
                     console.error('Error fetching posts:', err);
-                    $('#loading').html('<p>Failed to load posts.</p>');
+                    //$('#loading').html('<p>Failed to load posts.</p>');
+                    $('#loading').hide();
                     lock = false;
                 }
             });
