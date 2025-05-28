@@ -2150,7 +2150,24 @@
             
             // Add click handler for editing
             img.onclick = function() {
-                DiagramEditor.editElement(this);
+                // Configuration to hide Format and Shapes panels
+                const config = {
+                    defaultLibraries: 'general',  // Only show general shapes
+                    libraries: false,  // Don't show the shapes panel
+                    ui: 'simple'  // Use simple UI
+                };
+                
+                // URL params to control the UI
+                const urlParams = [
+                    'format=0',  // Hide format panel
+                    'layers=1',  // Show layers
+                    'lightbox=1',  // Lightbox mode
+                    'nav=1',  // Show navigation
+                    'pages=0',  // Hide pages
+                    'tooltips=1'  // Show tooltips
+                ];
+                
+                DiagramEditor.editElement(this, config, 'simple', null, urlParams);
             };
             
             return img;
