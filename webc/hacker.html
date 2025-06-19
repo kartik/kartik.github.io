@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker News Posts</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ff6600; /* Hacker News orange */
+            font-weight: 300;
+        }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .time-range {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 0.9em;
+        }
+
+        .chip.active, .chip:hover {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        #postsContainer {
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-header h2 {
+            font-size: 1.1em;
+            font-weight: 500;
+            color: #ff6600;
+            margin-bottom: 5px;
+        }
+
+        .card-header a {
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .card-header .upvotes {
+            font-size: 0.8em;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hacker News Posts</h1>
+        <div id="postsContainer">
+            <!-- Post cards will be inserted here -->
+        </div>
+        <div class="loading" id="loading">
+            Loading posts...
+        </div>
+    </div>
+
+    <script>
+        const TOP_STORIES_URL = 'https://hacker-news.firebaseio.com/v0/topstories.json';
+        const STORY_URL = 'https://hacker-news.firebaseio.com/v0/item/';
+        let TIMEFRAME = 'day'; // Default timeframe
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchTopHNPosts();
+
+            // Handle time range selection
+            document.querySelectorAll('.chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    TIMEFRAME = chip.dataset.time;
+                    fetchTopHNPosts();
+                });
+            });
+        });
+
+        async function fetchTopHNPosts() {
+            document.getElementById('loading').style.display = 'block';
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = ''; // Clear container
+
+            const response = await fetch(TOP_STORIES_URL);
+            const storyIds = await response.json();
+            const stories = await Promise.all(
+                storyIds.slice(0, 20).map(async (id) => {
+                    const storyResponse = await fetch(`${STORY_URL}${id}.json`);
+                    const story = await storyResponse.json();
+                    const timeElapsed = Math.max((Date.now() / 1000 - story.time) / 86400, 1); // in days
+                    return {
+                        id: story.id,
+                        title: story.title,
+                        url: story.url || `https://news.ycombinator.com/item?id=${story.id}`,
+                        score: story.score || 0,
+                        timeElapsed: timeElapsed.toFixed(2),
+                        votesPerDay: (story.score / timeElapsed).toFixed(2),
+                    };
+                })
+            );
+
+            renderHNPosts(stories);
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function renderHNPosts(posts) {
+            const postsContainer = document.getElementById('postsContainer');
+
+            posts.sort((a, b) => b.votesPerDay - a.votesPerDay); // Sort by votes per day
+
+            posts.forEach(post => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h2>${post.title}</h2>
+                        <a href="${post.url}" target="_blank">Read More</a>
+                        <div class="upvotes">
+                            <span>Score: ${post.score}</span>
+                        </div>
+                    </div>
+                `;
+                postsContainer.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
