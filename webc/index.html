@@ -218,13 +218,22 @@
         .gallery-indicators span {
             width: 10px;
             height: 10px;
-            background-color: rgba(255,255,255,0.7);
+            background-color: rgba(80,80,80,0.6);
+            border: 2px solid rgba(255,255,255,0.9);
             border-radius: 50%;
             cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
         }
 
         .gallery-indicators span.active {
             background-color: #FF4500;
+            border-color: #fff;
+        }
+
+        /* Focused gallery for keyboard nav */
+        .card-gallery.gallery-focused {
+            outline: 2px solid #FF4500;
+            outline-offset: -2px;
         }
 
         /* Card Content */
@@ -635,6 +644,9 @@
             });
         }
 
+        // Track active gallery for keyboard navigation
+        let activeGallery = null;
+
         function initializeGallery(galleryElement) {
             const slidesContainer = galleryElement.find('.gallery-slides');
             const slides = slidesContainer.find('img');
@@ -645,6 +657,17 @@
             const nextButton = galleryElement.find('.next');
             const indicators = galleryElement.find('.gallery-indicators span');
 
+            // Navigation functions
+            function goToPrev() {
+                currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalSlides - 1;
+                updateGallery();
+            }
+
+            function goToNext() {
+                currentIndex = (currentIndex < totalSlides - 1) ? currentIndex + 1 : 0;
+                updateGallery();
+            }
+
             // Update the slides position
             function updateGallery() {
                 slidesContainer.css('transform', `translateX(-${currentIndex * 100}%)`);
@@ -652,18 +675,23 @@
                 indicators.eq(currentIndex).addClass('active');
             }
 
+            // Set this gallery as active on click/hover
+            galleryElement.on('mouseenter click', function() {
+                activeGallery = { goToPrev, goToNext, element: galleryElement };
+                $('.card-gallery').removeClass('gallery-focused');
+                galleryElement.addClass('gallery-focused');
+            });
+
             // Previous Slide
             prevButton.on('click', function(e) {
                 e.stopPropagation();
-                currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalSlides - 1;
-                updateGallery();
+                goToPrev();
             });
 
             // Next Slide
             nextButton.on('click', function(e) {
                 e.stopPropagation();
-                currentIndex = (currentIndex < totalSlides - 1) ? currentIndex + 1 : 0;
-                updateGallery();
+                goToNext();
             });
 
             // Indicator Click
@@ -697,13 +725,10 @@
                 // Determine if the swipe is horizontal
                 if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) { // Horizontal swipe
                     if (diffX > 0) {
-                        // Swipe Right
-                        currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalSlides - 1;
+                        goToPrev();
                     } else {
-                        // Swipe Left
-                        currentIndex = (currentIndex < totalSlides - 1) ? currentIndex + 1 : 0;
+                        goToNext();
                     }
-                    updateGallery();
                     isSwiping = false;
                     e.preventDefault(); // Prevent vertical scrolling
                 }
@@ -713,6 +738,22 @@
                 isSwiping = false;
             });
         }
+
+        // Keyboard navigation for galleries
+        $(document).on('keydown', function(e) {
+            if (!activeGallery) return;
+
+            // Only handle if not typing in input
+            if ($(e.target).is('input, textarea')) return;
+
+            if (e.key === 'ArrowLeft' || e.key === '<' || e.key === ',') {
+                e.preventDefault();
+                activeGallery.goToPrev();
+            } else if (e.key === 'ArrowRight' || e.key === '>' || e.key === '.') {
+                e.preventDefault();
+                activeGallery.goToNext();
+            }
+        });
 
         function fetchComments(postId, contentElement, retryCount = 0) {
             const MAX_RETRIES = 3;
