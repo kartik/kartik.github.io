@@ -263,6 +263,40 @@
             font-size: 0.8em;
         }
 
+        /* Markdown Styles */
+        .card-selftext a, .comment-body a {
+            color: #0066cc;
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .card-selftext a:hover, .comment-body a:hover {
+            text-decoration: underline;
+        }
+
+        .card-selftext blockquote, .comment-body blockquote {
+            border-left: 3px solid #FF4500;
+            padding-left: 10px;
+            margin: 8px 0;
+            color: #555;
+            font-style: italic;
+        }
+
+        .card-selftext code, .comment-body code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .card-selftext img, .comment-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+
         /* Loading Spinner */
         .loading {
             text-align: center;
@@ -405,13 +439,17 @@
             $('#postsContainer').empty();
         }
 
-        function fetchTopPosts() {
+        function fetchTopPosts(retryCount = 0) {
+            const MAX_RETRIES = 3;
+            const RETRY_DELAYS = [1000, 2000, 4000]; // Exponential backoff
+
             if (fetchedPosts >= TOTAL_POSTS || lock) return;
 
             lock = true;
-            $('#loading').show();
+            $('#loading').show().find('.spinner').show();
+            $('#loading').find('p').remove(); // Clear any error messages
 
-            let url = `https://www.reddit.com/r/${SUBREDDIT}/top/.json?limit=${POST_LIMIT}&t=${TIMEFRAME}`;
+            let url = `https://www.reddit.com/r/${SUBREDDIT}/top/.json?limit=${POST_LIMIT}&t=${TIMEFRAME}&raw_json=1`;
             if (after) {
                 url += `&after=${after}`;
             }
@@ -420,7 +458,13 @@
                 url: url,
                 method: 'GET',
                 dataType: 'json',
+                timeout: 15000, // 15 second timeout
                 success: function(data) {
+                    if (!data || !data.data || !data.data.children) {
+                        handleFetchError('Invalid response from Reddit', retryCount, MAX_RETRIES, RETRY_DELAYS);
+                        return;
+                    }
+
                     const posts = data.data.children;
                     after = data.data.after;
 
@@ -478,13 +522,33 @@
 
                     lock = false;
                 },
-                error: function(err) {
-                    console.error('Error fetching posts:', err);
-                    //$('#loading').html('<p>Failed to load posts.</p>');
-                    $('#loading').hide();
-                    lock = false;
+                error: function(xhr, status, err) {
+                    console.error('Error fetching posts:', status, err);
+                    handleFetchError(status === 'timeout' ? 'Request timed out' : err, retryCount, MAX_RETRIES, RETRY_DELAYS);
                 }
             });
+        }
+
+        function handleFetchError(errorMsg, retryCount, maxRetries, retryDelays) {
+            if (retryCount < maxRetries) {
+                const delay = retryDelays[retryCount];
+                console.log(`Retrying in ${delay}ms... (attempt ${retryCount + 2}/${maxRetries + 1})`);
+                $('#loading').find('.spinner').hide();
+                $('#loading').append(`<p style="font-size: 0.9em;">Retrying... (${retryCount + 2}/${maxRetries + 1})</p>`);
+                lock = false;
+                setTimeout(() => {
+                    fetchTopPosts(retryCount + 1);
+                }, delay);
+            } else {
+                $('#loading').find('.spinner').hide();
+                $('#loading').html('<p>Failed to load posts. <button onclick="retryFetch()" style="color: #FF4500; background: none; border: none; cursor: pointer; text-decoration: underline;">Try again</button></p>');
+                lock = false;
+            }
+        }
+
+        function retryFetch() {
+            $('#loading').html('<div class="spinner"></div>');
+            fetchTopPosts(0);
         }
 
         function createPostCard(postId, postTitle, postSelfText, subreddit, upvotes, imageUrl, galleryImages, isVideo, videoUrl) {
@@ -650,18 +714,32 @@
             });
         }
 
-        function fetchComments(postId, contentElement) {
-            const commentURL = `https://www.reddit.com/r/${SUBREDDIT}/comments/${postId}.json?sort=top&limit=20`;
+        function fetchComments(postId, contentElement, retryCount = 0) {
+            const MAX_RETRIES = 3;
+            const RETRY_DELAYS = [1000, 2000, 4000];
+            const commentURL = `https://www.reddit.com/r/${SUBREDDIT}/comments/${postId}.json?sort=top&limit=20&raw_json=1`;
+
+            contentElement.html('<p>Loading comments...</p>');
 
             $.ajax({
                 url: commentURL,
                 method: 'GET',
                 dataType: 'json',
+                timeout: 10000,
                 success: function(data) {
+                    if (!data || !data[1] || !data[1].data) {
+                        if (retryCount < MAX_RETRIES) {
+                            setTimeout(() => fetchComments(postId, contentElement, retryCount + 1), RETRY_DELAYS[retryCount]);
+                            return;
+                        }
+                        contentElement.html('<p>Failed to load comments.</p>').slideDown();
+                        return;
+                    }
+
                     const comments = data[1].data.children
                         .filter(child => child.kind === 't1' && child.data.ups > MIN_UPVOTES)
                         .map(child => child.data)
-                        .sort((a, b) => b.ups - a.ups); // Sort by upvotes descending
+                        .sort((a, b) => b.ups - a.ups);
 
                     if (comments.length === 0) {
                         contentElement.html('<p>No comments available.</p>');
@@ -675,13 +753,17 @@
                         contentElement.html(commentsHtml);
                     }
 
-                    // Mark as loaded
                     contentElement.data('loaded', true);
                     contentElement.slideDown();
                 },
-                error: function(err) {
-                    console.error('Error fetching comments:', err);
-                    contentElement.html('<p>Failed to load comments.</p>').slideDown();
+                error: function(xhr, status, err) {
+                    console.error('Error fetching comments:', status, err);
+                    if (retryCount < MAX_RETRIES) {
+                        contentElement.html(`<p>Retrying... (${retryCount + 2}/${MAX_RETRIES + 1})</p>`);
+                        setTimeout(() => fetchComments(postId, contentElement, retryCount + 1), RETRY_DELAYS[retryCount]);
+                    } else {
+                        contentElement.html('<p>Failed to load comments. <span onclick="$(this).parent().parent().data(\'loaded\', false).find(\'.card-header\').click()" style="color: #FF4500; cursor: pointer; text-decoration: underline;">Try again</span></p>').slideDown();
+                    }
                 }
             });
         }
@@ -692,45 +774,98 @@
         }
 
         // Function to parse selftext and render images or links where applicable
-        function parseSelfText(text) {
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
+        // Parse Reddit markdown to HTML
+        function parseMarkdown(text) {
+            if (!text) return '';
 
-            // First, escape the entire text to prevent XSS
-            let escapedText = escapeHtml(text);
+            // Fix encoding issues first
+            let parsed = text
+                .replace(/&amp;amp;/g, '&')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"');
 
-            // Replace &amp;amp; and &amp; with & to correct encoding issues
-            escapedText = escapedText.replace(/&amp;amp;/g, '&').replace(/&amp;/g, '&');
+            // Escape HTML but preserve newlines
+            parsed = escapeHtml(parsed);
 
-            // Now, replace URLs with images or links
-            return escapedText.replace(urlRegex, function(url) {
-                const normalizedUrl = url.replace(/&amp;/g, '&'); // Replace &amp; with &
-                if (imageRegEx.test(normalizedUrl)) {
-                    return `<img src="${escapeHtml(normalizedUrl)}" alt="Post Image" style="max-width:100%; height:auto; display:block; margin-top:10px;">`;
+            // Parse markdown links [text](url) - do this before plain URLs
+            parsed = parsed.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function(match, linkText, url) {
+                // Clean URL of trailing punctuation
+                const cleanUrl = url.replace(/[.,;:!?)]+$/, '');
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+            });
+
+            // Parse plain URLs (cleaning trailing punctuation)
+            parsed = parsed.replace(/(https?:\/\/[^\s<]+)/g, function(url) {
+                // Skip if already inside an href or anchor tag
+                const before = parsed.substring(0, parsed.indexOf(url));
+                if (before.match(/href="[^"]*$/) || before.match(/<a[^>]*>[^<]*$/)) {
+                    return url;
+                }
+                // Remove trailing punctuation that's not part of the URL
+                const cleanUrl = url.replace(/[.,;:!?)]+$/, '');
+                const trailingPunct = url.slice(cleanUrl.length);
+
+                if (imageRegEx.test(cleanUrl)) {
+                    return `<img src="${cleanUrl}" alt="Image" style="max-width:100%; height:auto; display:block; margin:10px 0;">${trailingPunct}`;
                 } else {
-                    return `<a href="${escapeHtml(normalizedUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(normalizedUrl)}</a>`;
+                    // Truncate display URL if too long
+                    const displayUrl = cleanUrl.length > 50 ? cleanUrl.substring(0, 47) + '...' : cleanUrl;
+                    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${displayUrl}</a>${trailingPunct}`;
                 }
             });
+
+            // Parse Reddit links: /r/subreddit and /u/username
+            parsed = parsed.replace(/\/r\/([a-zA-Z0-9_]+)/g, '<a href="https://reddit.com/r/$1" target="_blank">/r/$1</a>');
+            parsed = parsed.replace(/\/u\/([a-zA-Z0-9_-]+)/g, '<a href="https://reddit.com/u/$1" target="_blank">/u/$1</a>');
+
+            // Bold: **text** or __text__
+            parsed = parsed.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            parsed = parsed.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+            // Italic: *text* or _text_
+            parsed = parsed.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            parsed = parsed.replace(/\b_([^_]+)_\b/g, '<em>$1</em>');
+
+            // Strikethrough: ~~text~~
+            parsed = parsed.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+
+            // Inline code: `code`
+            parsed = parsed.replace(/`([^`]+)`/g, '<code style="background:#f0f0f0; padding:2px 5px; border-radius:3px; font-family:monospace;">$1</code>');
+
+            // Superscript: ^text or ^(text)
+            parsed = parsed.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>');
+            parsed = parsed.replace(/\^(\S+)/g, '<sup>$1</sup>');
+
+            // Block quotes: > text
+            parsed = parsed.replace(/^&gt;\s?(.+)$/gm, '<blockquote style="border-left:3px solid #ccc; padding-left:10px; margin:5px 0; color:#666;">$1</blockquote>');
+
+            // Headers: # ## ###
+            parsed = parsed.replace(/^###\s?(.+)$/gm, '<h4 style="margin:10px 0 5px;">$1</h4>');
+            parsed = parsed.replace(/^##\s?(.+)$/gm, '<h3 style="margin:10px 0 5px;">$1</h3>');
+            parsed = parsed.replace(/^#\s?(.+)$/gm, '<h2 style="margin:10px 0 5px;">$1</h2>');
+
+            // Line breaks: double newline = paragraph, single newline = <br>
+            parsed = parsed.replace(/\n\n+/g, '</p><p style="margin:10px 0;">');
+            parsed = parsed.replace(/\n/g, '<br>');
+
+            // Wrap in paragraph if content exists
+            if (parsed.trim()) {
+                parsed = '<p style="margin:0;">' + parsed + '</p>';
+            }
+
+            return parsed;
         }
 
-        // Function to parse comment body and render images where applicable
+        // Function to parse selftext with markdown
+        function parseSelfText(text) {
+            return parseMarkdown(text);
+        }
+
+        // Function to parse comment body with markdown
         function parseCommentBody(text) {
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-            // First, escape the entire text to prevent XSS
-            let escapedText = escapeHtml(text);
-
-            // Replace &amp;amp; with & to correct double encoding
-            escapedText = escapedText.replace(/&amp;amp;/g, '&');
-
-            // Now, replace URLs with images or links
-            return escapedText.replace(urlRegex, function(url) {
-                const normalizedUrl = url.replace(/&amp;/g, '&'); // Replace &amp; with &
-                if (imageRegEx.test(normalizedUrl)) {
-                    return `<img src="${escapeHtml(normalizedUrl)}" alt="Comment Image" style="max-width:100%; height:auto; display:block; margin-top:10px;">`;
-                } else {
-                    return `<a href="${escapeHtml(normalizedUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(normalizedUrl)}</a>`;
-                }
-            });
+            return parseMarkdown(text);
         }
     </script>
 </body>
