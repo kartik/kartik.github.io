@@ -261,8 +261,8 @@
         function renderHNPosts(posts) {
             const postsContainer = document.getElementById('postsContainer');
 
-            // Sort by votes per day (engagement rate)
-            posts.sort((a, b) => b.votesPerDay - a.votesPerDay);
+            // Sort by most upvoted
+            posts.sort((a, b) => b.score - a.score);
 
             posts.forEach(post => {
                 const card = document.createElement('div');
