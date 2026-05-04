@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluesky Feed</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 5px 10px;
+            background-color: #fff;
+        }
+
+        .search-input input {
+            border: none;
+            outline: none;
+            padding: 5px;
+            font-size: 1em;
+            border-radius: 20px;
+            width: 160px;
+        }
+
+        .search-input button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 1.2em;
+            color: #0085FF;
+        }
+
+        .time-range {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 0.9em;
+        }
+
+        .chip.active, .chip:hover {
+            background-color: #0085FF;
+            color: #fff;
+        }
+
+        .feed-label {
+            text-align: center;
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        #postsContainer {
+            margin-top: 10px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-header {
+            padding: 15px 20px;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ddd;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .author-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .author-name {
+            font-weight: 600;
+            font-size: 0.95em;
+            color: #1a1a1a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .author-handle {
+            font-size: 0.8em;
+            color: #888;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .post-text {
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 10px;
+        }
+
+        .post-text a {
+            color: #0085FF;
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .post-text a:hover {
+            text-decoration: underline;
+        }
+
+        .post-images {
+            display: grid;
+            gap: 4px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .post-images.count-1 { grid-template-columns: 1fr; }
+        .post-images.count-2 { grid-template-columns: 1fr 1fr; }
+        .post-images.count-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+        .post-images.count-3 img:first-child { grid-row: 1 / 3; }
+        .post-images.count-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+        .post-images img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .post-images.count-1 img {
+            max-height: 500px;
+            object-fit: contain;
+            background-color: #000;
+        }
+
+        .external-embed {
+            display: flex;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .external-embed:hover {
+            border-color: #0085FF;
+        }
+
+        .external-thumb {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            background-color: #f5f5f5;
+            flex-shrink: 0;
+        }
+
+        .external-info {
+            padding: 10px;
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .external-title {
+            font-size: 0.9em;
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .external-host {
+            font-size: 0.75em;
+            color: #888;
+            text-transform: lowercase;
+        }
+
+        .quoted-post {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.85em;
+        }
+
+        .quoted-post .author-name {
+            font-size: 0.85em;
+        }
+
+        .quoted-post .author-handle {
+            font-size: 0.75em;
+        }
+
+        .quoted-post .post-text {
+            font-size: 0.85em;
+            margin-bottom: 0;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85em;
+            color: #555;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .card-stats span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .comments-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .comments-toggle:hover {
+            color: #0085FF;
+        }
+
+        .card-content {
+            padding: 15px 20px;
+            display: none;
+            border-top: 1px solid #eee;
+            background-color: #fafafa;
+            font-size: 0.9em;
+        }
+
+        .card-content.loading-replies {
+            color: #888;
+            text-align: center;
+        }
+
+        .reply {
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .reply:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .reply .post-author {
+            margin-bottom: 6px;
+        }
+
+        .reply .avatar {
+            width: 28px;
+            height: 28px;
+        }
+
+        .reply .post-text {
+            font-size: 0.9em;
+            margin-bottom: 6px;
+        }
+
+        .reply-stats {
+            font-size: 0.75em;
+            color: #888;
+            display: flex;
+            gap: 12px;
+        }
+
+        .bsky-link {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 0.85em;
+            color: #0085FF;
+            text-decoration: none;
+        }
+
+        .bsky-link:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0085FF;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.5s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .time-range {
+                gap: 5px;
+            }
+            .chip {
+                padding: 6px 12px;
+                font-size: 0.85em;
+            }
+            .search-input input {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <div class="search-input">
+                <input type="text" id="searchInput" placeholder="handle.bsky.social" />
+                <button id="searchBtn" title="View handle">→</button>
+            </div>
+            <div class="time-range">
+                <button class="chip active" data-time="day">Day</button>
+                <button class="chip" data-time="week">Week</button>
+                <button class="chip" data-time="month">Month</button>
+                <button class="chip" data-time="all">All</button>
+            </div>
+        </div>
+        <div class="feed-label" id="feedLabel">Curated tech & AI feed · 38 accounts</div>
+        <div id="postsContainer"></div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Loading posts...
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://public.api.bsky.app/xrpc';
+
+        // Curated tech/AI accounts on Bluesky (actively posting, verified).
+        // searchPosts is auth-gated; we merge author feeds instead.
+        const AI_ACCOUNTS = [
+            // AI / ML
+            'emollick.bsky.social',
+            'simonw.bsky.social',
+            'emilymbender.bsky.social',
+            'hardmaru.bsky.social',
+            'garymarcus.bsky.social',
+            'mmitchell.bsky.social',
+            'rasbt.bsky.social',
+            'gdb.bsky.social',
+            'drmichaellevin.bsky.social',
+            'swyx.io',
+            'meredithmeredith.bsky.social',
+            // Tech / programming / policy
+            'molly.wiki',
+            'caseynewton.bsky.social',
+            'kateconger.com',
+            'waxy.org',
+            'schneier.com',
+            'techdirt.com',
+            'steveklabnik.com',
+            'jamesgleick.bsky.social',
+            'glennf.com',
+            'fasterthanli.me',
+            'xeiaso.net',
+            'cassidoo.co',
+            // Economics & finance
+            'claudia-sahm.bsky.social',
+            'jc-econ.bsky.social',
+            'isabellamweber.bsky.social',
+            // Tech & business
+            'mcuban.bsky.social',
+            'jay.bsky.team',
+            // Science & environment
+            'hankgreen.bsky.social',
+            // Publications
+            'nytimes.com',
+            'washingtonpost.com',
+            'economist.com',
+            'theinformation.com',
+            'techcrunch.com',
+            'theverge.com',
+            'arstechnica.com',
+            'wired.com',
+            'nature.com'
+        ];
+
+        let TIMEFRAME = 'day';
+        let CUSTOM_HANDLE = '';
+        let lock = false;
+
+        const TIME_RANGES = {
+            day: 24 * 60 * 60,
+            week: 7 * 24 * 60 * 60,
+            month: 30 * 24 * 60 * 60,
+            all: null
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchPosts();
+
+            document.querySelectorAll('.chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    if (chip.classList.contains('active')) return;
+                    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    TIMEFRAME = chip.dataset.time;
+                    fetchPosts();
+                });
+            });
+
+            document.getElementById('searchBtn').addEventListener('click', () => {
+                const v = document.getElementById('searchInput').value.trim().replace(/^@/, '');
+                CUSTOM_HANDLE = v;
+                fetchPosts();
+            });
+
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('searchBtn').click();
+            });
+        });
+
+        async function fetchPosts() {
+            if (lock) return;
+            lock = true;
+
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('postsContainer');
+            const label = document.getElementById('feedLabel');
+            container.innerHTML = '';
+            loading.style.display = 'block';
+            loading.innerHTML = '<div class="spinner"></div>Loading posts...';
+
+            const accounts = CUSTOM_HANDLE ? [CUSTOM_HANDLE] : AI_ACCOUNTS;
+            label.textContent = CUSTOM_HANDLE
+                ? `@${CUSTOM_HANDLE}`
+                : `Curated tech & AI feed · ${AI_ACCOUNTS.length} accounts`;
+
+            try {
+                const results = await Promise.all(accounts.map(actor =>
+                    fetch(`${API}/app.bsky.feed.getAuthorFeed?actor=${encodeURIComponent(actor)}&limit=30&filter=posts_no_replies`)
+                        .then(r => r.ok ? r.json() : null)
+                        .catch(() => null)
+                ));
+
+                let posts = [];
+                const seen = new Set();
+                results.forEach(r => {
+                    if (!r || !r.feed) return;
+                    r.feed.forEach(item => {
+                        // Skip reposts (have a reason) and replies; keep top-level only
+                        if (item.reason || item.reply) return;
+                        if (!item.post || !item.post.record) return;
+                        if (seen.has(item.post.uri)) return;
+                        seen.add(item.post.uri);
+                        posts.push(item.post);
+                    });
+                });
+
+                // Time range filter
+                const range = TIME_RANGES[TIMEFRAME];
+                if (range) {
+                    const cutoff = Date.now() - range * 1000;
+                    posts = posts.filter(p => new Date(p.record.createdAt).getTime() > cutoff);
+                }
+
+                // Sort by likes desc (trending within window)
+                posts.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+
+                posts.slice(0, 80).forEach(renderPost);
+
+                loading.style.display = 'none';
+                if (posts.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.</p>';
+                }
+            } catch (err) {
+                console.error('Error fetching posts:', err);
+                loading.innerHTML = '<p style="color:#888;">Failed to load posts. <span onclick="location.reload()" style="color:#0085FF;cursor:pointer;text-decoration:underline;">Retry</span></p>';
+            }
+
+            lock = false;
+        }
+
+        function renderPost(post) {
+            const card = document.createElement('div');
+            card.classList.add('card');
+
+            const webUrl = postWebUrl(post);
+            const profileUrl = `https://bsky.app/profile/${post.author.handle}`;
+            const timeAgo = formatTimeAgo(post.record.createdAt);
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <a class="post-author" href="${escapeHtml(profileUrl)}" target="_blank" rel="noopener">
+                        <img class="avatar" src="${escapeHtml(post.author.avatar || '')}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+                        <div class="author-info">
+                            <div class="author-name">${escapeHtml(post.author.displayName || post.author.handle)}</div>
+                            <div class="author-handle">@${escapeHtml(post.author.handle)} · ${timeAgo}</div>
+                        </div>
+                    </a>
+                    <div class="post-text">${linkifyText(post.record.text || '')}</div>
+                    ${renderEmbed(post.embed)}
+                    <div class="card-stats">
+                        <span>♥ ${post.likeCount || 0}</span>
+                        <span>🔁 ${post.repostCount || 0}</span>
+                        <span class="comments-toggle" title="Show replies">💬 ${post.replyCount || 0}</span>
+                    </div>
+                </div>
+                <div class="card-content" data-loaded="false"></div>
+            `;
+
+            const toggle = card.querySelector('.comments-toggle');
+            const content = card.querySelector('.card-content');
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                    return;
+                }
+                if (content.dataset.loaded === 'true') {
+                    content.style.display = 'block';
+                } else {
+                    fetchReplies(post.uri, content, webUrl);
+                }
+            });
+
+            document.getElementById('postsContainer').appendChild(card);
+        }
+
+        function renderEmbed(embed) {
+            if (!embed) return '';
+            const type = embed.$type;
+
+            if (type === 'app.bsky.embed.images#view' && embed.images) {
+                return renderImages(embed.images);
+            }
+            if (type === 'app.bsky.embed.external#view' && embed.external) {
+                return renderExternal(embed.external);
+            }
+            if (type === 'app.bsky.embed.recordWithMedia#view') {
+                let html = '';
+                if (embed.media) {
+                    if (embed.media.$type === 'app.bsky.embed.images#view') {
+                        html += renderImages(embed.media.images || []);
+                    } else if (embed.media.$type === 'app.bsky.embed.external#view') {
+                        html += renderExternal(embed.media.external);
+                    }
+                }
+                if (embed.record && embed.record.record) {
+                    html += renderQuotedRecord(embed.record.record);
+                }
+                return html;
+            }
+            if (type === 'app.bsky.embed.record#view' && embed.record) {
+                return renderQuotedRecord(embed.record);
+            }
+            if (type === 'app.bsky.embed.video#view' && embed.thumbnail) {
+                return `<div class="post-images count-1"><img src="${escapeHtml(embed.thumbnail)}" alt="video thumbnail"></div>`;
+            }
+            return '';
+        }
+
+        function renderImages(images) {
+            if (!images.length) return '';
+            const count = Math.min(images.length, 4);
+            const imgs = images.slice(0, 4).map(img =>
+                `<img src="${escapeHtml(img.thumb)}" alt="${escapeHtml(img.alt || '')}" loading="lazy" onclick="window.open('${escapeHtml(img.fullsize)}', '_blank')">`
+            ).join('');
+            return `<div class="post-images count-${count}">${imgs}</div>`;
+        }
+
+        function renderExternal(ext) {
+            const host = (() => {
+                try { return new URL(ext.uri).host.replace(/^www\./, ''); }
+                catch { return ''; }
+            })();
+            const thumb = ext.thumb
+                ? `<img class="external-thumb" src="${escapeHtml(ext.thumb)}" alt="" loading="lazy">`
+                : '';
+            return `
+                <a class="external-embed" href="${escapeHtml(ext.uri)}" target="_blank" rel="noopener">
+                    ${thumb}
+                    <div class="external-info">
+                        <div class="external-title">${escapeHtml(ext.title || ext.uri)}</div>
+                        <div class="external-host">${escapeHtml(host)}</div>
+                    </div>
+                </a>
+            `;
+        }
+
+        function renderQuotedRecord(record) {
+            // Quoted posts come back as ViewRecord with author + value.text (the original record)
+            const author = record.author;
+            const text = (record.value && record.value.text) || '';
+            if (!author) return '';
+            return `
+                <div class="quoted-post">
+                    <div class="post-author">
+                        <img class="avatar" src="${escapeHtml(author.avatar || '')}" alt="" loading="lazy" style="width:24px;height:24px;" onerror="this.style.visibility='hidden'">
+                        <div class="author-info">
+                            <div class="author-name">${escapeHtml(author.displayName || author.handle)}</div>
+                            <div class="author-handle">@${escapeHtml(author.handle)}</div>
+                        </div>
+                    </div>
+                    <div class="post-text">${linkifyText(text)}</div>
+                </div>
+            `;
+        }
+
+        async function fetchReplies(postUri, contentElement, webUrl) {
+            contentElement.classList.add('loading-replies');
+            contentElement.innerHTML = 'Loading replies...';
+            contentElement.style.display = 'block';
+
+            try {
+                const url = `${API}/app.bsky.feed.getPostThread?uri=${encodeURIComponent(postUri)}&depth=1`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                const replies = (data.thread && data.thread.replies) || [];
+                const valid = replies
+                    .filter(r => r.$type === 'app.bsky.feed.defs#threadViewPost' && r.post && r.post.record)
+                    .sort((a, b) => (b.post.likeCount || 0) - (a.post.likeCount || 0))
+                    .slice(0, 20);
+
+                contentElement.classList.remove('loading-replies');
+                const link = `<a class="bsky-link" href="${escapeHtml(webUrl)}" target="_blank" rel="noopener">View full thread on Bluesky →</a>`;
+
+                if (valid.length === 0) {
+                    contentElement.innerHTML = '<p style="color:#888;">No replies yet.</p>' + link;
+                } else {
+                    contentElement.innerHTML = valid.map(r => renderReply(r.post)).join('') + link;
+                }
+
+                contentElement.dataset.loaded = 'true';
+            } catch (err) {
+                console.error('Error fetching replies:', err);
+                contentElement.classList.remove('loading-replies');
+                contentElement.innerHTML = '<p style="color:#888;">Failed to load replies.</p>';
+            }
+        }
+
+        function renderReply(post) {
+            const profileUrl = `https://bsky.app/profile/${post.author.handle}`;
+            const timeAgo = formatTimeAgo(post.record.createdAt);
+            return `
+                <div class="reply">
+                    <a class="post-author" href="${escapeHtml(profileUrl)}" target="_blank" rel="noopener">
+                        <img class="avatar" src="${escapeHtml(post.author.avatar || '')}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+                        <div class="author-info">
+                            <div class="author-name">${escapeHtml(post.author.displayName || post.author.handle)}</div>
+                            <div class="author-handle">@${escapeHtml(post.author.handle)} · ${timeAgo}</div>
+                        </div>
+                    </a>
+                    <div class="post-text">${linkifyText(post.record.text || '')}</div>
+                    <div class="reply-stats">
+                        <span>♥ ${post.likeCount || 0}</span>
+                        <span>🔁 ${post.repostCount || 0}</span>
+                        <span>💬 ${post.replyCount || 0}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function postWebUrl(post) {
+            const rkey = post.uri.split('/').pop();
+            return `https://bsky.app/profile/${post.author.handle}/post/${rkey}`;
+        }
+
+        function linkifyText(text) {
+            const escaped = escapeHtml(text);
+            // URLs
+            let html = escaped.replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, (url) => {
+                const display = url.length > 50 ? url.substring(0, 47) + '...' : url;
+                return `<a href="${url}" target="_blank" rel="noopener">${display}</a>`;
+            });
+            // @mentions
+            html = html.replace(/(^|[\s(])@([a-zA-Z0-9.\-_]+)/g, (m, pre, handle) =>
+                `${pre}<a href="https://bsky.app/profile/${handle}" target="_blank" rel="noopener">@${handle}</a>`
+            );
+            // #hashtags
+            html = html.replace(/(^|[\s(])#([\p{L}\p{N}_]+)/gu, (m, pre, tag) =>
+                `${pre}<a href="https://bsky.app/hashtag/${encodeURIComponent(tag)}" target="_blank" rel="noopener">#${tag}</a>`
+            );
+            return html;
+        }
+
+        function formatTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+            if (seconds < 2592000) return `${Math.floor(seconds / 604800)}w ago`;
+            if (seconds < 31536000) return `${Math.floor(seconds / 2592000)}mo ago`;
+            return `${Math.floor(seconds / 31536000)}y ago`;
+        }
+
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
