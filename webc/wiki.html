@@ -239,6 +239,8 @@
     <script>
         let isRandomMode = true;
         let lock = false;
+        let currentPage = null;
+        let visitedPages = new Set();
 
         const imageRegEx = /\.(jpg|jpeg|png|gif|webp)/i;
 
@@ -273,9 +275,13 @@
             });
 
             $(window).on('scroll', function() {
-                if (!isRandomMode || lock) return;
+                if (lock) return;
                 if ($(window).scrollTop() + $(window).height() >= $(document).height() - 500) {
-                    loadRandomPage(false);
+                    if (isRandomMode) {
+                        loadRandomPage(false);
+                    } else if (currentPage) {
+                        loadSeeAlso(currentPage);
+                    }
                 }
             });
         });
@@ -296,6 +302,8 @@
             if (lock) return;
             lock = true;
             isRandomMode = true;
+            currentPage = null;
+            visitedPages = new Set();
             if (reset) resetPosts();
             showLoading();
 
@@ -320,9 +328,72 @@
             if (lock) return;
             lock = true;
             isRandomMode = false;
+            currentPage = title;
+            visitedPages = new Set([normalizeTitle(title)]);
             resetPosts();
             showLoading();
             fetchPageImages(title, false);
+        }
+
+        function normalizeTitle(t) {
+            return (t || '').replace(/_/g, ' ').trim().toLowerCase();
+        }
+
+        function loadSeeAlso(pageTitle) {
+            if (lock) return;
+            lock = true;
+            showLoading();
+
+            $.ajax({
+                url: `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&prop=sections&format=json&origin=*`,
+                method: 'GET',
+                dataType: 'json',
+                timeout: 15000,
+                success: function(data) {
+                    const sections = (data.parse && data.parse.sections) || [];
+                    const seeAlso = sections.find(s => /^see also$/i.test(s.line));
+
+                    if (!seeAlso) {
+                        hideLoading();
+                        lock = false;
+                        $('#postsContainer').append('<div class="card"><div class="card-header"><h2>End of chain — no "See also" section on "' + escapeHtml(pageTitle) + '".</h2></div></div>');
+                        currentPage = null;
+                        return;
+                    }
+
+                    $.ajax({
+                        url: `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&section=${seeAlso.index}&prop=links&format=json&origin=*`,
+                        method: 'GET',
+                        dataType: 'json',
+                        timeout: 15000,
+                        success: function(linkData) {
+                            const links = (linkData.parse && linkData.parse.links) || [];
+                            const nextLink = links.find(l => l.ns === 0 && !visitedPages.has(normalizeTitle(l['*'])));
+
+                            if (!nextLink) {
+                                hideLoading();
+                                lock = false;
+                                $('#postsContainer').append('<div class="card"><div class="card-header"><h2>End of chain — no new "See also" links from "' + escapeHtml(pageTitle) + '".</h2></div></div>');
+                                currentPage = null;
+                                return;
+                            }
+
+                            const nextPage = nextLink['*'];
+                            visitedPages.add(normalizeTitle(nextPage));
+                            currentPage = nextPage;
+                            fetchPageImages(nextPage, false);
+                        },
+                        error: function() {
+                            hideLoading();
+                            lock = false;
+                        }
+                    });
+                },
+                error: function() {
+                    hideLoading();
+                    lock = false;
+                }
+            });
         }
 
         function fetchPageImages(pageTitle, fromRandom) {
