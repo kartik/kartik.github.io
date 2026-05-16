@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text: #e0e0e0;
+            --text-muted: #999;
+            --input-bg: #2a2a2a;
+            --input-border: #444;
+            --chip-bg: #2a2a2a;
+            --chip-text: #e0e0e0;
+            --shadow: 0 2px 5px rgba(0,0,0,0.4);
+            --spinner-track: #2a2a2a;
+            --accent: #FF4500;
+            --link: #22aaff;
+        }
+
+        body.light {
+            --bg: #f0f0f0;
+            --card-bg: #fff;
+            --text: #333;
+            --text-muted: #555;
+            --input-bg: #fff;
+            --input-border: #ccc;
+            --chip-bg: #e0e0e0;
+            --chip-text: #333;
+            --shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --spinner-track: #f3f3f3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .subreddit-input {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--input-border);
+            border-radius: 20px;
+            padding: 5px 10px;
+            background-color: var(--input-bg);
+        }
+
+        .subreddit-input input {
+            border: none;
+            outline: none;
+            padding: 5px;
+            font-size: 1em;
+            border-radius: 20px;
+            width: 177px;
+            background-color: transparent;
+            color: var(--text);
+        }
+
+        .subreddit-input input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .subreddit-input button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 1.2em;
+            color: var(--accent);
+        }
+
+        .time-range {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background-color: var(--chip-bg);
+            color: var(--chip-text);
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 0.9em;
+        }
+
+        .chip.active, .chip:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        #postsContainer {
+            margin-top: 0px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 0.9em;
+            flex: 1;
+            margin-right: 10px;
+            font-weight: 400;
+            color: var(--link);
+        }
+
+        .card-header .subreddit {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-right: 10px;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: var(--text-muted);
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid var(--spinner-track);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.5s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .card-header h2 {
+                margin-bottom: 10px;
+            }
+
+            .card-header .subreddit {
+                margin-right: 0;
+            }
+
+            .control-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .subreddit-input input {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <div class="subreddit-input">
+                <input type="text" id="pageInput" placeholder="Page title" />
+                <button id="loadPage" title="Load Page">→</button>
+            </div>
+            <div class="time-range">
+                <button class="chip active" id="randomBtn">Random</button>
+                <button class="chip" id="themeBtn" title="Toggle theme">☾</button>
+            </div>
+        </div>
+        <div id="postsContainer">
+            <!-- Image cards will be inserted here -->
+        </div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let isRandomMode = true;
+        let lock = false;
+
+        const imageRegEx = /\.(jpg|jpeg|png|gif|webp)/i;
+
+        $(document).ready(function() {
+            const savedTheme = localStorage.getItem('wikiTheme') || 'dark';
+            applyTheme(savedTheme);
+
+            $('#themeBtn').on('click', function() {
+                const next = $('body').hasClass('light') ? 'dark' : 'light';
+                applyTheme(next);
+                localStorage.setItem('wikiTheme', next);
+            });
+
+            loadRandomPage(true);
+
+            $('#randomBtn').on('click', function() {
+                loadRandomPage(true);
+            });
+
+            $('#loadPage').on('click', function() {
+                const title = $('#pageInput').val().trim();
+                if (title !== '') {
+                    loadPage(title);
+                    $('#pageInput').val('');
+                }
+            });
+
+            $('#pageInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    $('#loadPage').click();
+                }
+            });
+
+            $(window).on('scroll', function() {
+                if (!isRandomMode || lock) return;
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 500) {
+                    loadRandomPage(false);
+                }
+            });
+        });
+
+        function resetPosts() {
+            $('#postsContainer').empty();
+        }
+
+        function showLoading() {
+            $('#loading').show();
+        }
+
+        function hideLoading() {
+            $('#loading').hide();
+        }
+
+        function loadRandomPage(reset) {
+            if (lock) return;
+            lock = true;
+            isRandomMode = true;
+            if (reset) resetPosts();
+            showLoading();
+
+            $.ajax({
+                url: 'https://en.wikipedia.org/api/rest_v1/page/random/summary',
+                method: 'GET',
+                dataType: 'json',
+                timeout: 15000,
+                success: function(data) {
+                    const pageTitle = data.title;
+                    fetchPageImages(pageTitle, true);
+                },
+                error: function() {
+                    hideLoading();
+                    lock = false;
+                    $('#postsContainer').append('<div class="card"><div class="card-header"><h2>Failed to load random page. <span style="color:#FF4500; cursor:pointer; text-decoration:underline;" onclick="loadRandomPage(false)">Try again</span></h2></div></div>');
+                }
+            });
+        }
+
+        function loadPage(title) {
+            if (lock) return;
+            lock = true;
+            isRandomMode = false;
+            resetPosts();
+            showLoading();
+            fetchPageImages(title, false);
+        }
+
+        function fetchPageImages(pageTitle, fromRandom) {
+            $.ajax({
+                url: `https://en.wikipedia.org/api/rest_v1/page/media-list/${encodeURIComponent(pageTitle)}`,
+                method: 'GET',
+                dataType: 'json',
+                timeout: 15000,
+                success: function(data) {
+                    const items = data.items || [];
+
+                    const images = items
+                        .filter(item => {
+                            const url = (item.srcset && item.srcset[0] && item.srcset[0].src) || item.src || '';
+                            return imageRegEx.test(url);
+                        })
+                        .map(item => {
+                            let url = (item.srcset && item.srcset[0] && item.srcset[0].src) || item.src || '';
+                            if (url.startsWith('//')) url = 'https:' + url;
+                            return {
+                                url: url,
+                                title: item.title || item.name || 'Image',
+                                caption: (item.caption && item.caption.text) ? stripHtml(item.caption.text) : ''
+                            };
+                        });
+
+                    hideLoading();
+                    lock = false;
+
+                    if (images.length === 0) {
+                        if (fromRandom) {
+                            loadRandomPage(false);
+                        } else {
+                            $('#postsContainer').append('<div class="card"><div class="card-header"><h2>No images found on this page.</h2><span class="subreddit">' + escapeHtml(pageTitle) + '</span></div></div>');
+                        }
+                    } else {
+                        images.forEach(img => {
+                            createImageCard(img, pageTitle);
+                        });
+                    }
+                },
+                error: function() {
+                    hideLoading();
+                    lock = false;
+                    $('#postsContainer').append('<div class="card"><div class="card-header"><h2>Failed to load images for "' + escapeHtml(pageTitle) + '". <span style="color:#FF4500; cursor:pointer; text-decoration:underline;" onclick="loadRandomPage(false)">Try random</span></h2></div></div>');
+                }
+            });
+        }
+
+        function createImageCard(img, pageTitle) {
+            const displayTitle = img.caption || cleanImageTitle(img.title);
+
+            const card = $(`
+                <div class="card">
+                    <div class="card-header">
+                        <h2>${escapeHtml(displayTitle)}</h2>
+                        <span class="subreddit">${escapeHtml(pageTitle)}</span>
+                    </div>
+                    <div class="card-image">
+                        <img src="${escapeHtml(img.url)}" alt="${escapeHtml(displayTitle)}" loading="lazy">
+                    </div>
+                </div>
+            `);
+
+            card.find('.card-image img').on('click', function() {
+                window.open($(this).attr('src'), '_blank');
+            });
+
+            $('#postsContainer').append(card);
+        }
+
+        function cleanImageTitle(title) {
+            return title
+                .replace(/^File:/, '')
+                .replace(/\.(jpg|jpeg|png|gif|webp|svg)$/i, '')
+                .replace(/_/g, ' ');
+        }
+
+        function stripHtml(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+
+        function escapeHtml(text) {
+            return $('<div>').text(text).html();
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                $('body').addClass('light');
+                $('#themeBtn').text('☼');
+            } else {
+                $('body').removeClass('light');
+                $('#themeBtn').text('☾');
+            }
+        }
+    </script>
+</body>
+</html>
