@@ -49,16 +49,27 @@
 
         .container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
             padding: 10px;
         }
 
         .control-panel {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
             gap: 10px;
             flex-wrap: wrap;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 15px 10px;
+            background-color: var(--bg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .container {
+            padding-top: 80px;
         }
 
         .subreddit-input {
@@ -195,11 +206,6 @@
 
             .card-header .subreddit {
                 margin-right: 0;
-            }
-
-            .control-panel {
-                flex-direction: column;
-                align-items: center;
             }
 
             .subreddit-input input {
@@ -381,8 +387,9 @@
                 </div>
             `);
 
-            card.find('.card-image img').on('click', function() {
-                window.open($(this).attr('src'), '_blank');
+            const articleUrl = 'https://en.wikipedia.org/wiki/' + encodeURIComponent(pageTitle.replace(/ /g, '_'));
+            card.find('.card-image img, .card-header h2').css('cursor', 'pointer').on('click', function() {
+                window.open(articleUrl, '_blank');
             });
 
             $('#postsContainer').append(card);
