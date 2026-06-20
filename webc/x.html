@@ -313,8 +313,8 @@
                 <button id="searchBtn" title="View handle">→</button>
             </div>
             <div class="time-range">
-                <button class="chip active" data-time="day">Day</button>
-                <button class="chip" data-time="week">Week</button>
+                <button class="chip" data-time="day">Day</button>
+                <button class="chip active" data-time="week">Week</button>
                 <button class="chip" data-time="month">Month</button>
                 <button class="chip" data-time="all">All</button>
             </div>
@@ -329,18 +329,21 @@
 
     <script>
         // X (Twitter) has no public CORS-enabled API, so we read public RSS from
-        // an xcancel (Nitter) instance through a CORS proxy. Nitter RSS carries the
-        // tweet text, media, quote-tweets and timestamps — but no like/retweet
-        // counts or replies, so this is a clean read-only feed.
-        const INSTANCE = 'https://xcancel.com';
-
-        // CORS proxies, tried in order. allorigins (/get) caches responses and is
-        // the most reliable; the others are raw-passthrough fallbacks.
-        const PROXIES = [
-            { url: u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, kind: 'allorigins' },
-            { url: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`, kind: 'raw' },
-            { url: u => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`, kind: 'raw' }
+        // an xcancel (Nitter) instance through the allorigins CORS proxy. Nitter
+        // RSS carries the tweet text, media, quote-tweets and timestamps — but no
+        // like/retweet counts or replies, so this is a clean read-only feed.
+        // Nitter instances are individually flaky/often-down, so we fail over
+        // between them: race them on a cold start, then stick to whichever responds.
+        const INSTANCES = [
+            'https://xcancel.com',
+            'https://nitter.net',
+            'https://nitter.space',
+            'https://lightbrd.com',
+            'https://nitter.privacyredirect.com',
+            'https://nitter.poast.org'
         ];
+        const INSTANCE_HOSTS = INSTANCES.map(u => u.replace(/^https?:\/\//, ''));
+        let WORKING_INSTANCE = null;   // sticky once one proves healthy
 
         // Curated tech / AI accounts on X (handles without @).
         const AI_ACCOUNTS = [
@@ -373,11 +376,13 @@
             'bentossell'       // Ben's Bites
         ];
 
-        // Concurrency ramp: fetch 1 feed first (fastest first paint), then widen
-        // to 2, 4, 6 parallel — the last size repeats for any remaining feeds.
-        const RAMP = [1, 2, 4, 6];
+        // Growing-concurrency pool: start several feeds at once so the first card
+        // is the fastest of a batch (not one unlucky slow feed), then widen up to
+        // POOL_MAX as feeds complete. No barriers, so a slow feed never blocks others.
+        const POOL_START = 4;
+        const POOL_MAX = 6;
 
-        let TIMEFRAME = 'day';
+        let TIMEFRAME = 'week';
         let CUSTOM_HANDLE = '';
         let lock = false;
         let currentReq = 0;   // guards against stale renders when filters change
@@ -424,33 +429,99 @@
             return new TextDecoder('utf-8').decode(bytes);
         }
 
-        async function fetchViaProxy(targetUrl) {
-            for (const proxy of PROXIES) {
-                for (let attempt = 0; attempt < 2; attempt++) {
-                    try {
-                        const res = await fetch(proxy.url(targetUrl), { cache: 'no-store' });
-                        if (!res.ok) continue;
-                        if (proxy.kind === 'allorigins') {
-                            const data = await res.json();
-                            let c = data && data.contents;
-                            if (!c) continue;
-                            if (c.startsWith('data:')) {
-                                const idx = c.indexOf('base64,');
-                                c = idx !== -1 ? b64ToUtf8(c.slice(idx + 7)) : decodeURIComponent(c.slice(c.indexOf(',') + 1));
-                            }
-                            if (c.includes('<rss') || c.includes('<item>')) return c;
-                        } else {
-                            const text = await res.text();
-                            if (text.includes('<rss') || text.includes('<item>')) return text;
-                        }
-                    } catch (e) { /* try next */ }
+        // Fetch with a hard timeout (so a hung request can't stall the feed) plus an
+        // optional external signal (so a race can cancel the losing instances).
+        async function fetchText(url, timeoutMs, extSignal) {
+            const ctrl = new AbortController();
+            const to = setTimeout(() => ctrl.abort(), timeoutMs);
+            const onAbort = () => ctrl.abort();
+            if (extSignal) {
+                if (extSignal.aborted) ctrl.abort();
+                else extSignal.addEventListener('abort', onAbort);
+            }
+            try {
+                const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+                return res.ok ? await res.text() : null;
+            } finally {
+                clearTimeout(to);
+                if (extSignal) extSignal.removeEventListener('abort', onAbort);
+            }
+        }
+
+        function decodeAllorigins(raw) {
+            let c;
+            try { c = JSON.parse(raw).contents; } catch { return null; }
+            if (!c) return null;
+            if (c.startsWith('data:')) {
+                const idx = c.indexOf('base64,');
+                c = idx !== -1 ? b64ToUtf8(c.slice(idx + 7)) : decodeURIComponent(c.slice(c.indexOf(',') + 1));
+            }
+            return (c.includes('<rss') || c.includes('<item>')) ? c : null;
+        }
+
+        // allorigins is the only proxy that reaches Nitter from the browser
+        // (corsproxy/codetabs are CORS- or key-gated). It returns transient 500/522
+        // errors under load, but those fast-fail and usually clear on retry — so we
+        // retry a few times. extSignal lets a race abort this once a winner is found.
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        async function fetchInstance(instance, path, attempts, extSignal) {
+            const target = `${instance}${path}`;
+            const url = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`;
+            for (let i = 0; i < attempts; i++) {
+                if (extSignal && extSignal.aborted) return null;
+                try {
+                    const raw = await fetchText(url, 12000, extSignal);
+                    if (raw) {
+                        const xml = decodeAllorigins(raw);
+                        if (xml) return xml;
+                    }
+                } catch (e) { /* timeout / abort / network — retry */ }
+                // Backoff before retrying: allorigins often returns a transient
+                // error/empty body that only clears a beat later, so an immediate
+                // retry just re-hits it. Skip the wait after the final attempt.
+                if (i < attempts - 1 && !(extSignal && extSignal.aborted)) {
+                    await sleep(700 * (i + 1));
                 }
             }
             return null;
         }
 
+        // Find a working instance. allorigins buckles if hit with many concurrent
+        // requests, so we probe instances 2 at a time (not all at once): the first
+        // of a pair to return valid RSS wins, becomes sticky, and aborts its partner.
+        async function establishInstance(path) {
+            for (let i = 0; i < INSTANCES.length; i += 2) {
+                const batch = INSTANCES.slice(i, i + 2);
+                const ctrl = new AbortController();
+                const xml = await new Promise(resolve => {
+                    let pending = batch.length;
+                    let settled = false;
+                    batch.forEach(inst => {
+                        fetchInstance(inst, path, 3, ctrl.signal).then(x => {
+                            if (settled) return;
+                            if (x) { settled = true; WORKING_INSTANCE = inst; ctrl.abort(); resolve(x); }
+                            else if (--pending === 0) resolve(null);
+                        });
+                    });
+                });
+                if (xml) return xml;
+            }
+            return null;
+        }
+
+        // Use the known-good instance if we have one; otherwise probe to find one.
+        async function fetchViaProxy(path) {
+            if (WORKING_INSTANCE) {
+                const xml = await fetchInstance(WORKING_INSTANCE, path, 3);
+                if (xml) return xml;
+                WORKING_INSTANCE = null;   // it died — fall back to a fresh probe
+            }
+            return establishInstance(path);
+        }
+
         async function fetchFeed(handle) {
-            const xml = await fetchViaProxy(`${INSTANCE}/${encodeURIComponent(handle)}/rss`);
+            const xml = await fetchViaProxy(`/${encodeURIComponent(handle)}/rss`);
             if (!xml) return [];
             try {
                 return parseFeed(xml, handle);
@@ -533,22 +604,42 @@
                 }
             }
 
-            // Fetch in widening waves (1 → 2 → 4 → 6) so the first feed paints
-            // immediately, then parallelism ramps up — each feed renders on arrival.
-            let i = 0, wave = 0;
-            while (i < accounts.length) {
-                if (myReq !== currentReq) break;
-                const size = RAMP[Math.min(wave, RAMP.length - 1)];
-                const batch = accounts.slice(i, i + size);
-                i += size;
-                wave++;
-                await Promise.all(batch.map(async acct => {
-                    let posts = [];
-                    try { posts = await fetchFeed(acct); }
-                    catch (err) { console.error('Feed error for', acct, err); }
-                    handleFeed(posts);
-                }));
+            // Cold start: establish a healthy instance on the first account alone
+            // (racing all instances) so the parallel pool below can reuse it instead
+            // of all stampeding the instance list at once. Its posts render now.
+            let startIdx = 0;
+            if (!WORKING_INSTANCE && accounts.length) {
+                let firstPosts = [];
+                try { firstPosts = await fetchFeed(accounts[0]); } catch (e) { /* ignore */ }
+                if (myReq !== currentReq) { lock = false; return; }
+                handleFeed(firstPosts);
+                startIdx = 1;
             }
+
+            // Growing-concurrency pool: launch POOL_START feeds immediately, and
+            // widen the cap by one each time a feed finishes (up to POOL_MAX). Each
+            // feed renders on arrival, so first paint = fastest of the opening batch.
+            await new Promise(resolve => {
+                let next = startIdx, active = 0, finished = startIdx, cap = POOL_START;
+                function pump() {
+                    if (myReq !== currentReq) { resolve(); return; }
+                    if (finished >= accounts.length) { resolve(); return; }
+                    while (active < cap && next < accounts.length) {
+                        const acct = accounts[next++];
+                        active++;
+                        fetchFeed(acct)
+                            .catch(() => [])
+                            .then(posts => {
+                                handleFeed(posts);
+                                active--; finished++;
+                                cap = Math.min(POOL_MAX, cap + 1);
+                                if (finished >= accounts.length) resolve();
+                                else pump();
+                            });
+                    }
+                }
+                pump();
+            });
 
             if (myReq !== currentReq) { lock = false; return; }
             loading.style.display = 'none';
@@ -693,10 +784,12 @@
 
         function rewriteUrl(url) {
             if (!url) return '';
-            return url
-                .replace(/^https?:\/\/xcancel\.com/i, 'https://x.com')
-                .replace(/^https?:\/\/(?:rss\.)?xcancel\.com/i, 'https://x.com')
-                .replace(/#m$/, '');
+            let out = url;
+            for (const host of INSTANCE_HOSTS) {
+                const re = new RegExp('^https?://(?:rss\\.)?' + host.replace(/\./g, '\\.'), 'i');
+                out = out.replace(re, 'https://x.com');
+            }
+            return out.replace(/#m$/, '');
         }
 
         function formatTimeAgo(timestamp) {
