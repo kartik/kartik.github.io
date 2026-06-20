@@ -284,6 +284,25 @@
                 width: 130px;
             }
         }
+
+        /* ---- dark mode (default) ---- */
+        body { background-color: #000000; color: #e7e9ea; }
+        .search-input { border-color: #2f3336; background-color: #16181c; }
+        .search-input input { color: #e7e9ea; background: transparent; }
+        .search-input input::placeholder { color: #71767b; }
+        .search-input button { color: #e7e9ea; }
+        .chip { background-color: #2a2d31; color: #e7e9ea; }
+        .chip.active, .chip:hover { background-color: #1d9bf0; color: #fff; }
+        .feed-label { color: #71767b; }
+        .card { background-color: #16181c; box-shadow: 0 1px 0 #2f3336; }
+        .author-name { color: #e7e9ea; }
+        .avatar { background-color: #2a2d31; }
+        .tweet-body img { background-color: #2a2d31; }
+        .tweet-body blockquote { border-color: #2f3336; background-color: #1c1f23; }
+        .tweet-body blockquote b { color: #e7e9ea; }
+        .card-stats { color: #8b98a5; border-top-color: #2f3336; }
+        .loading { color: #8b98a5; }
+        .spinner { border-color: #2f3336; border-top-color: #1d9bf0; }
     </style>
 </head>
 <body>
@@ -294,8 +313,8 @@
                 <button id="searchBtn" title="View handle">→</button>
             </div>
             <div class="time-range">
-                <button class="chip" data-time="day">Day</button>
-                <button class="chip active" data-time="week">Week</button>
+                <button class="chip active" data-time="day">Day</button>
+                <button class="chip" data-time="week">Week</button>
                 <button class="chip" data-time="month">Month</button>
                 <button class="chip" data-time="all">All</button>
             </div>
@@ -358,7 +377,7 @@
         // to 2, 4, 6 parallel — the last size repeats for any remaining feeds.
         const RAMP = [1, 2, 4, 6];
 
-        let TIMEFRAME = 'week';
+        let TIMEFRAME = 'day';
         let CUSTOM_HANDLE = '';
         let lock = false;
         let currentReq = 0;   // guards against stale renders when filters change
