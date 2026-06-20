@@ -342,12 +342,27 @@
             'paulg',
             'emollick',
             'hardmaru',
-            'OpenAIDevs'
+            'OpenAIDevs',
+            // Independent AI reporters / researchers / journalists
+            'CaseyNewton',     // Platformer
+            'Kantrowitz',      // Big Technology
+            'binarybits',      // Understanding AI
+            'natolambert',     // Interconnects
+            'jackclarkSF',     // Import AI
+            'swyx',            // Latent Space / Smol AI News
+            'rowancheung',     // The Rundown AI
+            'bentossell'       // Ben's Bites
         ];
+
+        // Concurrency ramp: fetch 1 feed first (fastest first paint), then widen
+        // to 2, 4, 6 parallel — the last size repeats for any remaining feeds.
+        const RAMP = [1, 2, 4, 6];
 
         let TIMEFRAME = 'week';
         let CUSTOM_HANDLE = '';
         let lock = false;
+        let currentReq = 0;   // guards against stale renders when filters change
+        const MAX_CARDS = 80;
 
         const TIME_RANGES = {
             day: 24 * 60 * 60,
@@ -463,6 +478,7 @@
         async function fetchPosts() {
             if (lock) return;
             lock = true;
+            const myReq = ++currentReq;
 
             const loading = document.getElementById('loading');
             const container = document.getElementById('postsContainer');
@@ -476,59 +492,78 @@
                 ? `@${CUSTOM_HANDLE}`
                 : `Curated tech & AI feed · ${AI_ACCOUNTS.length} accounts · via xcancel`;
 
-            try {
-                // Limited concurrency to avoid hammering the proxy.
-                const results = await mapPool(accounts, 4, fetchFeed);
-                let posts = results.flat();
+            const seen = new Set();
+            const range = TIME_RANGES[TIMEFRAME];
+            const cutoff = range ? Date.now() - range * 1000 : null;
+            let total = 0;
 
-                // Dedupe by tweet link.
-                const seen = new Set();
-                posts = posts.filter(p => {
-                    if (!p.link || seen.has(p.link)) return false;
+            // Render each account's posts the moment its feed arrives, inserting
+            // into the existing list in date order — no waiting for the slowest feed.
+            function handleFeed(posts) {
+                if (myReq !== currentReq) return;
+                for (const p of posts) {
+                    if (!p.link || seen.has(p.link)) continue;
                     seen.add(p.link);
-                    return true;
-                });
-
-                // Time range filter.
-                const range = TIME_RANGES[TIMEFRAME];
-                if (range) {
-                    const cutoff = Date.now() - range * 1000;
-                    posts = posts.filter(p => p.date > cutoff);
+                    if (cutoff && p.date <= cutoff) continue;
+                    insertPostSorted(p);
+                    total++;
                 }
-
-                // Most recent first.
-                posts.sort((a, b) => b.date - a.date);
-
-                posts.slice(0, 80).forEach(renderPost);
-
-                loading.style.display = 'none';
-                if (posts.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.<br><span style="font-size:0.85em;">(xcancel or the proxy may be rate-limited — try again or pick a wider range.)</span></p>';
+                trimToCap();
+                if (total > 0 && loading.style.display !== 'none') {
+                    loading.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:3px;"></div><span style="font-size:0.85em;">Loading more…</span>';
                 }
-            } catch (err) {
-                console.error('Error fetching posts:', err);
-                loading.innerHTML = '<p style="color:#888;">Failed to load posts. <span onclick="location.reload()" style="color:#1d9bf0;cursor:pointer;text-decoration:underline;">Retry</span></p>';
             }
 
+            // Fetch in widening waves (1 → 2 → 4 → 6) so the first feed paints
+            // immediately, then parallelism ramps up — each feed renders on arrival.
+            let i = 0, wave = 0;
+            while (i < accounts.length) {
+                if (myReq !== currentReq) break;
+                const size = RAMP[Math.min(wave, RAMP.length - 1)];
+                const batch = accounts.slice(i, i + size);
+                i += size;
+                wave++;
+                await Promise.all(batch.map(async acct => {
+                    let posts = [];
+                    try { posts = await fetchFeed(acct); }
+                    catch (err) { console.error('Feed error for', acct, err); }
+                    handleFeed(posts);
+                }));
+            }
+
+            if (myReq !== currentReq) { lock = false; return; }
+            loading.style.display = 'none';
+            loading.innerHTML = '<div class="spinner"></div>Loading posts...';
+            if (total === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.<br><span style="font-size:0.85em;">(xcancel or the proxy may be rate-limited — try again or pick a wider range.)</span></p>';
+            }
             lock = false;
         }
 
-        async function mapPool(items, size, fn) {
-            const out = new Array(items.length);
-            let i = 0;
-            async function worker() {
-                while (i < items.length) {
-                    const idx = i++;
-                    out[idx] = await fn(items[idx]);
-                }
+        // Insert a card in date-descending order among the cards already rendered.
+        function insertPostSorted(post) {
+            const card = buildCard(post);
+            card.dataset.date = post.date;
+            const container = document.getElementById('postsContainer');
+            const cards = container.children;
+            let ref = null;
+            for (let k = 0; k < cards.length; k++) {
+                if (Number(cards[k].dataset.date) < post.date) { ref = cards[k]; break; }
             }
-            await Promise.all(Array.from({ length: Math.min(size, items.length) }, worker));
-            return out;
+            container.insertBefore(card, ref);
+        }
+
+        // Keep the list bounded; late-arriving older posts past the cap drop off.
+        function trimToCap() {
+            const container = document.getElementById('postsContainer');
+            while (container.children.length > MAX_CARDS) {
+                container.removeChild(container.lastElementChild);
+            }
         }
 
         // ---- rendering ---------------------------------------------------------
 
-        function renderPost(post) {
+        function buildCard(post) {
             const card = document.createElement('div');
             card.classList.add('card');
 
@@ -568,7 +603,7 @@
             header.appendChild(stats);
 
             card.appendChild(header);
-            document.getElementById('postsContainer').appendChild(card);
+            return card;
         }
 
         function buildAvatar(post) {
