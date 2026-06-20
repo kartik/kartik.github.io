@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Feed</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #0f1419;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 5px 10px;
+            background-color: #fff;
+        }
+
+        .search-input input {
+            border: none;
+            outline: none;
+            padding: 5px;
+            font-size: 1em;
+            border-radius: 20px;
+            width: 160px;
+        }
+
+        .search-input button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 1.2em;
+            color: #0f1419;
+        }
+
+        .time-range {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 0.9em;
+        }
+
+        .chip.active, .chip:hover {
+            background-color: #0f1419;
+            color: #fff;
+        }
+
+        .feed-label {
+            text-align: center;
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        #postsContainer {
+            margin-top: 10px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-header {
+            padding: 15px 20px;
+        }
+
+        .repost-label {
+            font-size: 0.78em;
+            color: #888;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ddd;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .avatar-mono {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+
+        .author-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .author-name {
+            font-weight: 600;
+            font-size: 0.95em;
+            color: #0f1419;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .author-handle {
+            font-size: 0.8em;
+            color: #888;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tweet-body {
+            font-size: 0.95em;
+            word-wrap: break-word;
+        }
+
+        .tweet-body p {
+            margin-bottom: 8px;
+        }
+
+        .tweet-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .tweet-body a {
+            color: #1d9bf0;
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .tweet-body a:hover {
+            text-decoration: underline;
+        }
+
+        .tweet-body hr {
+            display: none;
+        }
+
+        .tweet-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin-top: 10px;
+            background-color: #f5f5f5;
+            display: block;
+        }
+
+        .tweet-body blockquote {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-top: 10px;
+            font-size: 0.92em;
+            background-color: #fafafa;
+        }
+
+        .tweet-body blockquote b {
+            display: block;
+            font-size: 0.95em;
+            margin-bottom: 4px;
+            color: #0f1419;
+        }
+
+        .tweet-body blockquote p {
+            margin-bottom: 4px;
+        }
+
+        .tweet-body blockquote footer,
+        .tweet-body blockquote cite {
+            display: none;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85em;
+            color: #555;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 1px solid #f0f0f0;
+            align-items: center;
+        }
+
+        .x-link {
+            font-size: 0.85em;
+            color: #1d9bf0;
+            text-decoration: none;
+        }
+
+        .x-link:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0f1419;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.5s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .time-range {
+                gap: 5px;
+            }
+            .chip {
+                padding: 6px 12px;
+                font-size: 0.85em;
+            }
+            .search-input input {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <div class="search-input">
+                <input type="text" id="searchInput" placeholder="@handle" />
+                <button id="searchBtn" title="View handle">→</button>
+            </div>
+            <div class="time-range">
+                <button class="chip" data-time="day">Day</button>
+                <button class="chip active" data-time="week">Week</button>
+                <button class="chip" data-time="month">Month</button>
+                <button class="chip" data-time="all">All</button>
+            </div>
+        </div>
+        <div class="feed-label" id="feedLabel"></div>
+        <div id="postsContainer"></div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Loading posts...
+        </div>
+    </div>
+
+    <script>
+        // X (Twitter) has no public CORS-enabled API, so we read public RSS from
+        // an xcancel (Nitter) instance through a CORS proxy. Nitter RSS carries the
+        // tweet text, media, quote-tweets and timestamps — but no like/retweet
+        // counts or replies, so this is a clean read-only feed.
+        const INSTANCE = 'https://xcancel.com';
+
+        // CORS proxies, tried in order. allorigins (/get) caches responses and is
+        // the most reliable; the others are raw-passthrough fallbacks.
+        const PROXIES = [
+            { url: u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, kind: 'allorigins' },
+            { url: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`, kind: 'raw' },
+            { url: u => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`, kind: 'raw' }
+        ];
+
+        // Curated tech / AI accounts on X (handles without @).
+        const AI_ACCOUNTS = [
+            'sama',
+            'OpenAI',
+            'AndrewYNg',
+            'ylecun',
+            'karpathy',
+            'GoogleDeepMind',
+            'AnthropicAI',
+            'demishassabis',
+            'JeffDean',
+            'fchollet',
+            'goodfellow_ian',
+            'sundarpichai',
+            'satyanadella',
+            'pmarca',
+            'paulg',
+            'emollick',
+            'hardmaru',
+            'OpenAIDevs'
+        ];
+
+        let TIMEFRAME = 'week';
+        let CUSTOM_HANDLE = '';
+        let lock = false;
+
+        const TIME_RANGES = {
+            day: 24 * 60 * 60,
+            week: 7 * 24 * 60 * 60,
+            month: 30 * 24 * 60 * 60,
+            all: null
+        };
+
+        const MONO_COLORS = ['#1d9bf0', '#0f1419', '#794bc4', '#f91880', '#00ba7c', '#ff7a00', '#536471'];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchPosts();
+
+            document.querySelectorAll('.chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    if (chip.classList.contains('active')) return;
+                    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    TIMEFRAME = chip.dataset.time;
+                    fetchPosts();
+                });
+            });
+
+            document.getElementById('searchBtn').addEventListener('click', () => {
+                CUSTOM_HANDLE = document.getElementById('searchInput').value.trim().replace(/^@/, '');
+                fetchPosts();
+            });
+
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('searchBtn').click();
+            });
+        });
+
+        // ---- fetching ----------------------------------------------------------
+
+        function b64ToUtf8(b64) {
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return new TextDecoder('utf-8').decode(bytes);
+        }
+
+        async function fetchViaProxy(targetUrl) {
+            for (const proxy of PROXIES) {
+                for (let attempt = 0; attempt < 2; attempt++) {
+                    try {
+                        const res = await fetch(proxy.url(targetUrl), { cache: 'no-store' });
+                        if (!res.ok) continue;
+                        if (proxy.kind === 'allorigins') {
+                            const data = await res.json();
+                            let c = data && data.contents;
+                            if (!c) continue;
+                            if (c.startsWith('data:')) {
+                                const idx = c.indexOf('base64,');
+                                c = idx !== -1 ? b64ToUtf8(c.slice(idx + 7)) : decodeURIComponent(c.slice(c.indexOf(',') + 1));
+                            }
+                            if (c.includes('<rss') || c.includes('<item>')) return c;
+                        } else {
+                            const text = await res.text();
+                            if (text.includes('<rss') || text.includes('<item>')) return text;
+                        }
+                    } catch (e) { /* try next */ }
+                }
+            }
+            return null;
+        }
+
+        async function fetchFeed(handle) {
+            const xml = await fetchViaProxy(`${INSTANCE}/${encodeURIComponent(handle)}/rss`);
+            if (!xml) return [];
+            try {
+                return parseFeed(xml, handle);
+            } catch (e) {
+                console.error('parse error for', handle, e);
+                return [];
+            }
+        }
+
+        function parseFeed(xmlText, handle) {
+            const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+            if (doc.querySelector('parsererror')) return [];
+
+            const channelTitle = (doc.querySelector('channel > title')?.textContent || '').trim();
+            const ownerName = channelTitle.split(' / ')[0] || handle;
+            const ownerAvatar = doc.querySelector('channel > image > url')?.textContent || '';
+
+            const posts = [];
+            doc.querySelectorAll('item').forEach(item => {
+                const title = item.querySelector('title')?.textContent || '';
+                const creatorRaw = (item.getElementsByTagNameNS('*', 'creator')[0]?.textContent || `@${handle}`).trim();
+                const creator = creatorRaw.replace(/^@/, '');
+                const desc = item.querySelector('description')?.textContent || '';
+                const pubDate = item.querySelector('pubDate')?.textContent || '';
+                const link = item.querySelector('link')?.textContent || '';
+
+                const rt = title.match(/^RT by @([\w]+):/);
+                const isRT = !!rt;
+
+                posts.push({
+                    feedHandle: handle,
+                    author: creator,
+                    authorName: (!isRT && creator.toLowerCase() === handle.toLowerCase()) ? ownerName : creator,
+                    avatar: (!isRT && creator.toLowerCase() === handle.toLowerCase()) ? ownerAvatar : '',
+                    repostedBy: isRT ? rt[1] : null,
+                    descHtml: desc,
+                    date: pubDate ? new Date(pubDate).getTime() : 0,
+                    link: rewriteUrl(link)
+                });
+            });
+            return posts;
+        }
+
+        async function fetchPosts() {
+            if (lock) return;
+            lock = true;
+
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('postsContainer');
+            const label = document.getElementById('feedLabel');
+            container.innerHTML = '';
+            loading.style.display = 'block';
+            loading.innerHTML = '<div class="spinner"></div>Loading posts...';
+
+            const accounts = CUSTOM_HANDLE ? [CUSTOM_HANDLE] : AI_ACCOUNTS;
+            label.textContent = CUSTOM_HANDLE
+                ? `@${CUSTOM_HANDLE}`
+                : `Curated tech & AI feed · ${AI_ACCOUNTS.length} accounts · via xcancel`;
+
+            try {
+                // Limited concurrency to avoid hammering the proxy.
+                const results = await mapPool(accounts, 4, fetchFeed);
+                let posts = results.flat();
+
+                // Dedupe by tweet link.
+                const seen = new Set();
+                posts = posts.filter(p => {
+                    if (!p.link || seen.has(p.link)) return false;
+                    seen.add(p.link);
+                    return true;
+                });
+
+                // Time range filter.
+                const range = TIME_RANGES[TIMEFRAME];
+                if (range) {
+                    const cutoff = Date.now() - range * 1000;
+                    posts = posts.filter(p => p.date > cutoff);
+                }
+
+                // Most recent first.
+                posts.sort((a, b) => b.date - a.date);
+
+                posts.slice(0, 80).forEach(renderPost);
+
+                loading.style.display = 'none';
+                if (posts.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.<br><span style="font-size:0.85em;">(xcancel or the proxy may be rate-limited — try again or pick a wider range.)</span></p>';
+                }
+            } catch (err) {
+                console.error('Error fetching posts:', err);
+                loading.innerHTML = '<p style="color:#888;">Failed to load posts. <span onclick="location.reload()" style="color:#1d9bf0;cursor:pointer;text-decoration:underline;">Retry</span></p>';
+            }
+
+            lock = false;
+        }
+
+        async function mapPool(items, size, fn) {
+            const out = new Array(items.length);
+            let i = 0;
+            async function worker() {
+                while (i < items.length) {
+                    const idx = i++;
+                    out[idx] = await fn(items[idx]);
+                }
+            }
+            await Promise.all(Array.from({ length: Math.min(size, items.length) }, worker));
+            return out;
+        }
+
+        // ---- rendering ---------------------------------------------------------
+
+        function renderPost(post) {
+            const card = document.createElement('div');
+            card.classList.add('card');
+
+            const header = document.createElement('div');
+            header.classList.add('card-header');
+
+            if (post.repostedBy) {
+                const rl = document.createElement('div');
+                rl.classList.add('repost-label');
+                rl.innerHTML = `🔁 ${escapeHtml('@' + post.repostedBy)} reposted`;
+                header.appendChild(rl);
+            }
+
+            const profileUrl = `https://x.com/${post.author}`;
+            const authorLink = document.createElement('a');
+            authorLink.classList.add('post-author');
+            authorLink.href = profileUrl;
+            authorLink.target = '_blank';
+            authorLink.rel = 'noopener';
+            authorLink.appendChild(buildAvatar(post));
+            const info = document.createElement('div');
+            info.classList.add('author-info');
+            info.innerHTML = `
+                <div class="author-name">${escapeHtml(post.authorName)}</div>
+                <div class="author-handle">@${escapeHtml(post.author)} · ${formatTimeAgo(post.date)}</div>`;
+            authorLink.appendChild(info);
+            header.appendChild(authorLink);
+
+            const body = document.createElement('div');
+            body.classList.add('tweet-body');
+            body.appendChild(sanitizeHtml(post.descHtml));
+            header.appendChild(body);
+
+            const stats = document.createElement('div');
+            stats.classList.add('card-stats');
+            stats.innerHTML = `<a class="x-link" href="${escapeHtml(post.link)}" target="_blank" rel="noopener">View on X →</a>`;
+            header.appendChild(stats);
+
+            card.appendChild(header);
+            document.getElementById('postsContainer').appendChild(card);
+        }
+
+        function buildAvatar(post) {
+            if (post.avatar) {
+                const img = document.createElement('img');
+                img.classList.add('avatar');
+                img.src = post.avatar;
+                img.loading = 'lazy';
+                img.alt = '';
+                img.onerror = function () { this.replaceWith(monogram(post.author)); };
+                return img;
+            }
+            return monogram(post.author);
+        }
+
+        function monogram(handle) {
+            const div = document.createElement('div');
+            div.classList.add('avatar', 'avatar-mono');
+            let h = 0;
+            for (let i = 0; i < handle.length; i++) h = (h * 31 + handle.charCodeAt(i)) >>> 0;
+            div.style.backgroundColor = MONO_COLORS[h % MONO_COLORS.length];
+            div.textContent = (handle[0] || '?');
+            return div;
+        }
+
+        // Rebuild the RSS description into a safe DOM fragment (whitelist of tags),
+        // rewriting xcancel links to x.com and dropping scripts/handlers.
+        const ALLOWED = new Set(['P', 'BR', 'A', 'B', 'I', 'EM', 'STRONG', 'BLOCKQUOTE', 'IMG', 'HR', 'CITE', 'FOOTER', 'UL', 'OL', 'LI', 'SPAN']);
+
+        function sanitizeHtml(html) {
+            const parsed = new DOMParser().parseFromString(html, 'text/html');
+            const frag = document.createDocumentFragment();
+            for (const node of Array.from(parsed.body.childNodes)) {
+                const clean = cleanNode(node);
+                if (clean) frag.appendChild(clean);
+            }
+            return frag;
+        }
+
+        function cleanNode(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return document.createTextNode(node.textContent);
+            }
+            if (node.nodeType !== Node.ELEMENT_NODE) return null;
+            if (!ALLOWED.has(node.tagName)) {
+                // Drop the tag but keep its (cleaned) children inline.
+                const frag = document.createDocumentFragment();
+                for (const child of Array.from(node.childNodes)) {
+                    const c = cleanNode(child);
+                    if (c) frag.appendChild(c);
+                }
+                return frag;
+            }
+            const el = document.createElement(node.tagName.toLowerCase());
+            if (node.tagName === 'A') {
+                const href = rewriteUrl(node.getAttribute('href') || '');
+                if (href) { el.setAttribute('href', href); el.target = '_blank'; el.rel = 'noopener'; }
+            } else if (node.tagName === 'IMG') {
+                const src = node.getAttribute('src') || '';
+                if (/^https?:\/\//.test(src)) { el.setAttribute('src', src); el.loading = 'lazy'; el.alt = node.getAttribute('alt') || ''; }
+            }
+            for (const child of Array.from(node.childNodes)) {
+                const c = cleanNode(child);
+                if (c) el.appendChild(c);
+            }
+            return el;
+        }
+
+        function rewriteUrl(url) {
+            if (!url) return '';
+            return url
+                .replace(/^https?:\/\/xcancel\.com/i, 'https://x.com')
+                .replace(/^https?:\/\/(?:rss\.)?xcancel\.com/i, 'https://x.com')
+                .replace(/#m$/, '');
+        }
+
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '';
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+            if (seconds < 2592000) return `${Math.floor(seconds / 604800)}w ago`;
+            if (seconds < 31536000) return `${Math.floor(seconds / 2592000)}mo ago`;
+            return `${Math.floor(seconds / 31536000)}y ago`;
+        }
+
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
