@@ -643,21 +643,25 @@
             }
 
             // Add a post to the dataset (for caching) and render it if it's within
-            // the current time window and we haven't already shown it.
+            // the current time window and we haven't already shown it. Cards are only
+            // ever appended to the end (never inserted mid-list) so the feed never
+            // shifts under the reader; once the list is full we keep caching but stop
+            // rendering. Cached posts are pre-sorted, so the visible order is newest
+            // first, with any genuinely new tweets appended below.
             function addPost(p) {
                 if (!p.link || seen.has(p.link)) return;
                 seen.add(p.link);
                 allPosts.push(p);
                 if (cutoff && p.date <= cutoff) return;
+                if (total >= MAX_CARDS) return;
                 clearSkeletons();
-                insertPostSorted(p);
+                container.appendChild(buildCard(p));
                 total++;
             }
 
             function handleFeed(posts) {
                 if (myReq !== currentReq) return;
                 posts.forEach(addPost);
-                trimToCap();
                 persist(false);
                 // Once anything is on screen, downgrade the spinner to a quiet pill.
                 if (total > 0 && loading.style.display !== 'none' && !loading.querySelector('.refreshing')) {
@@ -740,27 +744,6 @@
                 container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.<br><span style="font-size:0.85em;">(xcancel or the proxy may be rate-limited — try again or pick a wider range.)</span></p>';
             }
             lock = false;
-        }
-
-        // Insert a card in date-descending order among the cards already rendered.
-        function insertPostSorted(post) {
-            const card = buildCard(post);
-            card.dataset.date = post.date;
-            const container = document.getElementById('postsContainer');
-            const cards = container.children;
-            let ref = null;
-            for (let k = 0; k < cards.length; k++) {
-                if (Number(cards[k].dataset.date) < post.date) { ref = cards[k]; break; }
-            }
-            container.insertBefore(card, ref);
-        }
-
-        // Keep the list bounded; late-arriving older posts past the cap drop off.
-        function trimToCap() {
-            const container = document.getElementById('postsContainer');
-            while (container.children.length > MAX_CARDS) {
-                container.removeChild(container.lastElementChild);
-            }
         }
 
         // ---- rendering ---------------------------------------------------------
