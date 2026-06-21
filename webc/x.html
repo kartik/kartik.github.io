@@ -303,6 +303,22 @@
         .card-stats { color: #8b98a5; border-top-color: #2f3336; }
         .loading { color: #8b98a5; }
         .spinner { border-color: #2f3336; border-top-color: #1d9bf0; }
+
+        /* ---- skeleton placeholders (shown only on a cold first load) ---- */
+        .skeleton { pointer-events: none; }
+        .skeleton .card-header { padding: 15px 20px; }
+        .sk-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .sk-avatar { width: 40px; height: 40px; border-radius: 50%; background: #2a2d31; flex-shrink: 0; }
+        .sk-lines { flex: 1; }
+        .sk-line { height: 10px; border-radius: 5px; background: #2a2d31; margin-bottom: 9px; }
+        .sk-line.short { width: 45%; }
+        .sk-line:last-child { margin-bottom: 0; }
+        .skeleton .sk-avatar, .skeleton .sk-line { animation: pulse 1.2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* compact "refreshing" indicator (cache shown, fresh data loading) */
+        .refreshing { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85em; }
+        .refreshing .spinner { width: 16px; height: 16px; border-width: 3px; margin: 0; }
     </style>
 </head>
 <body>
@@ -373,7 +389,13 @@
             'jackclarkSF',     // Import AI
             'swyx',            // Latent Space / Smol AI News
             'rowancheung',     // The Rundown AI
-            'bentossell'       // Ben's Bites
+            'bentossell',      // Ben's Bites
+            '_KarenHao',       // Karen Hao
+            'EricNewcomer',    // Eric Newcomer
+            'jasminewsun',     // Jasmine Sun
+            'sharongoldman',   // Sharon Goldman — independent AI journalist (Substack)
+            'GarrisonLovely',  // Garrison Lovely — freelance, political economy of AI
+            'levie'            // Aaron Levie (Box)
         ];
 
         // Growing-concurrency pool: start several feeds at once so the first card
@@ -387,6 +409,22 @@
         let lock = false;
         let currentReq = 0;   // guards against stale renders when filters change
         const MAX_CARDS = 80;
+        const CACHE_MAX = 120;          // posts kept per feed in localStorage
+        const CACHE_PREFIX = 'xfeed_v1:';
+
+        // Stale-while-revalidate: render the last good feed instantly, refresh behind it.
+        function cacheKeyFor() {
+            return CACHE_PREFIX + (CUSTOM_HANDLE ? 'h:' + CUSTOM_HANDLE.toLowerCase() : 'curated');
+        }
+        function loadCache(key) {
+            try {
+                const o = JSON.parse(localStorage.getItem(key) || 'null');
+                return o && Array.isArray(o.posts) ? o : null;
+            } catch (e) { return null; }
+        }
+        function saveCache(key, posts) {
+            try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), posts })); } catch (e) { /* quota / private mode */ }
+        }
 
         const TIME_RANGES = {
             day: 24 * 60 * 60,
@@ -574,8 +612,6 @@
             const container = document.getElementById('postsContainer');
             const label = document.getElementById('feedLabel');
             container.innerHTML = '';
-            loading.style.display = 'block';
-            loading.innerHTML = '<div class="spinner"></div>Loading posts...';
 
             const accounts = CUSTOM_HANDLE ? [CUSTOM_HANDLE] : AI_ACCOUNTS;
             label.textContent = CUSTOM_HANDLE
@@ -583,25 +619,75 @@
                 : `Curated tech & AI feed · ${AI_ACCOUNTS.length} accounts · via xcancel`;
 
             const seen = new Set();
+            const allPosts = [];   // every deduped post (cache + live), for re-caching
             const range = TIME_RANGES[TIMEFRAME];
             const cutoff = range ? Date.now() - range * 1000 : null;
             let total = 0;
+            let skeletonsShown = false;
+            let lastPersist = 0;
 
-            // Render each account's posts the moment its feed arrives, inserting
-            // into the existing list in date order — no waiting for the slowest feed.
+            // Persist progressively (throttled) so an abandoned multi-minute load
+            // still leaves a usable cache for next time.
+            function persist(force) {
+                if (!allPosts.length) return;
+                const now = Date.now();
+                if (!force && now - lastPersist < 2500) return;
+                lastPersist = now;
+                saveCache(key, allPosts.slice().sort((a, b) => b.date - a.date).slice(0, CACHE_MAX));
+            }
+
+            function clearSkeletons() {
+                if (!skeletonsShown) return;
+                container.querySelectorAll('.skeleton').forEach(n => n.remove());
+                skeletonsShown = false;
+            }
+
+            // Add a post to the dataset (for caching) and render it if it's within
+            // the current time window and we haven't already shown it.
+            function addPost(p) {
+                if (!p.link || seen.has(p.link)) return;
+                seen.add(p.link);
+                allPosts.push(p);
+                if (cutoff && p.date <= cutoff) return;
+                clearSkeletons();
+                insertPostSorted(p);
+                total++;
+            }
+
             function handleFeed(posts) {
                 if (myReq !== currentReq) return;
-                for (const p of posts) {
-                    if (!p.link || seen.has(p.link)) continue;
-                    seen.add(p.link);
-                    if (cutoff && p.date <= cutoff) continue;
-                    insertPostSorted(p);
-                    total++;
-                }
+                posts.forEach(addPost);
                 trimToCap();
-                if (total > 0 && loading.style.display !== 'none') {
-                    loading.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:3px;"></div><span style="font-size:0.85em;">Loading more…</span>';
+                persist(false);
+                // Once anything is on screen, downgrade the spinner to a quiet pill.
+                if (total > 0 && loading.style.display !== 'none' && !loading.querySelector('.refreshing')) {
+                    loading.innerHTML = '<span class="refreshing"><span class="spinner"></span>Refreshing…</span>';
                 }
+            }
+
+            // 1) Paint the last cached feed instantly so the user never stares at a
+            //    bare spinner for a flaky multi-minute fetch. First-ever load (no
+            //    cache) shows skeleton placeholders instead.
+            const key = cacheKeyFor();
+            const cached = loadCache(key);
+            if (cached && cached.posts.length) {
+                cached.posts.slice().sort((a, b) => b.date - a.date).forEach(addPost);
+            }
+            if (total > 0) {
+                loading.style.display = 'block';
+                loading.innerHTML = '<span class="refreshing"><span class="spinner"></span>Refreshing…</span>';
+            } else {
+                for (let i = 0; i < 6; i++) {
+                    const sk = document.createElement('div');
+                    sk.className = 'card skeleton';
+                    sk.innerHTML = '<div class="card-header"><div class="sk-row"><div class="sk-avatar"></div>'
+                        + '<div class="sk-lines"><div class="sk-line"></div><div class="sk-line short"></div></div></div>'
+                        + '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line short"></div></div>';
+                    container.appendChild(sk);
+                }
+                skeletonsShown = true;
+                loading.style.display = 'block';
+                loading.innerHTML = '<div class="spinner"></div>Loading posts...';
             }
 
             // Cold start: establish a healthy instance on the first account alone
@@ -642,8 +728,14 @@
             });
 
             if (myReq !== currentReq) { lock = false; return; }
+            clearSkeletons();
             loading.style.display = 'none';
             loading.innerHTML = '<div class="spinner"></div>Loading posts...';
+
+            // Final persist for instant paint next time (newest first, bounded).
+            // Never overwrite a good cache with nothing if this fetch came back empty.
+            persist(true);
+
             if (total === 0) {
                 container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.<br><span style="font-size:0.85em;">(xcancel or the proxy may be rate-limited — try again or pick a wider range.)</span></p>';
             }
