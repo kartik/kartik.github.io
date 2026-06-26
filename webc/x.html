@@ -375,8 +375,6 @@
             'fchollet',
             'goodfellow_ian',
             'sundarpichai',
-            'satyanadella',
-            'pmarca',
             'paulg',
             'emollick',
             'hardmaru',
@@ -387,7 +385,6 @@
             'binarybits',      // Understanding AI
             'natolambert',     // Interconnects
             'jackclarkSF',     // Import AI
-            'swyx',            // Latent Space / Smol AI News
             'rowancheung',     // The Rundown AI
             'bentossell',      // Ben's Bites
             '_KarenHao',       // Karen Hao
@@ -403,14 +400,26 @@
             'OfficialLoganK',  // Logan Kilpatrick — developer tools/ecosystem
             'mattshumer_',     // Matt Shumer — AI builder, agent workflows
             'svpino',          // Santiago Valdarrama — AI automation/agents
-            'GoogleAI'         // Google AI — official announcements
+            'GoogleAI',        // Google AI — official announcements
+            // Builders, educators & practitioners
+            'rasbt',           // Sebastian Raschka — LLMs, implementation
+            'maximelabonne',   // Maxime Labonne — fine-tuning, quantization
+            'chipro',          // Chip Huyen — AI engineering, MLOps
+            'goodside',        // Riley Goodside — prompt engineering
+            'AIHighlight',     // daily tools, prompts, discoveries
+            'levelsio',        // Pieter Levels — indie AI products
+            'DrJimFan',        // Jim Fan — NVIDIA, embodied AI/robotics
+            'steipete',        // Peter Steinberger — practical AI dev tools
+            'theaibuilders'    // community account for AI builders
         ];
 
-        // Growing-concurrency pool: start several feeds at once so the first card
-        // is the fastest of a batch (not one unlucky slow feed), then widen up to
-        // POOL_MAX as feeds complete. No barriers, so a slow feed never blocks others.
-        const POOL_START = 4;
-        const POOL_MAX = 6;
+        // Staggered fetch policy: the feed runs entirely through one free proxy
+        // (allorigins) that rate-limits under bursts, so we (a) cap how many feeds
+        // are in flight at once and (b) space out the launch of each new request.
+        // The cache means repeat loads are instant regardless, so we can afford to
+        // be gentle here rather than hammering the proxy and getting throttled.
+        const MAX_INFLIGHT = 3;     // never more than this many requests at once
+        const STAGGER_MS = 400;     // minimum gap between launching requests
 
         let TIMEFRAME = 'week';
         let CUSTOM_HANDLE = '';
@@ -714,29 +723,30 @@
                 startIdx = 1;
             }
 
-            // Growing-concurrency pool: launch POOL_START feeds immediately, and
-            // widen the cap by one each time a feed finishes (up to POOL_MAX). Each
-            // feed renders on arrival, so first paint = fastest of the opening batch.
+            // Staggered launcher: keep at most MAX_INFLIGHT feeds in flight and
+            // leave at least STAGGER_MS between launches, so we never burst the
+            // proxy. Each feed still renders the moment it arrives.
             await new Promise(resolve => {
-                let next = startIdx, active = 0, finished = startIdx, cap = POOL_START;
-                function pump() {
+                let next = startIdx, active = 0, finished = startIdx, launching = false;
+                function launch() {
                     if (myReq !== currentReq) { resolve(); return; }
                     if (finished >= accounts.length) { resolve(); return; }
-                    while (active < cap && next < accounts.length) {
-                        const acct = accounts[next++];
-                        active++;
-                        fetchFeed(acct)
-                            .catch(() => [])
-                            .then(posts => {
-                                handleFeed(posts);
-                                active--; finished++;
-                                cap = Math.min(POOL_MAX, cap + 1);
-                                if (finished >= accounts.length) resolve();
-                                else pump();
-                            });
-                    }
+                    if (launching || active >= MAX_INFLIGHT || next >= accounts.length) return;
+                    launching = true;
+                    const acct = accounts[next++];
+                    active++;
+                    fetchFeed(acct)
+                        .catch(() => [])
+                        .then(posts => {
+                            handleFeed(posts);
+                            active--; finished++;
+                            if (finished >= accounts.length) resolve();
+                            else launch();   // a slot freed
+                        });
+                    // Release the launch gate after the stagger gap, then try again.
+                    setTimeout(() => { launching = false; launch(); }, STAGGER_MS);
                 }
-                pump();
+                launch();
             });
 
             if (myReq !== currentReq) { lock = false; return; }
