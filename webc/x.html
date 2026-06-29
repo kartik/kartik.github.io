@@ -319,9 +319,25 @@
         /* compact "refreshing" indicator (cache shown, fresh data loading) */
         .refreshing { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85em; }
         .refreshing .spinner { width: 16px; height: 16px; border-width: 3px; margin: 0; }
+
+        /* page-level loading bar — a deterministic progress fill at the top of the
+           page that advances as feeds complete (completed / total accounts) */
+        #topbar {
+            position: fixed; top: 0; left: 0; right: 0; height: 3px;
+            z-index: 1000; overflow: hidden; pointer-events: none;
+            opacity: 0; transition: opacity 0.25s;
+        }
+        #topbar.active { opacity: 1; }
+        #topbar-fill {
+            height: 100%; width: 0;
+            background: #1d9bf0; border-radius: 0 3px 3px 0;
+            box-shadow: 0 0 8px rgba(29, 155, 240, 0.6);
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body>
+    <div id="topbar"><div id="topbar-fill"></div></div>
     <div class="container">
         <div class="control-panel">
             <div class="search-input">
@@ -377,7 +393,6 @@
             'sundarpichai',
             'paulg',
             'emollick',
-            'hardmaru',
             'OpenAIDevs',
             // Independent AI reporters / researchers / journalists
             'CaseyNewton',     // Platformer
@@ -406,11 +421,11 @@
             'maximelabonne',   // Maxime Labonne — fine-tuning, quantization
             'chipro',          // Chip Huyen — AI engineering, MLOps
             'goodside',        // Riley Goodside — prompt engineering
-            'AIHighlight',     // daily tools, prompts, discoveries
             'levelsio',        // Pieter Levels — indie AI products
             'DrJimFan',        // Jim Fan — NVIDIA, embodied AI/robotics
             'steipete',        // Peter Steinberger — practical AI dev tools
-            'theaibuilders'    // community account for AI builders
+            'theaibuilders',   // community account for AI builders
+            'kimmonismus'      // Chubby — AI news / hype tracker
         ];
 
         // Staggered fetch policy: the feed runs entirely through one free proxy
@@ -423,8 +438,7 @@
 
         let TIMEFRAME = 'week';
         let CUSTOM_HANDLE = '';
-        let lock = false;
-        let currentReq = 0;   // guards against stale renders when filters change
+        let currentReq = 0;   // guards against stale renders / supersedes in-flight runs
         const MAX_CARDS = 80;
         const CACHE_MAX = 120;          // posts kept per feed in localStorage
         const CACHE_PREFIX = 'xfeed_v1:';
@@ -461,13 +475,13 @@
                     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
                     chip.classList.add('active');
                     TIMEFRAME = chip.dataset.time;
-                    fetchPosts();
+                    fetchPosts(true);   // reload → show the shimmer again
                 });
             });
 
             document.getElementById('searchBtn').addEventListener('click', () => {
                 CUSTOM_HANDLE = document.getElementById('searchInput').value.trim().replace(/^@/, '');
-                fetchPosts();
+                fetchPosts(true);
             });
 
             document.getElementById('searchInput').addEventListener('keypress', (e) => {
@@ -620,17 +634,42 @@
             return posts;
         }
 
-        async function fetchPosts() {
-            if (lock) return;
-            lock = true;
+        // --- deterministic top progress bar (advances as feeds complete) ---
+        function startProgress() {
+            const bar = document.getElementById('topbar');
+            const fill = document.getElementById('topbar-fill');
+            fill.style.transition = 'none';
+            fill.style.width = '8%';     // small head start so there's always a visible bar
+            void fill.offsetWidth;       // reflow so the reset itself isn't animated
+            fill.style.transition = 'width 0.3s ease';
+            bar.classList.add('active');
+        }
+        function setProgress(completed, total) {
+            const fill = document.getElementById('topbar-fill');
+            const frac = total ? Math.min(completed / total, 1) : 0;
+            fill.style.width = (8 + 90 * frac).toFixed(1) + '%';   // 8% → 98%
+        }
+        function finishProgress() {
+            const bar = document.getElementById('topbar');
+            document.getElementById('topbar-fill').style.width = '100%';
+            setTimeout(() => bar.classList.remove('active'), 250);
+        }
+
+        async function fetchPosts(reload = false) {
+            // Bump the request id first: any in-flight run sees myReq !== currentReq
+            // at its next checkpoint and bails, so a filter/search switch supersedes
+            // a slow load instead of being dropped.
             const myReq = ++currentReq;
 
             const loading = document.getElementById('loading');
             const container = document.getElementById('postsContainer');
             const label = document.getElementById('feedLabel');
+            startProgress();   // page-level deterministic progress bar
             container.innerHTML = '';
 
             const accounts = CUSTOM_HANDLE ? [CUSTOM_HANDLE] : AI_ACCOUNTS;
+            const totalFeeds = accounts.length;   // feeds to fetch → drives the progress bar
+            let completed = 0;
             label.textContent = CUSTOM_HANDLE
                 ? `@${CUSTOM_HANDLE}`
                 : `Curated tech & AI feed · ${AI_ACCOUNTS.length} accounts · via xcancel`;
@@ -657,6 +696,18 @@
                 if (!skeletonsShown) return;
                 container.querySelectorAll('.skeleton').forEach(n => n.remove());
                 skeletonsShown = false;
+            }
+
+            function showSkeletons() {
+                for (let i = 0; i < 6; i++) {
+                    const sk = document.createElement('div');
+                    sk.className = 'card skeleton';
+                    sk.innerHTML = '<div class="card-header"><div class="sk-row"><div class="sk-avatar"></div>'
+                        + '<div class="sk-lines"><div class="sk-line"></div><div class="sk-line short"></div></div></div>'
+                        + '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line short"></div></div>';
+                    container.appendChild(sk);
+                }
+                skeletonsShown = true;
             }
 
             // Add a post to the dataset (for caching) and render it if it's within
@@ -687,28 +738,30 @@
             }
 
             // 1) Paint the last cached feed instantly so the user never stares at a
-            //    bare spinner for a flaky multi-minute fetch. First-ever load (no
-            //    cache) shows skeleton placeholders instead.
+            //    bare spinner for a flaky multi-minute fetch. Show shimmer skeletons
+            //    on a cold load (no cache) and on every user-triggered reload
+            //    (filter/search switch) so the switch gets visible feedback.
             const key = cacheKeyFor();
             const cached = loadCache(key);
-            if (cached && cached.posts.length) {
+            const haveCache = !!(cached && cached.posts.length);
+
+            if (reload || !haveCache) {
+                showSkeletons();
+                loading.style.display = 'block';
+                loading.innerHTML = '<div class="spinner"></div>Loading posts...';
+            }
+            // On a reload that has cache to fall back on, hold the shimmer briefly so
+            // it's actually seen before the (instant) cached results replace it.
+            if (reload && haveCache) {
+                await new Promise(r => setTimeout(r, 450));
+                if (myReq !== currentReq) return;
+            }
+            if (haveCache) {
                 cached.posts.slice().sort((a, b) => b.date - a.date).forEach(addPost);
             }
             if (total > 0) {
                 loading.style.display = 'block';
                 loading.innerHTML = '<span class="refreshing"><span class="spinner"></span>Refreshing…</span>';
-            } else {
-                for (let i = 0; i < 6; i++) {
-                    const sk = document.createElement('div');
-                    sk.className = 'card skeleton';
-                    sk.innerHTML = '<div class="card-header"><div class="sk-row"><div class="sk-avatar"></div>'
-                        + '<div class="sk-lines"><div class="sk-line"></div><div class="sk-line short"></div></div></div>'
-                        + '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line short"></div></div>';
-                    container.appendChild(sk);
-                }
-                skeletonsShown = true;
-                loading.style.display = 'block';
-                loading.innerHTML = '<div class="spinner"></div>Loading posts...';
             }
 
             // Cold start: establish a healthy instance on the first account alone
@@ -718,8 +771,9 @@
             if (!WORKING_INSTANCE && accounts.length) {
                 let firstPosts = [];
                 try { firstPosts = await fetchFeed(accounts[0]); } catch (e) { /* ignore */ }
-                if (myReq !== currentReq) { lock = false; return; }
+                if (myReq !== currentReq) return;
                 handleFeed(firstPosts);
+                completed++; setProgress(completed, totalFeeds);
                 startIdx = 1;
             }
 
@@ -740,6 +794,7 @@
                         .then(posts => {
                             handleFeed(posts);
                             active--; finished++;
+                            completed++; setProgress(completed, totalFeeds);
                             if (finished >= accounts.length) resolve();
                             else launch();   // a slot freed
                         });
@@ -749,10 +804,11 @@
                 launch();
             });
 
-            if (myReq !== currentReq) { lock = false; return; }
+            if (myReq !== currentReq) return;   // superseded — newer run owns the UI
             clearSkeletons();
             loading.style.display = 'none';
             loading.innerHTML = '<div class="spinner"></div>Loading posts...';
+            finishProgress();   // fill to 100%, then fade out
 
             // Final persist for instant paint next time (newest first, bounded).
             // Never overwrite a good cache with nothing if this fetch came back empty.
@@ -761,7 +817,6 @@
             if (total === 0) {
                 container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.<br><span style="font-size:0.85em;">(xcancel or the proxy may be rate-limited — try again or pick a wider range.)</span></p>';
             }
-            lock = false;
         }
 
         // ---- rendering ---------------------------------------------------------
