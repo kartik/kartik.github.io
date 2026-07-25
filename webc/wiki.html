@@ -79,6 +79,52 @@
             border-radius: 20px;
             padding: 5px 10px;
             background-color: var(--input-bg);
+            position: relative;
+        }
+
+        .autocomplete {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            width: 300px;
+            max-width: 92vw;
+            background-color: var(--card-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            list-style: none;
+            margin: 0;
+            padding: 4px 0;
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 200;
+            display: none;
+        }
+
+        .autocomplete li {
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .autocomplete li .desc {
+            color: var(--text-muted);
+            font-size: 0.85em;
+        }
+
+        .autocomplete li.active,
+        .autocomplete li:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        .autocomplete li.active .desc,
+        .autocomplete li:hover .desc {
+            color: rgba(255,255,255,0.8);
         }
 
         .subreddit-input input {
@@ -218,8 +264,9 @@
     <div class="container">
         <div class="control-panel">
             <div class="subreddit-input">
-                <input type="text" id="pageInput" placeholder="Page title" />
+                <input type="text" id="pageInput" placeholder="Page title" autocomplete="off" />
                 <button id="loadPage" title="Load Page">→</button>
+                <ul class="autocomplete" id="autocomplete"></ul>
             </div>
             <div class="time-range">
                 <button class="chip active" id="randomBtn">Random</button>
@@ -268,10 +315,85 @@
                 }
             });
 
-            $('#pageInput').on('keypress', function(e) {
-                if (e.which === 13) {
-                    $('#loadPage').click();
+            // ---- title autocomplete (Wikipedia OpenSearch API) ----
+            let acItems = [], acIndex = -1, acReq = 0, acTimer = null;
+            const $ac = $('#autocomplete');
+
+            function hideAC() { $ac.hide().empty(); acItems = []; acIndex = -1; }
+
+            function renderAC(titles) {
+                acItems = titles || [];
+                acIndex = -1;
+                if (!acItems.length) { hideAC(); return; }
+                $ac.empty();
+                acItems.forEach((t, i) => $ac.append($('<li>').attr('data-i', i).text(t)));
+                $ac.show();
+            }
+
+            function highlightAC() {
+                $ac.children('li').removeClass('active');
+                if (acIndex >= 0) {
+                    const el = $ac.children('li').eq(acIndex).addClass('active')[0];
+                    if (el) el.scrollIntoView({ block: 'nearest' });
                 }
+            }
+
+            function chooseTitle(title) {
+                hideAC();
+                $('#pageInput').val('');
+                loadPage(title);
+            }
+
+            function fetchSuggestions(q) {
+                const my = ++acReq;
+                $.ajax({
+                    url: `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(q)}&limit=8&namespace=0&format=json&origin=*`,
+                    method: 'GET', dataType: 'json', timeout: 8000,
+                    success: function(data) {
+                        if (my !== acReq) return;                                  // stale response
+                        if ($('#pageInput').val().trim().length < 2) { hideAC(); return; }
+                        renderAC(data && data[1]);
+                    },
+                    error: function() { if (my === acReq) hideAC(); }
+                });
+            }
+
+            $('#pageInput').on('input', function() {
+                const q = $(this).val().trim();
+                clearTimeout(acTimer);
+                if (q.length < 2) { hideAC(); return; }
+                acTimer = setTimeout(() => fetchSuggestions(q), 180);
+            });
+
+            $('#pageInput').on('keydown', function(e) {
+                const open = $ac.is(':visible') && acItems.length;
+                if (e.which === 40 && open) {          // arrow down
+                    e.preventDefault();
+                    acIndex = Math.min(acIndex + 1, acItems.length - 1);
+                    highlightAC();
+                } else if (e.which === 38 && open) {   // arrow up
+                    e.preventDefault();
+                    acIndex = Math.max(acIndex - 1, 0);
+                    highlightAC();
+                } else if (e.which === 13) {           // enter
+                    if (open && acIndex >= 0) {
+                        e.preventDefault();
+                        chooseTitle(acItems[acIndex]);
+                    } else {
+                        $('#loadPage').click();
+                    }
+                } else if (e.which === 27) {           // escape
+                    hideAC();
+                }
+            });
+
+            $ac.on('click', 'li', function() {
+                const i = +$(this).attr('data-i');
+                if (acItems[i] != null) chooseTitle(acItems[i]);
+            });
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.subreddit-input').length) hideAC();
             });
 
             $(window).on('scroll', function() {
@@ -413,6 +535,7 @@
                         .map(item => {
                             let url = (item.srcset && item.srcset[0] && item.srcset[0].src) || item.src || '';
                             if (url.startsWith('//')) url = 'https:' + url;
+                            url = upscaleWikiImage(url, 1280);
                             return {
                                 url: url,
                                 title: item.title || item.name || 'Image',
@@ -464,6 +587,16 @@
             });
 
             $('#postsContainer').append(card);
+        }
+
+        // Wikipedia resized-image URLs carry a "NNNpx-" width token; bump it up so
+        // cards render crisp instead of upscaling a 500px thumbnail. 1280 matches
+        // the API's pre-rendered 2x size (cache hit). Originals (no /thumb/) are left alone.
+        function upscaleWikiImage(url, width) {
+            if (url.indexOf('/thumb/') === -1) return url;
+            return url.replace(/(\d+)px-/, function(m, cur) {
+                return Math.max(parseInt(cur, 10), width) + 'px-';
+            });
         }
 
         function cleanImageTitle(title) {
