@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X Feed</title>
+    <!-- warm up TLS to the proxy and image CDN before the first request -->
+    <link rel="preconnect" href="https://api.allorigins.win" crossorigin>
+    <link rel="preconnect" href="https://pbs.twimg.com" crossorigin>
     <style>
         * {
             box-sizing: border-box;
@@ -429,12 +432,20 @@
         ];
 
         // Staggered fetch policy: the feed runs entirely through one free proxy
-        // (allorigins) that rate-limits under bursts, so we (a) cap how many feeds
-        // are in flight at once and (b) space out the launch of each new request.
-        // The cache means repeat loads are instant regardless, so we can afford to
-        // be gentle here rather than hammering the proxy and getting throttled.
-        const MAX_INFLIGHT = 3;     // never more than this many requests at once
-        const STAGGER_MS = 400;     // minimum gap between launching requests
+        // (allorigins) that rate-limits under bursts, so we (a) cap how many
+        // requests are in flight at once and (b) space out each launch. On top of
+        // that, accounts are fetched in BATCHES via Nitter's multi-user merged RSS
+        // (/user1,user2,.../rss) — 44 accounts collapse into ~9 requests instead
+        // of 44, which is the single biggest speed lever available through the proxy.
+        const MAX_INFLIGHT = 3;      // never more than this many requests at once
+        const STAGGER_MS = 400;      // minimum gap between launching requests
+        const BATCH_SIZE = 5;        // handles per merged-RSS request (each merged
+                                     // feed returns ~20 newest items across the batch)
+        const FEED_FRESH_MS = 10 * 60 * 1000;   // skip the network entirely if the
+                                     // last full refresh was this recent (Nitter's
+                                     // own RSS cache TTL is 40 min anyway)
+        const RUN_DEADLINE_MS = 75 * 1000;      // hard cap per refresh run — finish
+                                     // with what we have instead of dragging on
 
         let TIMEFRAME = 'week';
         let CUSTOM_HANDLE = '';
@@ -454,7 +465,100 @@
             } catch (e) { return null; }
         }
         function saveCache(key, posts) {
-            try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), posts })); } catch (e) { /* quota / private mode */ }
+            // Returns success so callers can refuse to stamp freshness on a cache
+            // that silently failed to write (quota / private mode).
+            try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), posts })); return true; }
+            catch (e) { return false; }
+        }
+
+        // Freshness gate: after a successful full refresh we stamp the feed as
+        // fresh; loads within FEED_FRESH_MS render the cache and skip the network.
+        function markFresh(key) {
+            try { localStorage.setItem(key + ':fresh', String(Date.now())); } catch (e) { }
+        }
+        function isFresh(key) {
+            try {
+                const age = Date.now() - (+localStorage.getItem(key + ':fresh') || 0);
+                return age >= 0 && age < FEED_FRESH_MS;   // negative age = clock jumped — distrust
+            }
+            catch (e) { return false; }
+        }
+
+        // Housekeeping: per-searched-handle caches (+ fresh stamps) accumulate one
+        // localStorage pair per handle ever searched — drop any not touched in 7 days.
+        (function pruneOldHandleCaches() {
+            try {
+                const cutoff = Date.now() - 7 * 24 * 3600 * 1000;
+                Object.keys(localStorage)
+                    .filter(k => k.startsWith(CACHE_PREFIX + 'h:') && !k.endsWith(':fresh'))
+                    .forEach(k => {
+                        let ts = 0;
+                        try { ts = (JSON.parse(localStorage.getItem(k) || '{}').ts) || 0; } catch (e) { }
+                        if (ts < cutoff || ts > Date.now() + 60000) {
+                            localStorage.removeItem(k);
+                            localStorage.removeItem(k + ':fresh');
+                        }
+                    });
+            } catch (e) { }
+        })();
+
+        // Identity store: merged multi-user RSS has per-item @handles but no
+        // display names or avatars, so we remember author → {name, avatar} from
+        // every source that does carry them (single-handle feeds' channel header,
+        // and previously cached posts) and resolve at render time.
+        const IDENT_KEY = CACHE_PREFIX + 'identities';
+        let IDENTITIES = {};
+        try { IDENTITIES = JSON.parse(localStorage.getItem(IDENT_KEY) || '{}') || {}; } catch (e) { }
+        let identDirty = false, lastIdentSave = 0;
+        function harvestIdentity(author, name, avatar) {
+            if (!author || !avatar) return;
+            const k = author.toLowerCase();
+            const cur = IDENTITIES[k];
+            const bestName = (name && name !== author) ? name : (cur && cur.n) || name || author;
+            if (cur && cur.a === avatar && cur.n === bestName) return;
+            IDENTITIES[k] = { n: bestName, a: avatar, t: Date.now() };
+            identDirty = true;
+            if (Date.now() - lastIdentSave > 3000) saveIdentities();
+        }
+        function saveIdentities() {
+            if (!identDirty) return;
+            lastIdentSave = Date.now(); identDirty = false;
+            try {
+                const keys = Object.keys(IDENTITIES);
+                if (keys.length > 400) {
+                    // Bound storage — but never evict curated feed owners (their
+                    // identities are the whole point of the store); prune the
+                    // oldest incidental authors (RT'd accounts etc.) first.
+                    const owners = new Set(AI_ACCOUNTS.map(h => h.toLowerCase()));
+                    keys.filter(k => !owners.has(k))
+                        .sort((a, b) => (IDENTITIES[a].t || 0) - (IDENTITIES[b].t || 0))
+                        .slice(0, Math.max(0, keys.length - 400))
+                        .forEach(k => delete IDENTITIES[k]);
+                }
+                localStorage.setItem(IDENT_KEY, JSON.stringify(IDENTITIES));
+            } catch (e) { }
+        }
+
+        // Sticky instance persists across page loads, so repeat visits skip the
+        // (slow) instance-discovery race entirely. TTL keeps a dead instance from
+        // being trusted forever; a failed fetch also clears it immediately.
+        const INST_KEY = CACHE_PREFIX + 'instance';
+        const INSTANCE_TTL_MS = 30 * 60 * 1000;
+        (function restoreInstance() {
+            try {
+                const o = JSON.parse(localStorage.getItem(INST_KEY) || 'null');
+                const age = o ? Date.now() - o.ts : -1;
+                if (o && o.url && INSTANCES.includes(o.url) && age >= 0 && age < INSTANCE_TTL_MS) {
+                    WORKING_INSTANCE = o.url;
+                }
+            } catch (e) { }
+        })();
+        function setWorkingInstance(inst) {
+            WORKING_INSTANCE = inst;
+            try {
+                if (inst) localStorage.setItem(INST_KEY, JSON.stringify({ url: inst, ts: Date.now() }));
+                else localStorage.removeItem(INST_KEY);
+            } catch (e) { }
         }
 
         const TIME_RANGES = {
@@ -481,6 +585,9 @@
 
             document.getElementById('searchBtn').addEventListener('click', () => {
                 CUSTOM_HANDLE = document.getElementById('searchInput').value.trim().replace(/^@/, '');
+                // An explicit search is a deliberate refresh request — bust the
+                // freshness stamp so it always refetches (filter chips stay gated).
+                try { localStorage.removeItem(cacheKeyFor() + ':fresh'); } catch (e) { }
                 fetchPosts(true);
             });
 
@@ -557,61 +664,119 @@
         }
 
         // Find a working instance. allorigins buckles if hit with many concurrent
-        // requests, so we probe instances 2 at a time (not all at once): the first
-        // of a pair to return valid RSS wins, becomes sticky, and aborts its partner.
-        async function establishInstance(path) {
-            for (let i = 0; i < INSTANCES.length; i += 2) {
-                const batch = INSTANCES.slice(i, i + 2);
+        // requests, so we probe instances 3 at a time (not all at once): the first
+        // of a group to return valid RSS wins, becomes sticky, and aborts the rest.
+        async function establishInstance(path, extSignal) {
+            for (let i = 0; i < INSTANCES.length; i += 3) {
+                if (extSignal && extSignal.aborted) return null;
+                const group = INSTANCES.slice(i, i + 3);
                 const ctrl = new AbortController();
+                const onAbort = () => ctrl.abort();
+                if (extSignal) extSignal.addEventListener('abort', onAbort);
                 const xml = await new Promise(resolve => {
-                    let pending = batch.length;
+                    let pending = group.length;
                     let settled = false;
-                    batch.forEach(inst => {
-                        fetchInstance(inst, path, 3, ctrl.signal).then(x => {
+                    group.forEach(inst => {
+                        fetchInstance(inst, path, 2, ctrl.signal).then(x => {
                             if (settled) return;
-                            if (x) { settled = true; WORKING_INSTANCE = inst; ctrl.abort(); resolve(x); }
+                            if (x) { settled = true; setWorkingInstance(inst); ctrl.abort(); resolve(x); }
                             else if (--pending === 0) resolve(null);
                         });
                     });
                 });
+                if (extSignal) extSignal.removeEventListener('abort', onAbort);
                 if (xml) return xml;
             }
             return null;
         }
 
         // Use the known-good instance if we have one; otherwise probe to find one.
-        async function fetchViaProxy(path) {
+        // Discovery is SERIALIZED: only one instance race runs at a time — any
+        // other request that arrives instance-less waits for that race instead of
+        // launching its own (a parallel stampede of races is how a struggling
+        // proxy gets rate-limited into the ground).
+        let establishing = null;
+        let stickyFails = 0;   // consecutive distinct-path failures on the sticky instance
+        async function fetchViaProxy(path, extSignal) {
             if (WORKING_INSTANCE) {
-                const xml = await fetchInstance(WORKING_INSTANCE, path, 3);
-                if (xml) return xml;
-                WORKING_INSTANCE = null;   // it died — fall back to a fresh probe
+                const inst = WORKING_INSTANCE;
+                const xml = await fetchInstance(inst, path, 3, extSignal);
+                if (xml) {
+                    stickyFails = 0;
+                    setWorkingInstance(inst);   // re-stamp the persisted TTL on success
+                    return xml;
+                }
+                if (extSignal && extSignal.aborted) return null;
+                // A concurrent request may have already replaced the instance while
+                // we were failing — use theirs instead of clobbering it.
+                if (WORKING_INSTANCE && WORKING_INSTANCE !== inst) {
+                    return fetchInstance(WORKING_INSTANCE, path, 3, extSignal);
+                }
+                // One failing path might be the PATH's fault (dead handle in the
+                // batch), not the instance's — only declare the instance dead after
+                // two different requests fail on it.
+                stickyFails++;
+                if (stickyFails < 2) return null;
+                stickyFails = 0;
+                if (WORKING_INSTANCE === inst) setWorkingInstance(null);
             }
-            return establishInstance(path);
+            if (extSignal && extSignal.aborted) return null;
+            if (!establishing) {
+                // This request leads the discovery race; its own path rides along.
+                establishing = establishInstance(path, extSignal).finally(() => { establishing = null; });
+                return establishing;
+            }
+            // Someone else is already discovering — wait, then use their result.
+            await establishing.catch(() => null);
+            if (extSignal && extSignal.aborted) return null;
+            if (WORKING_INSTANCE) return fetchInstance(WORKING_INSTANCE, path, 3, extSignal);
+            // The leader's race failed — possibly because of ITS path, not the
+            // network. Lead one race of our own (still serialized) before giving up.
+            if (!establishing) {
+                establishing = establishInstance(path, extSignal).finally(() => { establishing = null; });
+                return establishing;
+            }
+            await establishing.catch(() => null);
+            return WORKING_INSTANCE ? fetchInstance(WORKING_INSTANCE, path, 3, extSignal) : null;
         }
 
-        async function fetchFeed(handle) {
-            const xml = await fetchViaProxy(`/${encodeURIComponent(handle)}/rss`);
-            if (!xml) return [];
+        // Fetch one unit — a single handle or an array of handles. Multiple handles
+        // use Nitter's multi-user merged RSS (/user1,user2/rss): one request covers
+        // the whole batch, with per-item dc:creator attribution. Returns null on
+        // fetch failure (vs [] for a feed that parsed but had nothing).
+        async function fetchFeed(handleOrList, extSignal) {
+            const handles = Array.isArray(handleOrList) ? handleOrList : [handleOrList];
+            const path = '/' + handles.map(encodeURIComponent).join(',') + '/rss';
+            const xml = await fetchViaProxy(path, extSignal);
+            if (!xml) return null;
             try {
-                return parseFeed(xml, handle);
+                return parseFeed(xml, handles);
             } catch (e) {
-                console.error('parse error for', handle, e);
-                return [];
+                console.error('parse error for', handles.join(','), e);
+                return null;
             }
         }
 
-        function parseFeed(xmlText, handle) {
+        function parseFeed(xmlText, handles) {
             const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
-            if (doc.querySelector('parsererror')) return [];
+            // Throw (not []) so fetchFeed reports null = failure: a truncated or
+            // garbage response must not count as a "successful" unit, or a failed
+            // run could get stamped fresh and lock in stale cache for 10 minutes.
+            if (doc.querySelector('parsererror')) throw new Error('unparseable RSS');
 
+            // Single-handle feeds carry the owner's display name + avatar in the
+            // channel header; merged feeds don't (title is "a | b | c"), so there
+            // we rely on the identity store, populated from single fetches + cache.
+            const single = handles.length === 1 ? handles[0] : null;
             const channelTitle = (doc.querySelector('channel > title')?.textContent || '').trim();
-            const ownerName = channelTitle.split(' / ')[0] || handle;
-            const ownerAvatar = doc.querySelector('channel > image > url')?.textContent || '';
+            const ownerName = single ? (channelTitle.split(' / ')[0] || single) : '';
+            const ownerAvatar = single ? (doc.querySelector('channel > image > url')?.textContent || '') : '';
+            if (single && ownerAvatar) harvestIdentity(single, ownerName, ownerAvatar);
 
             const posts = [];
             doc.querySelectorAll('item').forEach(item => {
                 const title = item.querySelector('title')?.textContent || '';
-                const creatorRaw = (item.getElementsByTagNameNS('*', 'creator')[0]?.textContent || `@${handle}`).trim();
+                const creatorRaw = (item.getElementsByTagNameNS('*', 'creator')[0]?.textContent || `@${handles[0]}`).trim();
                 const creator = creatorRaw.replace(/^@/, '');
                 const desc = item.querySelector('description')?.textContent || '';
                 const pubDate = item.querySelector('pubDate')?.textContent || '';
@@ -619,12 +784,13 @@
 
                 const rt = title.match(/^RT by @([\w]+):/);
                 const isRT = !!rt;
+                const isOwner = !!single && !isRT && creator.toLowerCase() === single.toLowerCase();
 
                 posts.push({
-                    feedHandle: handle,
+                    feedHandle: handles.join(','),
                     author: creator,
-                    authorName: (!isRT && creator.toLowerCase() === handle.toLowerCase()) ? ownerName : creator,
-                    avatar: (!isRT && creator.toLowerCase() === handle.toLowerCase()) ? ownerAvatar : '',
+                    authorName: isOwner ? ownerName : creator,
+                    avatar: isOwner ? ownerAvatar : '',
                     repostedBy: isRT ? rt[1] : null,
                     descHtml: desc,
                     date: pubDate ? new Date(pubDate).getTime() : 0,
@@ -635,7 +801,9 @@
         }
 
         // --- deterministic top progress bar (advances as feeds complete) ---
+        let barHideTimer = null;   // pending fade-out; cancelled if a new run starts
         function startProgress() {
+            if (barHideTimer) { clearTimeout(barHideTimer); barHideTimer = null; }
             const bar = document.getElementById('topbar');
             const fill = document.getElementById('topbar-fill');
             fill.style.transition = 'none';
@@ -652,14 +820,22 @@
         function finishProgress() {
             const bar = document.getElementById('topbar');
             document.getElementById('topbar-fill').style.width = '100%';
-            setTimeout(() => bar.classList.remove('active'), 250);
+            if (barHideTimer) clearTimeout(barHideTimer);
+            barHideTimer = setTimeout(() => { bar.classList.remove('active'); barHideTimer = null; }, 250);
         }
+
+        let runCtrl = null;   // abort controller for the current run's network work
 
         async function fetchPosts(reload = false) {
             // Bump the request id first: any in-flight run sees myReq !== currentReq
             // at its next checkpoint and bails, so a filter/search switch supersedes
-            // a slow load instead of being dropped.
+            // a slow load instead of being dropped. Abort the old run's network work
+            // too — otherwise its retry chains keep burning the proxy's rate limit
+            // underneath the new run.
             const myReq = ++currentReq;
+            if (runCtrl) runCtrl.abort();
+            runCtrl = new AbortController();
+            const signal = runCtrl.signal;
 
             const loading = document.getElementById('loading');
             const container = document.getElementById('postsContainer');
@@ -668,8 +844,18 @@
             container.innerHTML = '';
 
             const accounts = CUSTOM_HANDLE ? [CUSTOM_HANDLE] : AI_ACCOUNTS;
-            const totalFeeds = accounts.length;   // feeds to fetch → drives the progress bar
+            // Chunk accounts into merged-RSS batch units — the core speed lever:
+            // 44 accounts → ~9 requests instead of 44.
+            const units = [];
+            for (let i = 0; i < accounts.length; i += BATCH_SIZE) {
+                units.push(accounts.slice(i, i + BATCH_SIZE));
+            }
+            const totalFeeds = units.length;   // units to fetch → drives the progress bar
             let completed = 0;
+            let successUnits = 0;              // units that returned a parseable feed
+            let didNetwork = false;            // did this run actually hit the network?
+            let runDone = false;               // completion latch (normal or deadline)
+            let deadlineTimer = null;
             label.textContent = CUSTOM_HANDLE
                 ? `@${CUSTOM_HANDLE}`
                 : `Curated tech & AI feed · ${AI_ACCOUNTS.length} accounts · via xcancel`;
@@ -684,12 +870,13 @@
 
             // Persist progressively (throttled) so an abandoned multi-minute load
             // still leaves a usable cache for next time.
+            let persistOk = false;   // did the latest cache write actually land?
             function persist(force) {
                 if (!allPosts.length) return;
                 const now = Date.now();
                 if (!force && now - lastPersist < 2500) return;
                 lastPersist = now;
-                saveCache(key, allPosts.slice().sort((a, b) => b.date - a.date).slice(0, CACHE_MAX));
+                persistOk = saveCache(key, allPosts.slice().sort((a, b) => b.date - a.date).slice(0, CACHE_MAX));
             }
 
             function clearSkeletons() {
@@ -720,8 +907,13 @@
                 if (!p.link || seen.has(p.link)) return;
                 seen.add(p.link);
                 allPosts.push(p);
+                // Remember display name + avatar for authors that carry them, so
+                // batch-fetched posts (which don't) can be resolved at render time.
+                if (p.avatar) harvestIdentity(p.author, p.authorName, p.avatar);
                 if (cutoff && p.date <= cutoff) return;
-                if (total >= MAX_CARDS) return;
+                // After the run has visually completed (deadline or finish), keep
+                // caching stragglers but stop appending cards under the reader.
+                if (runDone || total >= MAX_CARDS) return;
                 clearSkeletons();
                 container.appendChild(buildCard(p));
                 total++;
@@ -729,11 +921,35 @@
 
             function handleFeed(posts) {
                 if (myReq !== currentReq) return;
-                posts.forEach(addPost);
+                if (posts && posts.length) posts.forEach(addPost);
                 persist(false);
                 // Once anything is on screen, downgrade the spinner to a quiet pill.
                 if (total > 0 && loading.style.display !== 'none' && !loading.querySelector('.refreshing')) {
                     loading.innerHTML = '<span class="refreshing"><span class="spinner"></span>Refreshing…</span>';
+                }
+            }
+
+            // Single completion path — reached normally when all units finish, or
+            // early via the run deadline. Idempotent.
+            function finishRun() {
+                if (runDone || myReq !== currentReq) return;
+                runDone = true;
+                if (deadlineTimer) clearTimeout(deadlineTimer);
+                clearSkeletons();
+                loading.style.display = 'none';
+                loading.innerHTML = '<div class="spinner"></div>Loading posts...';
+                finishProgress();
+                persist(true);
+                saveIdentities();
+                // Stamp freshness only for a run that actually fetched, mostly
+                // succeeded, AND whose cache write landed — never for cache-only
+                // paints (that would let frequent visits extend the stamp forever)
+                // and never over a cache that failed to persist (quota).
+                if (didNetwork && persistOk && successUnits >= Math.ceil(units.length / 2)) {
+                    markFresh(key);
+                }
+                if (total === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.<br><span style="font-size:0.85em;">(xcancel or the proxy may be rate-limited — try again or pick a wider range.)</span></p>';
                 }
             }
 
@@ -764,38 +980,72 @@
                 loading.innerHTML = '<span class="refreshing"><span class="spinner"></span>Refreshing…</span>';
             }
 
-            // Cold start: establish a healthy instance on the first account alone
-            // (racing all instances) so the parallel pool below can reuse it instead
-            // of all stampeding the instance list at once. Its posts render now.
-            let startIdx = 0;
-            if (!WORKING_INSTANCE && accounts.length) {
-                let firstPosts = [];
-                try { firstPosts = await fetchFeed(accounts[0]); } catch (e) { /* ignore */ }
-                if (myReq !== currentReq) return;
-                handleFeed(firstPosts);
-                completed++; setProgress(completed, totalFeeds);
-                startIdx = 1;
+            // Freshness gate: if a full refresh completed very recently, the cache
+            // IS current (upstream Nitter caches RSS for ~40 min anyway) — render
+            // it and skip the network entirely. Quick revisits and filter switches
+            // become instant and cost zero requests. Only gate when the filtered
+            // view actually has content: an empty view falls through to a real
+            // fetch, so its "no posts / try again" state is never a 10-minute
+            // dead end.
+            if (haveCache && isFresh(key) && total > 0) {
+                setProgress(1, 1);
+                finishRun();
+                return;
             }
 
-            // Staggered launcher: keep at most MAX_INFLIGHT feeds in flight and
-            // leave at least STAGGER_MS between launches, so we never burst the
-            // proxy. Each feed still renders the moment it arrives.
+            // Hard cap on the whole run: when it fires, finish with what we have
+            // and abort the in-flight retry chains (they'd otherwise keep burning
+            // the proxy's rate limit for minutes after the UI completed).
+            deadlineTimer = setTimeout(() => {
+                if (myReq === currentReq && !runDone) {
+                    finishRun();
+                    runCtrl.abort();
+                }
+            }, RUN_DEADLINE_MS);
+            didNetwork = true;
+
+            // Cold start: establish a healthy instance on the first unit alone
+            // (racing instances) so the parallel pool below can reuse it instead of
+            // all stampeding the instance list at once. With a persisted sticky
+            // instance this phase is skipped entirely on repeat visits. If it
+            // fails, unit 0 stays in the launcher queue and gets retried there —
+            // its 5 accounts must not silently vanish from the run.
+            let startIdx = 0;
+            if (!WORKING_INSTANCE && units.length) {
+                let firstPosts = null;
+                try { firstPosts = await fetchFeed(units[0], signal); } catch (e) { /* ignore */ }
+                if (myReq !== currentReq) return;
+                if (firstPosts !== null) {
+                    successUnits++;
+                    handleFeed(firstPosts);
+                    completed++; setProgress(completed, totalFeeds);
+                    startIdx = 1;
+                }
+            }
+
+            // Staggered launcher: keep at most MAX_INFLIGHT batch requests in
+            // flight and leave at least STAGGER_MS between launches, so we never
+            // burst the proxy. Each batch still renders the moment it arrives.
             await new Promise(resolve => {
                 let next = startIdx, active = 0, finished = startIdx, launching = false;
                 function launch() {
-                    if (myReq !== currentReq) { resolve(); return; }
-                    if (finished >= accounts.length) { resolve(); return; }
-                    if (launching || active >= MAX_INFLIGHT || next >= accounts.length) return;
+                    if (myReq !== currentReq || runDone) { resolve(); return; }
+                    if (finished >= units.length) { resolve(); return; }
+                    if (launching || active >= MAX_INFLIGHT || next >= units.length) return;
                     launching = true;
-                    const acct = accounts[next++];
+                    const unit = units[next++];
                     active++;
-                    fetchFeed(acct)
-                        .catch(() => [])
+                    fetchFeed(unit, signal)
+                        .catch(() => null)
                         .then(posts => {
+                            if (posts !== null) successUnits++;
                             handleFeed(posts);
                             active--; finished++;
-                            completed++; setProgress(completed, totalFeeds);
-                            if (finished >= accounts.length) resolve();
+                            completed++;
+                            // Guard the shared bar: a superseded run's stragglers
+                            // must not fight the new run over the fill width.
+                            if (myReq === currentReq) setProgress(completed, totalFeeds);
+                            if (finished >= units.length) resolve();
                             else launch();   // a slot freed
                         });
                     // Release the launch gate after the stagger gap, then try again.
@@ -805,17 +1055,25 @@
             });
 
             if (myReq !== currentReq) return;   // superseded — newer run owns the UI
-            clearSkeletons();
-            loading.style.display = 'none';
-            loading.innerHTML = '<div class="spinner"></div>Loading posts...';
-            finishProgress();   // fill to 100%, then fade out
+            const deadlineFired = runDone;      // finishRun already ran via deadline
+            finishRun();
 
-            // Final persist for instant paint next time (newest first, bounded).
-            // Never overwrite a good cache with nothing if this fetch came back empty.
-            persist(true);
-
-            if (total === 0) {
-                container.innerHTML = '<p style="text-align:center;color:#888;padding:30px;">No posts in this time range.<br><span style="font-size:0.85em;">(xcancel or the proxy may be rate-limited — try again or pick a wider range.)</span></p>';
+            // Identity backfill: merged feeds carry no avatars/display-names, so
+            // after a HEALTHY run (majority of units succeeded, no deadline) quietly
+            // fetch a few single-handle feeds for feed owners we don't know yet —
+            // their channel header fills the identity store, and avatars appear
+            // from the next paint on. Random pick so one avatar-less handle can't
+            // starve the rotation forever.
+            if (!CUSTOM_HANDLE && !deadlineFired && successUnits >= Math.ceil(units.length / 2)) {
+                const missing = AI_ACCOUNTS.filter(h => !IDENTITIES[h.toLowerCase()]);
+                missing.sort(() => Math.random() - 0.5);
+                for (const h of missing.slice(0, 3)) {
+                    await sleep(600);
+                    if (myReq !== currentReq) break;
+                    try { handleFeed(await fetchFeed(h, signal)); } catch (e) { /* best effort */ }
+                }
+                persist(true);      // backfill posts land in the cache too
+                saveIdentities();
             }
         }
 
@@ -835,17 +1093,25 @@
                 header.appendChild(rl);
             }
 
+            // Batch-fetched posts carry no avatar/display-name — resolve from the
+            // identity store (populated by single-handle fetches and cached posts).
+            const ident = IDENTITIES[post.author.toLowerCase()];
+            const avatar = post.avatar || (ident && ident.a) || '';
+            const name = (post.authorName && post.authorName !== post.author)
+                ? post.authorName
+                : ((ident && ident.n) || post.authorName || post.author);
+
             const profileUrl = `https://x.com/${post.author}`;
             const authorLink = document.createElement('a');
             authorLink.classList.add('post-author');
             authorLink.href = profileUrl;
             authorLink.target = '_blank';
             authorLink.rel = 'noopener';
-            authorLink.appendChild(buildAvatar(post));
+            authorLink.appendChild(buildAvatar({ avatar: avatar, author: post.author }));
             const info = document.createElement('div');
             info.classList.add('author-info');
             info.innerHTML = `
-                <div class="author-name">${escapeHtml(post.authorName)}</div>
+                <div class="author-name">${escapeHtml(name)}</div>
                 <div class="author-handle">@${escapeHtml(post.author)} · ${formatTimeAgo(post.date)}</div>`;
             authorLink.appendChild(info);
             header.appendChild(authorLink);
