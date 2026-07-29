@@ -387,6 +387,23 @@
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // ---------------------------------------------------------------------
+        // Reddit API access.
+        // Reddit now blocks anonymous .json requests (403), so this page uses the
+        // official OAuth "installed app" flow — the sanctioned, CORS-enabled way
+        // for a static page to read Reddit. One-time setup for the feed owner:
+        //   1. Log in to Reddit → https://www.reddit.com/prefs/apps
+        //   2. "create another app…" → pick type "installed app"
+        //      name: anything ("kartik-feed") · redirect uri: https://kartik.github.io
+        //   3. Copy the id shown under the app name (~22 chars) into
+        //      REDDIT_CLIENT_ID below. Installed-app ids are public by design —
+        //      safe to commit. Free tier: 100 requests/min, far above what this
+        //      page uses.
+        // If left empty, the page falls back to the legacy anonymous endpoint
+        // (which may still work in some regions) and otherwise shows setup help.
+        const REDDIT_CLIENT_ID = '';
+        // ---------------------------------------------------------------------
+
         // Configuration Constants
         let SUBREDDIT = 'singularity'; // Default subreddit
         let TIMEFRAME = 'day';            // Default timeframe
@@ -400,6 +417,77 @@
 
         // Regular Expression to check for image URLs
         const imageRegEx = /.*\.(jpg|jpeg|png|gif)$/i;
+
+        // ---- Reddit transport (OAuth installed-app flow, legacy fallback) ----
+
+        function redditDeviceId() {
+            let id = localStorage.getItem('reddit_device_id');
+            if (!id) {
+                id = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)).slice(0, 30);
+                localStorage.setItem('reddit_device_id', id);
+            }
+            return id;
+        }
+
+        async function redditToken(forceNew = false) {
+            if (!forceNew) {
+                try {
+                    const cached = JSON.parse(localStorage.getItem('reddit_token') || 'null');
+                    if (cached && cached.t && Date.now() < cached.exp) return cached.t;
+                } catch (e) { }
+            }
+            const res = await fetch('https://www.reddit.com/api/v1/access_token', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Basic ' + btoa(REDDIT_CLIENT_ID + ':'),
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'grant_type=' + encodeURIComponent('https://oauth.reddit.com/grants/installed_client')
+                    + '&device_id=' + encodeURIComponent(redditDeviceId())
+            });
+            if (!res.ok) throw new Error('token request failed: ' + res.status);
+            const data = await res.json();
+            if (!data.access_token) throw new Error('no token in response');
+            try {
+                localStorage.setItem('reddit_token', JSON.stringify({
+                    t: data.access_token,
+                    exp: Date.now() + (data.expires_in || 3600) * 1000 - 60000
+                }));
+            } catch (e) { }
+            return data.access_token;
+        }
+
+        // Fetch a Reddit API path (e.g. "/r/pics/top?limit=20") as parsed JSON.
+        // With a client id: OAuth host + bearer token (retries once on 401).
+        // Without: legacy anonymous .json endpoint — may be blocked by Reddit.
+        async function redditGet(pathQuery) {
+            const ctrl = new AbortController();
+            const to = setTimeout(() => ctrl.abort(), 15000);
+            try {
+                if (REDDIT_CLIENT_ID) {
+                    for (let attempt = 0; attempt < 2; attempt++) {
+                        const token = await redditToken(attempt > 0);
+                        const res = await fetch('https://oauth.reddit.com' + pathQuery, {
+                            headers: { 'Authorization': 'Bearer ' + token },
+                            signal: ctrl.signal
+                        });
+                        if (res.status === 401 && attempt === 0) continue;   // stale token — refresh once
+                        if (!res.ok) throw new Error('reddit ' + res.status);
+                        return await res.json();
+                    }
+                    throw new Error('reddit auth failed');
+                }
+                // Legacy: insert .json before the query string.
+                const i = pathQuery.indexOf('?');
+                const legacy = i === -1 ? pathQuery + '.json'
+                    : pathQuery.slice(0, i) + '.json' + pathQuery.slice(i);
+                const res = await fetch('https://www.reddit.com' + legacy, { signal: ctrl.signal });
+                if (!res.ok) throw new Error('reddit ' + res.status);
+                return await res.json();
+            } finally {
+                clearTimeout(to);
+            }
+        }
 
         // Initialize on document ready
         $(document).ready(function() {
@@ -458,17 +546,13 @@
             $('#loading').show().find('.spinner').show();
             $('#loading').find('p').remove(); // Clear any error messages
 
-            let url = `https://www.reddit.com/r/${SUBREDDIT}/top/.json?limit=${POST_LIMIT}&t=${TIMEFRAME}&raw_json=1`;
+            let path = `/r/${SUBREDDIT}/top?limit=${POST_LIMIT}&t=${TIMEFRAME}&raw_json=1`;
             if (after) {
-                url += `&after=${after}`;
+                path += `&after=${after}`;
             }
 
-            $.ajax({
-                url: url,
-                method: 'GET',
-                dataType: 'json',
-                timeout: 15000, // 15 second timeout
-                success: function(data) {
+            redditGet(path)
+                .then(function(data) {
                     if (!data || !data.data || !data.data.children) {
                         handleFetchError('Invalid response from Reddit', retryCount, MAX_RETRIES, RETRY_DELAYS);
                         return;
@@ -530,12 +614,12 @@
                     }
 
                     lock = false;
-                },
-                error: function(xhr, status, err) {
-                    console.error('Error fetching posts:', status, err);
-                    handleFetchError(status === 'timeout' ? 'Request timed out' : err, retryCount, MAX_RETRIES, RETRY_DELAYS);
-                }
-            });
+                })
+                .catch(function(err) {
+                    console.error('Error fetching posts:', err);
+                    const msg = err && err.name === 'AbortError' ? 'Request timed out' : String(err && err.message || err);
+                    handleFetchError(msg, retryCount, MAX_RETRIES, RETRY_DELAYS);
+                });
         }
 
         function handleFetchError(errorMsg, retryCount, maxRetries, retryDelays) {
@@ -550,7 +634,11 @@
                 }, delay);
             } else {
                 $('#loading').find('.spinner').hide();
-                $('#loading').html('<p>Failed to load posts. <button onclick="retryFetch()" style="color: #FF4500; background: none; border: none; cursor: pointer; text-decoration: underline;">Try again</button></p>');
+                const hint = REDDIT_CLIENT_ID ? '' :
+                    '<p style="font-size:0.85em; max-width:420px; margin:8px auto 0;">Reddit now blocks anonymous API access. ' +
+                    'Fix: create a free "installed app" at <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener" style="color:#FF4500;">reddit.com/prefs/apps</a> ' +
+                    'and paste its client id into <code>REDDIT_CLIENT_ID</code> in this page’s source.</p>';
+                $('#loading').html('<p>Failed to load posts. <button onclick="retryFetch()" style="color: #FF4500; background: none; border: none; cursor: pointer; text-decoration: underline;">Try again</button></p>' + hint);
                 lock = false;
             }
         }
@@ -758,16 +846,14 @@
         function fetchComments(postId, contentElement, retryCount = 0) {
             const MAX_RETRIES = 3;
             const RETRY_DELAYS = [1000, 2000, 4000];
-            const commentURL = `https://www.reddit.com/r/${SUBREDDIT}/comments/${postId}.json?sort=top&limit=20&raw_json=1`;
+            // /comments/<id> without a subreddit works on both hosts and stays
+            // valid when SUBREDDIT is a multireddit (a+b+c).
+            const commentPath = `/comments/${postId}?sort=top&limit=20&raw_json=1`;
 
             contentElement.html('<p>Loading comments...</p>');
 
-            $.ajax({
-                url: commentURL,
-                method: 'GET',
-                dataType: 'json',
-                timeout: 10000,
-                success: function(data) {
+            redditGet(commentPath)
+                .then(function(data) {
                     if (!data || !data[1] || !data[1].data) {
                         if (retryCount < MAX_RETRIES) {
                             setTimeout(() => fetchComments(postId, contentElement, retryCount + 1), RETRY_DELAYS[retryCount]);
@@ -796,17 +882,16 @@
 
                     contentElement.data('loaded', true);
                     contentElement.slideDown();
-                },
-                error: function(xhr, status, err) {
-                    console.error('Error fetching comments:', status, err);
+                })
+                .catch(function(err) {
+                    console.error('Error fetching comments:', err);
                     if (retryCount < MAX_RETRIES) {
                         contentElement.html(`<p>Retrying... (${retryCount + 2}/${MAX_RETRIES + 1})</p>`);
                         setTimeout(() => fetchComments(postId, contentElement, retryCount + 1), RETRY_DELAYS[retryCount]);
                     } else {
                         contentElement.html('<p>Failed to load comments. <span onclick="$(this).parent().parent().data(\'loaded\', false).find(\'.card-header\').click()" style="color: #FF4500; cursor: pointer; text-decoration: underline;">Try again</span></p>').slideDown();
                     }
-                }
-            });
+                });
         }
 
         // Utility function to escape HTML to prevent XSS
