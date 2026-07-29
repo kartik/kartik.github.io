@@ -431,12 +431,12 @@
             'kimmonismus'      // Chubby — AI news / hype tracker
         ];
 
-        // Staggered fetch policy: the feed runs entirely through one free proxy
-        // (allorigins) that rate-limits under bursts, so we (a) cap how many
-        // requests are in flight at once and (b) space out each launch. On top of
-        // that, accounts are fetched in BATCHES via Nitter's multi-user merged RSS
-        // (/user1,user2,.../rss) — 44 accounts collapse into ~9 requests instead
-        // of 44, which is the single biggest speed lever available through the proxy.
+        // Staggered fetch policy: the feed runs through free public proxies
+        // (rss2json, allorigins) that rate-limit under bursts, so we (a) cap how
+        // many requests are in flight at once and (b) space out each launch. On top
+        // of that, accounts are fetched in BATCHES via Nitter's multi-user merged
+        // RSS (/user1,user2,.../rss) — 44 accounts collapse into ~9 requests
+        // instead of 44, the single biggest speed lever available through a proxy.
         const MAX_INFLIGHT = 3;      // never more than this many requests at once
         const STAGGER_MS = 400;      // minimum gap between launching requests
         const BATCH_SIZE = 5;        // handles per merged-RSS request (each merged
@@ -635,27 +635,81 @@
             return (c.includes('<rss') || c.includes('<item>')) ? c : null;
         }
 
-        // allorigins is the only proxy that reaches Nitter from the browser
-        // (corsproxy/codetabs are CORS- or key-gated). It returns transient 500/522
-        // errors under load, but those fast-fail and usually clear on retry — so we
-        // retry a few times. extSignal lets a race abort this once a winner is found.
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-        async function fetchInstance(instance, path, attempts, extSignal) {
+        // ---- transports --------------------------------------------------------
+        // Two independent ways to read a Nitter RSS URL from the browser; each
+        // returns normalized post objects or null on failure. Keeping both means
+        // one proxy having a bad day (allorigins 520s, rss2json 500s) doesn't
+        // take the feed down.
+        //   1. rss2json — purpose-built RSS→JSON API, CORS-native, ~1-2s, caches
+        //      server-side. Keyless tier caps at 10 items per feed.
+        //   2. allorigins — generic CORS mirror returning the raw XML (~5-15s,
+        //      flakier, but no item cap and a different egress network).
+        // The transport that last worked is sticky (persisted), same as instances.
+
+        const TRANSPORTS = [
+            {
+                name: 'rss2json',
+                async get(target, handles, extSignal, timeoutMs) {
+                    const url = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(target);
+                    const raw = await fetchText(url, timeoutMs || 12000, extSignal);
+                    if (!raw) return null;
+                    let d;
+                    try { d = JSON.parse(raw); } catch (e) { return null; }
+                    if (!d || d.status !== 'ok' || !Array.isArray(d.items)) return null;
+                    // Some instances serve RSS readers a "not whitelisted" stub —
+                    // that's a failure for our purposes, not a feed.
+                    if (/not yet whitelisted/i.test((d.feed && d.feed.title) || '')) return null;
+                    return parseR2J(d, handles);
+                }
+            },
+            {
+                name: 'allorigins',
+                async get(target, handles, extSignal, timeoutMs) {
+                    const url = 'https://api.allorigins.win/get?url=' + encodeURIComponent(target);
+                    const raw = await fetchText(url, timeoutMs || 12000, extSignal);
+                    if (!raw) return null;
+                    const xml = decodeAllorigins(raw);
+                    if (!xml) return null;
+                    return parseFeed(xml, handles);   // throws on parsererror → caught below
+                }
+            }
+        ];
+
+        const TRANSPORT_KEY = CACHE_PREFIX + 'transport';
+        let TRANSPORT_IDX = 0;
+        try {
+            const savedT = +localStorage.getItem(TRANSPORT_KEY);
+            if (savedT >= 0 && savedT < TRANSPORTS.length) TRANSPORT_IDX = savedT;
+        } catch (e) { }
+        function setTransport(i) {
+            TRANSPORT_IDX = i;
+            try { localStorage.setItem(TRANSPORT_KEY, String(i)); } catch (e) { }
+        }
+
+        // Fetch one instance+path, trying the sticky transport first and failing
+        // over to the other per attempt. Returns posts[] or null.
+        async function fetchInstance(instance, path, handles, attempts, extSignal) {
             const target = `${instance}${path}`;
-            const url = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`;
             for (let i = 0; i < attempts; i++) {
                 if (extSignal && extSignal.aborted) return null;
-                try {
-                    const raw = await fetchText(url, 12000, extSignal);
-                    if (raw) {
-                        const xml = decodeAllorigins(raw);
-                        if (xml) return xml;
-                    }
-                } catch (e) { /* timeout / abort / network — retry */ }
-                // Backoff before retrying: allorigins often returns a transient
-                // error/empty body that only clears a beat later, so an immediate
-                // retry just re-hits it. Skip the wait after the final attempt.
+                for (let k = 0; k < TRANSPORTS.length; k++) {
+                    if (extSignal && extSignal.aborted) return null;
+                    const idx = (TRANSPORT_IDX + k) % TRANSPORTS.length;
+                    try {
+                        // Give the sticky transport the full window; probe the
+                        // fallback with a shorter one so a dead proxy can't drag
+                        // every attempt out by 12s.
+                        const posts = await TRANSPORTS[idx].get(target, handles, extSignal, k === 0 ? 12000 : 6000);
+                        if (posts !== null) {
+                            if (idx !== TRANSPORT_IDX) setTransport(idx);
+                            return posts;
+                        }
+                    } catch (e) { /* parse/network failure — try next transport */ }
+                }
+                // Backoff before retrying: both proxies return transient errors
+                // that clear a beat later. Skip the wait after the final attempt.
                 if (i < attempts - 1 && !(extSignal && extSignal.aborted)) {
                     await sleep(700 * (i + 1));
                 }
@@ -666,18 +720,18 @@
         // Find a working instance. allorigins buckles if hit with many concurrent
         // requests, so we probe instances 3 at a time (not all at once): the first
         // of a group to return valid RSS wins, becomes sticky, and aborts the rest.
-        async function establishInstance(path, extSignal) {
+        async function establishInstance(path, handles, extSignal) {
             for (let i = 0; i < INSTANCES.length; i += 3) {
                 if (extSignal && extSignal.aborted) return null;
                 const group = INSTANCES.slice(i, i + 3);
                 const ctrl = new AbortController();
                 const onAbort = () => ctrl.abort();
                 if (extSignal) extSignal.addEventListener('abort', onAbort);
-                const xml = await new Promise(resolve => {
+                const posts = await new Promise(resolve => {
                     let pending = group.length;
                     let settled = false;
                     group.forEach(inst => {
-                        fetchInstance(inst, path, 2, ctrl.signal).then(x => {
+                        fetchInstance(inst, path, handles, 2, ctrl.signal).then(x => {
                             if (settled) return;
                             if (x) { settled = true; setWorkingInstance(inst); ctrl.abort(); resolve(x); }
                             else if (--pending === 0) resolve(null);
@@ -685,7 +739,7 @@
                     });
                 });
                 if (extSignal) extSignal.removeEventListener('abort', onAbort);
-                if (xml) return xml;
+                if (posts) return posts;
             }
             return null;
         }
@@ -697,64 +751,58 @@
         // proxy gets rate-limited into the ground).
         let establishing = null;
         let stickyFails = 0;   // consecutive distinct-path failures on the sticky instance
-        async function fetchViaProxy(path, extSignal) {
+        async function fetchViaProxy(path, handles, extSignal) {
             if (WORKING_INSTANCE) {
                 const inst = WORKING_INSTANCE;
-                const xml = await fetchInstance(inst, path, 3, extSignal);
-                if (xml) {
+                const posts = await fetchInstance(inst, path, handles, 3, extSignal);
+                if (posts) {
                     stickyFails = 0;
                     setWorkingInstance(inst);   // re-stamp the persisted TTL on success
-                    return xml;
+                    return posts;
                 }
                 if (extSignal && extSignal.aborted) return null;
                 // A concurrent request may have already replaced the instance while
                 // we were failing — use theirs instead of clobbering it.
                 if (WORKING_INSTANCE && WORKING_INSTANCE !== inst) {
-                    return fetchInstance(WORKING_INSTANCE, path, 3, extSignal);
+                    return fetchInstance(WORKING_INSTANCE, path, handles, 3, extSignal);
                 }
                 // One failing path might be the PATH's fault (dead handle in the
-                // batch), not the instance's — only declare the instance dead after
-                // two different requests fail on it.
+                // batch) or transient proxy flake, not the instance's — only
+                // declare the instance dead after three different requests fail.
                 stickyFails++;
-                if (stickyFails < 2) return null;
+                if (stickyFails < 3) return null;
                 stickyFails = 0;
                 if (WORKING_INSTANCE === inst) setWorkingInstance(null);
             }
             if (extSignal && extSignal.aborted) return null;
             if (!establishing) {
                 // This request leads the discovery race; its own path rides along.
-                establishing = establishInstance(path, extSignal).finally(() => { establishing = null; });
+                establishing = establishInstance(path, handles, extSignal).finally(() => { establishing = null; });
                 return establishing;
             }
             // Someone else is already discovering — wait, then use their result.
             await establishing.catch(() => null);
             if (extSignal && extSignal.aborted) return null;
-            if (WORKING_INSTANCE) return fetchInstance(WORKING_INSTANCE, path, 3, extSignal);
+            if (WORKING_INSTANCE) return fetchInstance(WORKING_INSTANCE, path, handles, 3, extSignal);
             // The leader's race failed — possibly because of ITS path, not the
             // network. Lead one race of our own (still serialized) before giving up.
             if (!establishing) {
-                establishing = establishInstance(path, extSignal).finally(() => { establishing = null; });
+                establishing = establishInstance(path, handles, extSignal).finally(() => { establishing = null; });
                 return establishing;
             }
             await establishing.catch(() => null);
-            return WORKING_INSTANCE ? fetchInstance(WORKING_INSTANCE, path, 3, extSignal) : null;
+            return WORKING_INSTANCE ? fetchInstance(WORKING_INSTANCE, path, handles, 3, extSignal) : null;
         }
 
         // Fetch one unit — a single handle or an array of handles. Multiple handles
         // use Nitter's multi-user merged RSS (/user1,user2/rss): one request covers
-        // the whole batch, with per-item dc:creator attribution. Returns null on
-        // fetch failure (vs [] for a feed that parsed but had nothing).
+        // the whole batch, with per-item dc:creator attribution. Parsing happens
+        // inside the transports (rss2json returns items, allorigins returns XML).
+        // Returns null on failure (vs [] for a feed that parsed but had nothing).
         async function fetchFeed(handleOrList, extSignal) {
             const handles = Array.isArray(handleOrList) ? handleOrList : [handleOrList];
             const path = '/' + handles.map(encodeURIComponent).join(',') + '/rss';
-            const xml = await fetchViaProxy(path, extSignal);
-            if (!xml) return null;
-            try {
-                return parseFeed(xml, handles);
-            } catch (e) {
-                console.error('parse error for', handles.join(','), e);
-                return null;
-            }
+            return fetchViaProxy(path, handles, extSignal);
         }
 
         function parseFeed(xmlText, handles) {
@@ -798,6 +846,53 @@
                 });
             });
             return posts;
+        }
+
+        // Nitter serves channel avatars through its own image proxy
+        // (https://<instance>/pic/<url-encoded pbs.twimg.com URL>). Unwrap to the
+        // direct CDN URL so stored avatars survive that instance going down.
+        function unwrapNitterPic(url) {
+            const m = String(url || '').match(/^https?:\/\/[^/]+\/pic\/(.+)$/);
+            if (!m) return url || '';
+            try {
+                const inner = decodeURIComponent(m[1]);
+                return /^https?:\/\//.test(inner) ? inner : url;
+            } catch (e) { return url; }
+        }
+
+        // Normalize an rss2json response to the same post shape parseFeed emits.
+        // rss2json maps dc:creator → item.author and rewrites pubDate to a
+        // "YYYY-MM-DD HH:mm:ss" string in UTC (parse it as UTC, not local time).
+        function parseR2J(d, handles) {
+            const single = handles.length === 1 ? handles[0] : null;
+            const feed = d.feed || {};
+            const ownerName = single ? ((feed.title || '').split(' / ')[0] || single) : '';
+            const ownerAvatar = single ? unwrapNitterPic(feed.image || '') : '';
+            if (single && ownerAvatar) harvestIdentity(single, ownerName, ownerAvatar);
+
+            return (d.items || []).map(item => {
+                const title = item.title || '';
+                const creator = String(item.author || handles[0]).replace(/^@/, '').trim() || handles[0];
+                const rt = title.match(/^RT by @([\w]+):/);
+                const isRT = !!rt;
+                const isOwner = !!single && !isRT && creator.toLowerCase() === single.toLowerCase();
+                let ts = 0;
+                if (item.pubDate) {
+                    // "2026-07-29 17:46:06" (UTC) → ISO; fall back to native parsing
+                    ts = Date.parse(item.pubDate.replace(' ', 'T') + 'Z');
+                    if (isNaN(ts)) ts = Date.parse(item.pubDate) || 0;
+                }
+                return {
+                    feedHandle: handles.join(','),
+                    author: creator,
+                    authorName: isOwner ? ownerName : creator,
+                    avatar: isOwner ? ownerAvatar : '',
+                    repostedBy: isRT ? rt[1] : null,
+                    descHtml: item.description || item.content || '',
+                    date: ts,
+                    link: rewriteUrl(item.link || '')
+                };
+            });
         }
 
         // --- deterministic top progress bar (advances as feeds complete) ---
