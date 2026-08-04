@@ -359,6 +359,23 @@
                 padding: 5px;
             }
         }
+
+        /* ---- dark mode (only mode) ---- */
+        body { background-color: #15181c; color: #e7e9ea; }
+        .subreddit-input { border-color: #2f3336; background-color: #16181c; }
+        .subreddit-input input { color: #e7e9ea; background: transparent; }
+        .subreddit-input input::placeholder { color: #71767b; }
+        .chip { background-color: #2a2d31; color: #e7e9ea; }
+        .chip.active, .chip:hover { background-color: #FF4500; color: #fff; }
+        .card { background-color: #16181c; box-shadow: 0 1px 0 #2f3336; }
+        .card-header h2 a { color: #22aaff; }
+        .card-selftext { color: #e7e9ea; }
+        .card-content { border-top-color: #2f3336; }
+        .comment { border-bottom-color: #2f3336; }
+        .comment-body { color: #e7e9ea; }
+        .comment-upvotes { color: #8b98a5; }
+        .loading { color: #8b98a5; }
+        .spinner { border-color: #2f3336; border-top-color: #FF4500; }
     </style>
 </head>
 <body>
@@ -457,6 +474,79 @@
             return data.access_token;
         }
 
+        // ---- Arctic Shift fallback (no auth, CORS-open) --------------------
+        // When Reddit blocks direct access, fall back to the Arctic Shift
+        // archive (Pushshift successor, api CORS *). It re-ingests scores with
+        // ~a day of lag, so "day" widens to 48h to catch fully-scored posts,
+        // and rankings for recent hours run behind. Honest tradeoff for a feed
+        // that works with zero credentials.
+        let usingArctic = false;
+        const ARCTIC = 'https://arctic-shift.photon-reddit.com/api';
+        const ARCTIC_WINDOWS = { day: 2 * 86400, week: 7 * 86400, month: 30 * 86400, year: 365 * 86400, all: 4 * 365 * 86400 };
+        // Arctic can only sort by creation time, so wide windows are SAMPLED:
+        // the window is cut into slices and we take the newest ~100 posts of
+        // each slice, then rank the merged pool by score.
+        const ARCTIC_SLICES = { day: 1, week: 4, month: 6, year: 8, all: 8 };
+
+        function setArcticNote(on) {
+            usingArctic = on;
+            const el = document.getElementById('sourceNote');
+            if (el) el.style.display = on ? 'block' : 'none';
+        }
+
+        async function arcticFetchJson(url) {
+            const ctrl = new AbortController();
+            const to = setTimeout(() => ctrl.abort(), 20000);
+            try {
+                const res = await fetch(url, { signal: ctrl.signal });
+                if (!res.ok) throw new Error('arctic ' + res.status);
+                return await res.json();
+            } finally { clearTimeout(to); }
+        }
+
+        // Returns the same listing shape as Reddit's API so the render pipeline
+        // is untouched: {data: {children: [{data: post}], after: null}}.
+        async function arcticGet() {
+            const subs = SUBREDDIT.split('+').map(s => s.trim()).filter(Boolean).slice(0, 3);
+            const now = Math.floor(Date.now() / 1000);
+            const window = ARCTIC_WINDOWS[TIMEFRAME] || ARCTIC_WINDOWS.day;
+            const slices = Math.max(1, Math.floor((ARCTIC_SLICES[TIMEFRAME] || 1) / subs.length) || 1);
+            const sliceLen = Math.floor(window / slices);
+
+            const jobs = [];
+            subs.forEach(sub => {
+                for (let i = 0; i < slices; i++) {
+                    const before = now - i * sliceLen;
+                    const after = before - sliceLen;
+                    jobs.push(
+                        arcticFetchJson(`${ARCTIC}/posts/search?subreddit=${encodeURIComponent(sub)}&after=${after}&before=${before}&limit=100`)
+                            .then(d => (d && d.data) || [])
+                            .catch(() => [])
+                    );
+                }
+            });
+            const results = await Promise.all(jobs);
+            const seen = new Set();
+            const posts = results.flat().filter(p => {
+                if (!p || !p.id || seen.has(p.id)) return false;
+                seen.add(p.id);
+                return true;
+            });
+            if (!posts.length) throw new Error('arctic: no posts');
+            posts.forEach(p => { if (p.ups == null) p.ups = p.score || 0; });
+            posts.sort((a, b) => (b.score || 0) - (a.score || 0));
+            return { data: { children: posts.map(p => ({ data: p })), after: null } };
+        }
+
+        async function arcticComments(postId) {
+            const d = await arcticFetchJson(`${ARCTIC}/comments/search?link_id=${encodeURIComponent(postId)}&limit=50`);
+            const comments = ((d && d.data) || [])
+                .map(c => ({ kind: 't1', data: { body: c.body || '', ups: c.ups != null ? c.ups : (c.score || 0) } }))
+                .sort((a, b) => (b.data.ups || 0) - (a.data.ups || 0));
+            // Mirror Reddit's [post, comments] envelope for the existing parser.
+            return [null, { data: { children: comments } }];
+        }
+
         // Fetch a Reddit API path (e.g. "/r/pics/top?limit=20") as parsed JSON.
         // With a client id: OAuth host + bearer token (retries once on 401).
         // Without: legacy anonymous .json endpoint — may be blocked by Reddit.
@@ -552,6 +642,12 @@
             }
 
             redditGet(path)
+                .then(function(data) { setArcticNote(false); return data; })
+                .catch(function(err) {
+                    // Reddit blocked us — fall back to the Arctic Shift archive.
+                    console.warn('Reddit direct failed, trying Arctic Shift:', err && err.message);
+                    return arcticGet().then(function(data) { setArcticNote(true); return data; });
+                })
                 .then(function(data) {
                     if (!data || !data.data || !data.data.children) {
                         handleFetchError('Invalid response from Reddit', retryCount, MAX_RETRIES, RETRY_DELAYS);
@@ -852,7 +948,7 @@
 
             contentElement.html('<p>Loading comments...</p>');
 
-            redditGet(commentPath)
+            (usingArctic ? arcticComments(postId) : redditGet(commentPath).catch(() => arcticComments(postId)))
                 .then(function(data) {
                     if (!data || !data[1] || !data[1].data) {
                         if (retryCount < MAX_RETRIES) {
@@ -863,8 +959,11 @@
                         return;
                     }
 
+                    // Arctic archive comment scores lag (~1 point at ingest), so the
+                    // upvote floor would wrongly discard everything in archive mode.
+                    const minUps = usingArctic ? -1 : MIN_UPVOTES;
                     const comments = data[1].data.children
-                        .filter(child => child.kind === 't1' && child.data.ups > MIN_UPVOTES)
+                        .filter(child => child.kind === 't1' && child.data.ups > minUps)
                         .map(child => child.data)
                         .sort((a, b) => b.ups - a.ups);
 
