@@ -432,6 +432,7 @@
         let fetchedPosts = 0;             // Counter for fetched posts
         let lock = false;                 // Lock to prevent multiple concurrent fetches
         let loadedIDArray = [];           // Array to store loaded post IDs
+        let subCounts = {};               // Per-sub render counts (diversity cap)
 
         // Regular Expression to check for image URLs
         const imageRegEx = /.*\.(jpg|jpeg|png|gif)$/i;
@@ -519,10 +520,17 @@
             );
             const sliceLen = Math.floor(window / slices);
 
+            // Arctic re-ingests vote counts roughly TWO DAYS behind live Reddit —
+            // posts newer than that all sit at ~1 point, so sampling up to "now"
+            // makes high-volume subs invisible in a score ranking. End every
+            // sampling band at the score horizon instead: "Day" is effectively
+            // "the best of ~2 days ago", which is the honest best archive mode can do.
+            const SCORE_LAG = 2 * 86400;
+            const end = now - SCORE_LAG;
             const jobs = [];
             subs.forEach(sub => {
                 for (let i = 0; i < slices; i++) {
-                    const before = now - i * sliceLen;
+                    const before = end - i * sliceLen;
                     const after = before - sliceLen;
                     jobs.push(
                         arcticFetchJson(`${ARCTIC}/posts/search?subreddit=${encodeURIComponent(sub)}&after=${after}&before=${before}&limit=100`)
@@ -629,6 +637,7 @@
             after = null;
             fetchedPosts = 0;
             loadedIDArray = [];
+            subCounts = {};
             $('#postsContainer').empty();
         }
 
@@ -673,6 +682,13 @@
 
                         // Avoid duplicates
                         if (loadedIDArray.includes(postData.id)) return;
+
+                        // Diversity cap: in a multireddit, don't let one huge sub
+                        // swallow the whole view (max ~30% of rendered posts).
+                        const subKey = (postData.subreddit || '').toLowerCase();
+                        const subCap = Math.ceil(TOTAL_POSTS * 0.3);
+                        if ((subCounts[subKey] || 0) >= subCap) return;
+                        subCounts[subKey] = (subCounts[subKey] || 0) + 1;
 
                         const postId = postData.id;
                         const postTitle = postData.title;
