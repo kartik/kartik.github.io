@@ -512,11 +512,14 @@
             const subs = SUBREDDIT.split('+').map(s => s.trim()).filter(Boolean).slice(0, 16);
             const now = Math.floor(Date.now() / 1000);
             const window = ARCTIC_WINDOWS[TIMEFRAME] || ARCTIC_WINDOWS.day;
-            // Each sub gets its own window slices, bounded so a multireddit
-            // doesn't fan out into an unreasonable number of requests (~14 max).
+            // Each sub gets its own window slices. Arctic has no score sort or
+            // score filter, so newest-per-band sampling is the only tool — with
+            // one band, every timeframe returns the same newest posts and the
+            // range selector does nothing. Guarantee at least 2 bands for any
+            // window wider than a day (~30 request budget) so timeframes differ.
             const slices = Math.min(
                 ARCTIC_SLICES[TIMEFRAME] || 1,
-                Math.max(1, Math.floor(14 / subs.length))
+                Math.max(1, Math.floor(30 / subs.length))
             );
             const sliceLen = Math.floor(window / slices);
 
@@ -527,19 +530,26 @@
             // "the best of ~2 days ago", which is the honest best archive mode can do.
             const SCORE_LAG = 2 * 86400;
             const end = now - SCORE_LAG;
-            const jobs = [];
+            const urls = [];
             subs.forEach(sub => {
                 for (let i = 0; i < slices; i++) {
                     const before = end - i * sliceLen;
                     const after = before - sliceLen;
-                    jobs.push(
-                        arcticFetchJson(`${ARCTIC}/posts/search?subreddit=${encodeURIComponent(sub)}&after=${after}&before=${before}&limit=100`)
-                            .then(d => (d && d.data) || [])
-                            .catch(() => [])
-                    );
+                    urls.push(`${ARCTIC}/posts/search?subreddit=${encodeURIComponent(sub)}&after=${after}&before=${before}&limit=100`);
                 }
             });
-            const results = await Promise.all(jobs);
+            // Be polite to the archive: at most 8 requests in flight.
+            const results = [];
+            let next = 0;
+            async function worker() {
+                while (next < urls.length) {
+                    const idx = next++;
+                    results[idx] = await arcticFetchJson(urls[idx])
+                        .then(d => (d && d.data) || [])
+                        .catch(() => []);
+                }
+            }
+            await Promise.all(Array.from({ length: Math.min(8, urls.length) }, worker));
             const seen = new Set();
             const posts = results.flat().filter(p => {
                 if (!p || !p.id || seen.has(p.id)) return false;
