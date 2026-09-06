@@ -371,15 +371,17 @@
         // Nitter instances are individually flaky/often-down, so we fail over
         // between them: race them on a cold start, then stick to whichever responds.
         const INSTANCES = [
+            // Verified working through rss2json with merged multi-user RSS
+            // (source: codeberg.org/mv12star/shitter/wiki/Instances, 2026-09-05).
+            // tw.eir-nya.gay also responds but serves posts from the WRONG
+            // accounts on merged queries — never add it.
+            'https://nitter.jaydenha.uk',
+            'https://x.n0g.xyz',
+            'https://shitter.thepixora.com',
+            // Historically strong, kept as fallbacks
             'https://xcancel.com',
             'https://nitter.net',
-            'https://nitter.tiekoetter.com',
-            'https://nitter.space',
-            'https://lightbrd.com',
-            'https://nitter.privacyredirect.com',
-            'https://nitter.poast.org',
-            'https://nuku.trabun.org',
-            'https://bird.trom.tf'
+            'https://nitter.tiekoetter.com'
         ];
         const INSTANCE_HOSTS = INSTANCES.map(u => u.replace(/^https?:\/\//, ''));
         let WORKING_INSTANCE = null;   // sticky once one proves healthy
@@ -731,9 +733,12 @@
         // requests, so we probe instances 3 at a time (not all at once): the first
         // of a group to return valid RSS wins, becomes sticky, and aborts the rest.
         async function establishInstance(path, handles, extSignal) {
-            for (let i = 0; i < INSTANCES.length; i += 3) {
+            // rss2json rate-limits per IP (~10 req/min), so probe the
+            // top (verified) instance alone before burning budget on races.
+            const groups = [[INSTANCES[0]]];
+            for (let i = 1; i < INSTANCES.length; i += 3) groups.push(INSTANCES.slice(i, i + 3));
+            for (const group of groups) {
                 if (extSignal && extSignal.aborted) return null;
-                const group = INSTANCES.slice(i, i + 3);
                 const ctrl = new AbortController();
                 const onAbort = () => ctrl.abort();
                 if (extSignal) extSignal.addEventListener('abort', onAbort);
@@ -963,7 +968,7 @@
             let deadlineTimer = null;
             label.textContent = CUSTOM_HANDLE
                 ? `@${CUSTOM_HANDLE}`
-                : `Curated tech & AI feed · ${AI_ACCOUNTS.length} accounts · via xcancel`;
+                : `Curated tech & AI feed · ${AI_ACCOUNTS.length} accounts · via ${(WORKING_INSTANCE || INSTANCES[0]).replace(/^https:\/\/(www\.)?/, '').replace(/^(nitter\.|x\.|shitter\.)/, '').split('.')[0] || 'nitter'}`;
 
             const seen = new Set();
             const allPosts = [];   // every deduped post (cache + live), for re-caching
