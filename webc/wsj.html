@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>WSJ AI</title>
     <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%23111"/><text x="32" y="46" font-family="Georgia,serif" font-size="40" font-weight="bold" text-anchor="middle" fill="white">J</text></svg>'>
     <style>
@@ -133,8 +136,10 @@
     // Each item: t = headline, p = wsj.com path, im = image ids, cover first (images.wsj.net/<id>;
     // "op:" prefix = opinion-images.wsj.net), s = section, g = topic (Agents/Policy/Business/Culture),
     // b = 3-bullet summary (our paraphrase of the article).
+    // updatedAt = ISO 8601 timestamp (with UTC offset) of when this refresh ran.
     window.WSJ_FEED = {
       updated: "2026-09-24",
+      updatedAt: "2026-09-24T13:57:00-07:00",
       source: "https://www.wsj.com/tech/ai",
       items: [
         { t: "The AI Build-Out Is Becoming the Biggest Economic Bet in U.S. History", p: "economy/the-ai-build-out-is-becoming-the-biggest-economic-bet-in-u-s-history-c60716dd", im: ["im-81923968"], s: "U.S. Economy", g: "Business", b: [
@@ -250,7 +255,7 @@
     };
     </script>
     <script>
-        const feed = window.WSJ_FEED || { items: [] };
+        let feed = window.WSJ_FEED || { items: [] };
         const TOPICS = ['All', 'Agents', 'Policy', 'Business', 'Culture'];
         let active = 'All';
 
@@ -360,14 +365,81 @@
             });
         }
 
-        if (feed.updated) {
-            const d = new Date(feed.updated + 'T12:00:00');
-            document.getElementById('updated').innerHTML =
-                d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) +
-                ' · ' + feed.items.length + ' stories · <a href="' + esc(feed.source) + '" target="_blank" rel="noopener">wsj.com/tech/ai</a>';
+        function stampOf(f) {
+            if (f && f.updatedAt) { const t = Date.parse(f.updatedAt); if (!isNaN(t)) return t; }
+            if (f && f.updated) return Date.parse(f.updated + 'T12:00:00');
+            return 0;
         }
-        renderChips();
-        render();
+
+        function ago(ms) {
+            const m = Math.round((Date.now() - ms) / 60000);
+            if (m < 1) return 'just now';
+            if (m < 60) return m + 'm ago';
+            const h = Math.round(m / 60);
+            if (h < 24) return h + 'h ago';
+            return Math.round(h / 24) + 'd ago';
+        }
+
+        function renderHeader() {
+            const el = document.getElementById('updated');
+            if (!feed.updated && !feed.updatedAt) { el.textContent = ''; return; }
+            let when;
+            if (feed.updatedAt && !isNaN(Date.parse(feed.updatedAt))) {
+                const d = new Date(feed.updatedAt);
+                when = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) +
+                    ' · updated ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) +
+                    ' (' + ago(d.getTime()) + ')';
+            } else {
+                when = new Date(feed.updated + 'T12:00:00')
+                    .toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            }
+            el.innerHTML = esc(when) + ' · ' + feed.items.length +
+                ' stories · <a href="' + esc(feed.source) + '" target="_blank" rel="noopener">wsj.com/tech/ai</a>';
+        }
+
+        function renderAll() {
+            const present = new Set(feed.items.map(x => x.g));
+            if (active !== 'All' && !present.has(active)) active = 'All';
+            renderHeader(); renderChips(); render();
+        }
+
+        // Always show the newest copy: the browser/CDN may hand back a cached
+        // page, so re-fetch this page uncached and swap in its feed data if it
+        // is newer than what was served.
+        let checking = false;
+        async function checkForNewer() {
+            if (checking) return;
+            checking = true;
+            try {
+                const url = location.pathname + '?fresh=' + Date.now();
+                const res = await fetch(url, { cache: 'no-store' });
+                if (!res.ok) return;
+                const html = await res.text();
+                const block = new DOMParser().parseFromString(html, 'text/html')
+                    .getElementById('feed-data');
+                if (!block) return;
+                const sandbox = {};
+                new Function('window', block.textContent)(sandbox);
+                const fresh = sandbox.WSJ_FEED;
+                if (!fresh || !Array.isArray(fresh.items) || !fresh.items.length) return;
+                if (stampOf(fresh) > stampOf(feed)) {
+                    feed = fresh;
+                    renderAll();
+                }
+            } catch (e) {
+                // offline or blocked: keep what we have
+            } finally {
+                checking = false;
+            }
+        }
+
+        renderAll();
+        checkForNewer();
+        // back/forward cache restores and returning to a long-idle tab
+        window.addEventListener('pageshow', e => { if (e.persisted) checkForNewer(); });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') { renderHeader(); checkForNewer(); }
+        });
     </script>
 </body>
 </html>
