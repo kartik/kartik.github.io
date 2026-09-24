@@ -279,6 +279,16 @@
             gap: 4px;
         }
 
+        .view-link {
+            margin-left: auto;
+            color: #0085FF;
+            text-decoration: none;
+        }
+
+        .view-link:hover {
+            text-decoration: underline;
+        }
+
         .comments-toggle {
             cursor: pointer;
             user-select: none;
@@ -382,7 +392,7 @@
         }
 
         /* ---- dark mode (default) ---- */
-        body { background-color: #15181c; color: #e7e9ea; }
+        body { background-color: #000000; color: #e7e9ea; }
         .search-input { border-color: #2f3336; background-color: #16181c; }
         .search-input input { color: #e7e9ea; background: transparent; }
         .search-input input::placeholder { color: #71767b; }
@@ -698,6 +708,7 @@
                         <span>♥ ${post.likeCount || 0}</span>
                         <span>🔁 ${post.repostCount || 0}</span>
                         <span class="comments-toggle" title="Show replies">💬 ${post.replyCount || 0}</span>
+                        <a class="view-link" href="${escapeHtml(webUrl)}" target="_blank" rel="noopener">View on Bluesky →</a>
                     </div>
                 </div>
                 <div class="card-content" data-loaded="false"></div>

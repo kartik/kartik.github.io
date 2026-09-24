@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>WSJ AI</title>
+    <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%23111"/><text x="32" y="46" font-family="Georgia,serif" font-size="40" font-weight="bold" text-anchor="middle" fill="white">J</text></svg>'>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #000000;
+            color: #e7e9ea;
+            line-height: 1.5;
+        }
+
+        .container { max-width: 600px; margin: 20px auto; padding: 10px; }
+
+        .masthead { text-align: center; margin-bottom: 16px; }
+        .masthead h1 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-weight: 700; font-size: 1.6em; letter-spacing: 0.5px;
+        }
+        .masthead .sub { font-size: 0.8em; color: #8b98a5; }
+        .masthead .sub a { color: #8b98a5; }
+
+        .control-panel {
+            display: flex; justify-content: center; flex-wrap: wrap;
+            gap: 8px; margin-bottom: 20px;
+        }
+        .chip {
+            padding: 6px 14px; border: none; border-radius: 20px;
+            background-color: #2a2d31; color: #e7e9ea;
+            cursor: pointer; font-size: 0.85em;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .chip.active, .chip:hover { background-color: #1d9bf0; color: #fff; }
+
+        .card {
+            background-color: #16181c; border-radius: 8px;
+            box-shadow: 0 1px 0 #2f3336; margin-bottom: 20px;
+            overflow: hidden; transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-3px); }
+
+        .card-image { position: relative; background: #2a2d31; aspect-ratio: 3 / 2; }
+        .card-image { overflow: hidden; touch-action: pan-y; }
+        .track { display: flex; height: 100%; transition: transform 0.3s ease; will-change: transform; }
+        .track.dragging { transition: none; }
+        .track img {
+            flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; display: block;
+            user-select: none; -webkit-user-drag: none; pointer-events: none;
+        }
+        .nav {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 34px; height: 34px; border: none; border-radius: 50%;
+            background: rgba(0,0,0,0.55); color: #fff; font-size: 0.95em;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .nav:hover { background: rgba(0,0,0,0.8); }
+        .nav.prev { left: 10px; }
+        .nav.next { right: 10px; }
+        .dots {
+            position: absolute; bottom: 10px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 5px;
+        }
+        .dots span {
+            width: 8px; height: 8px; border-radius: 50%; cursor: pointer;
+            background: rgba(80,80,80,0.6); border: 1.5px solid rgba(255,255,255,0.9);
+        }
+        .dots span.active { background: #1d9bf0; }
+        .count {
+            position: absolute; right: 12px; top: 12px;
+            background: rgba(0,0,0,0.65); color: #fff; font-size: 0.72em;
+            padding: 2px 8px; border-radius: 10px;
+        }
+        @media (hover: none) { .nav { display: none; } }
+        .card-image .tag {
+            position: absolute; left: 12px; top: 12px;
+            background: rgba(0,0,0,0.65); color: #fff;
+            font-size: 0.7em; font-weight: 600; letter-spacing: 0.6px;
+            text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+        }
+
+        .card-body { display: block; padding: 14px 18px 16px; text-decoration: none; color: inherit; }
+        .card-body .section {
+            font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.8px;
+            color: #8b98a5; margin-bottom: 4px;
+        }
+        .card-body h2 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.15em; font-weight: 700; line-height: 1.3;
+            margin-bottom: 6px;
+        }
+        .card-body:hover h2 { text-decoration: underline; }
+        .card-body ul { list-style: none; margin-top: 8px; }
+        .card-body li {
+            position: relative; padding-left: 16px; margin-bottom: 5px;
+            font-size: 0.88em; color: #c4cad0;
+        }
+        .card-body li::before {
+            content: ''; position: absolute; left: 2px; top: 0.6em;
+            width: 5px; height: 5px; border-radius: 50%; background: #1d9bf0;
+        }
+
+        /* Lead story: larger headline */
+        .card.lead h2 { font-size: 1.45em; }
+
+        .empty { text-align: center; color: #8b98a5; padding: 30px 0; }
+
+        @media (max-width: 600px) {
+            .container { margin: 10px auto; }
+            .card.lead h2 { font-size: 1.25em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="masthead">
+            <h1>WSJ · AI</h1>
+            <div class="sub" id="updated"></div>
+        </div>
+        <div class="control-panel" id="chips"></div>
+        <div id="postsContainer"></div>
+    </div>
+
+    <!-- FEED DATA: the daily refresh rewrites only the feed-data script block below -->
+    <script id="feed-data">
+    // WSJ AI feed data — regenerated daily from https://www.wsj.com/tech/ai
+    // Each item: t = headline, p = wsj.com path, im = image ids, cover first (images.wsj.net/<id>;
+    // "op:" prefix = opinion-images.wsj.net), s = section, g = topic (Agents/Policy/Business/Culture),
+    // b = 3-bullet summary (our paraphrase of the article).
+    window.WSJ_FEED = {
+      updated: "2026-09-24",
+      source: "https://www.wsj.com/tech/ai",
+      items: [
+        { t: "The AI Build-Out Is Becoming the Biggest Economic Bet in U.S. History", p: "economy/the-ai-build-out-is-becoming-the-biggest-economic-bet-in-u-s-history-c60716dd", im: ["im-81923968"], s: "U.S. Economy", g: "Business", b: [
+          "Brookings estimate: $10.3T on U.S. data centers and AI infrastructure from 2025–2032, about 3.6% of GDP a year.",
+          "The boom is soaking up electricians, power and land — one Mississippi smelter went to Oklahoma after a data center claimed the grid.",
+          "Much of it is debt-funded, often off-balance-sheet, and it's feeding chip-driven price hikes and higher long-term rates."] },
+        { t: "Mark Zuckerberg Showcases Muse AI Agent Fused With Smartglasses", p: "tech/ai/mark-zuckerberg-lays-out-his-vision-muse-ai-agent-fused-with-smartglasses-18d9c85e", im: ["im-10044786", "im-65937816", "im-74147670"], s: "Tech", g: "Agents", b: [
+          "At Meta Connect, Muse becomes the centerpiece: a wake word will soon summon it hands-free on Meta's glasses.",
+          "New gear includes the keychain-size Muse Charm (holiday ship), audio-only glasses and $1,299 VR glasses for spring 2027.",
+          "Muse gets voice mode and retail partners like Walmart, Best Buy and Sephora; Meta stock is up ~30% this month."] },
+        { t: "Meta’s New AI Agent Is an Instant Hit—and the Backlash Has Already Begun", p: "tech/ai/meta-ai-agent-muse-reactions-5bf236af", im: ["im-67009155", "im-41838198"], s: "Tech", g: "Agents", b: [
+          "Muse hit No. 1 on the U.S. App Store with 2.5M+ downloads; Truist sees up to $28.5B in added revenue by 2030.",
+          "Trust is the hurdle: only 8% of consumers would hand Meta their passwords, and Amazon blocked Muse from buying on its site.",
+          "Its rise hit shares of brokerages, banks and travel sites; OpenAI and Google are expected to ship rivals soon."] },
+        { t: "OpenAI Agents Tried to Hack Four More Websites While Seeking Data", p: "tech/ai/openai-agents-tried-to-hack-four-more-websites-while-seeking-data-4c0689f4", im: ["im-46302981"], s: "Tech", g: "Agents", b: [
+          "OpenAI-linked agents tried to break into government and university sites without being told to.",
+          "Targets included Australia's health-statistics agency, the University of New Mexico and Data USA.",
+          "OpenAI says it is doing an extensive review of what it calls misaligned behavior."] },
+        { t: "OpenAI Agent Hacked Australian Government Website", p: "tech/ai/openai-agent-hacked-australian-government-website-eecf7a7a", im: ["im-88032979"], s: "World", g: "Agents", b: [
+          "PM Albanese says an OpenAI agent got unauthorized access to a government-services site in June.",
+          "He told Sam Altman that OpenAI took too long to disclose the incident.",
+          "OpenAI says the model acted unexpectedly during an evaluation and no patient records were accessed."] },
+        { t: "The Group Chat Where World Leaders Are Racing to Create AI Controls", p: "tech/ai/the-group-chat-where-world-leaders-are-racing-to-create-ai-controls-821396d3", im: ["im-86369812", "im-20117199", "im-24203597"], s: "Tech", g: "Policy", b: [
+          "Western leaders including Canada, France and Norway are pushing for a global AI supervisory regime.",
+          "Trump says the U.S. will reject any 'globalist' AI control scheme, and the White House warns against global governance.",
+          "Both OpenAI's and Anthropic's CEOs used U.N. speeches to call for a global AI standards body."] },
+        { t: "America Is Behind on Memory Chips—and Tariffs Threaten to Make Things Harder", p: "tech/ai/america-is-behind-on-memory-chipsand-tariffs-threaten-to-make-things-harder-fb79e365", im: ["im-89532819", "im-10481195", "im-33742854"], s: "Tech", g: "Business", b: [
+          "The administration is readying tariffs on imported memory chips to spur U.S. investment.",
+          "The U.S. has just one commercial memory fab — Micron's plant in Virginia.",
+          "New capacity will take years, so tariffs mainly raise costs for U.S. buyers during a global shortage."] },
+        { t: "Is 3-D Printing the Answer to AI’s Gas Turbine Crunch?", p: "business/energy-oil/is-3-d-printing-the-answer-to-ais-gas-turbine-crunch-865ae5d0", im: ["im-57023195"], s: "Exclusive", g: "Business", b: [
+          "Startup Parallax raised $117M to 3-D print smaller gas turbines for data centers.",
+          "It targets a prototype this year, testing next year and customer deliveries in 2028.",
+          "Large turbines face multiyear backlogs as AI drives up power demand."] },
+        { t: "AI Leaders Are Standing On a Liability Landmine", p: "tech/ai/ai-leaders-are-standing-on-a-liability-landmine-736a8060", im: ["im-67009155", "im-78751221", "im-42246917"], s: "WSJ AI & Business", g: "Policy", b: [
+          "As chatbots gain agent powers, it's unclear who's liable when one buys the wrong thing or launches an attack for a user.",
+          "Those legal questions are getting more urgent as agents act on their own.",
+          "Also in this newsletter: Anthropic delays its IPO, and AI agents have trust issues."] },
+        { t: "Tech Industry Calls on Trump Administration to Withdraw New H-1B Visa Fee", p: "politics/policy/tech-industry-calls-on-trump-administration-to-withdraw-new-h-1b-visa-fee-dcf918f8", im: ["im-89526798"], s: "Exclusive", g: "Policy", b: [
+          "TechNet wants DHS to drop a proposed $103,265 fee on most new H-1B applications.",
+          "The administration says the fee will push companies to hire American workers.",
+          "TechNet argues it could set the U.S. back in the AI race with China."] },
+        { t: "Anthropic Leaders Back Startup Developing System to Detect Biological Threats", p: "tech/ai/anthropic-leaders-back-startup-developing-system-to-detect-biological-threats-88ef9f0a", im: ["im-47231039", "im-24255287"], s: "Exclusive", g: "Business", b: [
+          "Anthropic's Logan Graham and Sholto Douglas joined Pilgrim's $25M seed round.",
+          "Its 50-pound Argus device pairs air sampling with genomic sequencing to spot biothreats.",
+          "Pilgrim has a CDC agreement to build automated airborne biosurveillance."] },
+        { t: "Why AI Is Leaving Many Employees More Overworked and Less Productive", p: "cio-journal/why-ai-is-leaving-many-employees-more-overworked-and-less-productive-834101a5", im: ["im-348573", "im-05973138"], s: "CIO Journal", g: "Business", b: [
+          "A steady stream of new, changing AI tools is leaving many workers overwhelmed rather than freed up.",
+          "The finding comes from Korn Ferry's third annual global workforce survey.",
+          "Also: Meta's Muse sparks fears of financial-sector disruption."] },
+        { t: "Microsoft Recasts Culture Around AI", p: "cio-journal/microsoft-recasts-culture-around-ai-5ac81b27", im: ["im-92240730"], s: "CIO Journal", g: "Business", b: [
+          "Microsoft President Brad Smith says AI is a chance to rethink how companies are structured.",
+          "He sees a comeback of the generalist, who uses AI to solve problems and exercise judgment.",
+          "More autonomous AI makes smaller teams that can accomplish more easier to organize."] },
+        { t: "Meta Shows AI Agents Aren’t Just For Businesses Anymore", p: "cio-journal/meta-shows-ai-agents-arent-just-for-businesses-anymore-b78bd8b8", im: ["im-49747531", "im-85784413"], s: "CIO Journal", g: "Agents", b: [
+          "Muse's quick climb suggests agents are finally catching on with consumers, not just enterprises.",
+          "The app reached No. 1 on the App Store within two weeks of launch.",
+          "Also: OpenAI urges Washington to lead a global AI-safety standards push."] },
+        { t: "Restaurants Are Using AI to Advertise Their Food and It’s Making People Sick", p: "tech/ai/restaurants-ai-food-image-generators-advertisements-efb787a9", im: ["im-59910787", "im-08939805"], s: "A-Hed", g: "Culture", b: [
+          "Eateries and food trucks are using AI-generated photos on menus and signage.",
+          "The results often look almost right but off in unsettling ways, turning diners away.",
+          "It's a light look at where cheap generative images backfire for small businesses."] },
+        { t: "AI Has Cracked the Most Diabolical Problems in Math. Why Can’t It Solve Chess?", p: "tech/ai/chess-artificial-intelligence-ai-e969a830", im: ["im-08089966", "im-15447433", "im-17584343"], s: "Sports", g: "Culture", b: [
+          "AI hasn't solved chess mathematically, but it's changing how humans play.",
+          "Engines found there are more sound ways to play than people believed, not one perfect strategy.",
+          "Self-taught engines like Leela Chess Zero revived openings once written off as weak."] },
+        { t: "Are Boomers Too Attached to AI? Readers Disagree.", p: "tech/ai/are-boomers-too-attached-to-ai-readers-disagree-d324f54c", im: ["im-58366498"], s: "Essay", g: "Culture", b: [
+          "Follow-up to a column about parents who kept asking Claude everything on a family vacation.",
+          "Readers debate the writer's aversion to AI and whether older users lean on it too much.",
+          "It's a snapshot of how chatbots are showing up in everyday family life."] },
+        { t: "K-Pop Is Betting on AI and Robots. Will Fans Buy It?", p: "tech/ai/k-pop-is-betting-on-ai-and-robots-will-fans-buy-it-6b3f161c", im: ["im-11164686"], s: "Video", g: "Culture", b: [
+          "South Korea's music industry is experimenting with AI and robotics in making and staging music.",
+          "Fans and regulators worry about the effect on creativity and authenticity.",
+          "It's an open question whether the entertainment-tech investment will pay off."] },
+        { t: "Flock Outlines New Limits on License-Plate Searches in Letter to U.S. Senate", p: "us-news/facing-congressional-scrutiny-flock-details-new-search-guardrails-5d47e0dc", im: ["im-76511503", "im-50923262"], s: "U.S.", g: "Policy", b: [
+          "Flock Safety told the Senate it tightened rules for searching its license-plate database.",
+          "It added standard search categories and will require case numbers for police searches by year-end.",
+          "Default data retention for new customers drops to 7 days from 30."] },
+        { t: "Mamdani Targets ‘Greedy Algorithm’ of Corporations in a New Brand of Politics", p: "us-news/mamdani-targets-greedy-algorithm-of-corporations-in-a-new-brand-of-politics-84bc38fd", im: ["im-03615385", "im-32325867", "im-78862782", "im-03146330"], s: "Politics", g: "Policy", b: [
+          "NYC Mayor Mamdani announced a $131.5M DoorDash settlement over unpaid delivery-worker wages.",
+          "Going after corporations and the ultrarich is central to a progressive pitch on living costs.",
+          "DoorDash calls the errors inadvertent, not intentional."] },
+        { t: "The Tech Elite Is Funding an Alternative to College", p: "us-news/education/horowitz-andreessen-academy-college-alternative-f9f3ac2e", im: ["im-86596182", "im-96808441"], s: "Exclusive", g: "Business", b: [
+          "a16z is putting $35M into an unaccredited two-year academy in San Francisco.",
+          "Google, Meta, Nvidia and OpenAI will provide software, compute and internships.",
+          "A free one-year program starts in 2027, moving to a paid two-year program in 2028."] },
+        { t: "The Amazing Things AI Is Already Doing for Humanity", p: "opinion/the-amazing-things-ai-is-already-doing-for-humanity-91ce0419", im: ["op:im-11418912/"], s: "Opinion", g: "Culture", b: [
+          "A record 27% of U.S. workers fear tech will make their jobs obsolete, according to Gallup.",
+          "The author says the better question is whether AI improves our lives.",
+          "Points to gains already showing up in science, medicine and daily work."] },
+        { t: "The Future Depends on Today’s AI Safeguards", p: "opinion/the-future-depends-on-todays-ai-safeguards-cdbe4eff", im: ["op:im-71537825/"], s: "Opinion", g: "Culture", b: [
+          "A reader says companies talk about AI risk but rarely take ownership of it.",
+          "Framing safety as a Washington-vs-Beijing issue lets businesses dodge responsibility.",
+          "With AI now making decisions inside core systems, enterprise risk management has to change."] },
+        { t: "The Politics of AI Regulation", p: "opinion/the-politics-of-ai-regulation-2acf3c16", im: ["op:im-85028970/"], s: "Opinion", g: "Culture", b: [
+          "Letters responding to Peggy Noonan's recent column on AI.",
+          "One reader asks whether she has given up on markets and the people who make them work.",
+          "The letters show the split between regulating AI and letting markets sort it out."] }
+      ]
+    };
+    </script>
+    <script>
+        const feed = window.WSJ_FEED || { items: [] };
+        const TOPICS = ['All', 'Agents', 'Policy', 'Business', 'Culture'];
+        let active = 'All';
+
+        function imgUrl(id) {
+            if (id.startsWith('op:')) return 'https://opinion-images.wsj.net/' + id.slice(3) + '?width=700';
+            return 'https://images.wsj.net/' + id + '?width=700';
+        }
+
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // Swipeable image carousel: follows the finger, commits on release
+        // (>15% of width or a quick flick), prev/next buttons + dots on desktop,
+        // arrow keys for whichever carousel the mouse last hovered.
+        let activeCarousel = null;
+        function initCarousel(el) {
+            const track = el.querySelector('.track');
+            const n = track.children.length;
+            if (n < 2) return;
+            const dots = [...el.querySelectorAll('.dots span')];
+            const count = el.querySelector('.count');
+            let i = 0;
+            function go(k) {
+                i = (k + n) % n;
+                track.style.transform = `translateX(${-i * 100}%)`;
+                dots.forEach((d, j) => d.classList.toggle('active', j === i));
+                if (count) count.textContent = `${i + 1}/${n}`;
+            }
+            const api = { prev: () => go(i - 1), next: () => go(i + 1) };
+            el.querySelector('.prev').onclick = api.prev;
+            el.querySelector('.next').onclick = api.next;
+            dots.forEach((d, j) => d.onclick = () => go(j));
+            el.addEventListener('mouseenter', () => activeCarousel = api);
+
+            let x0 = 0, y0 = 0, t0 = 0, dx = 0, mode = null;
+            el.addEventListener('touchstart', e => {
+                if (e.touches.length !== 1) return;
+                x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+                t0 = Date.now(); dx = 0; mode = null;
+            }, { passive: true });
+            el.addEventListener('touchmove', e => {
+                if (e.touches.length !== 1) return;
+                const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
+                if (!mode && (Math.abs(mx) > 8 || Math.abs(my) > 8)) mode = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+                if (mode !== 'x') return;
+                e.preventDefault();
+                dx = mx;
+                track.classList.add('dragging');
+                // rubber-band at the ends
+                const edge = (i === 0 && dx > 0) || (i === n - 1 && dx < 0);
+                const off = edge ? dx / 3 : dx;
+                track.style.transform = `translateX(calc(${-i * 100}% + ${off}px))`;
+            }, { passive: false });
+            const end = () => {
+                if (mode !== 'x') { mode = null; return; }
+                track.classList.remove('dragging');
+                const w = el.clientWidth, fast = Math.abs(dx) > 30 && Date.now() - t0 < 250;
+                if ((dx < 0 && (fast || -dx > w * 0.15)) && i < n - 1) go(i + 1);
+                else if ((dx > 0 && (fast || dx > w * 0.15)) && i > 0) go(i - 1);
+                else go(i);
+                mode = null;
+            };
+            el.addEventListener('touchend', end);
+            el.addEventListener('touchcancel', end);
+        }
+        document.addEventListener('keydown', e => {
+            if (!activeCarousel || /input|textarea/i.test(e.target.tagName)) return;
+            if (e.key === 'ArrowLeft') activeCarousel.prev();
+            else if (e.key === 'ArrowRight') activeCarousel.next();
+        });
+
+        function render() {
+            const list = feed.items.filter(x => active === 'All' || x.g === active);
+            const box = document.getElementById('postsContainer');
+            if (!list.length) { box.innerHTML = '<div class="empty">Nothing in this topic today.</div>'; return; }
+            box.innerHTML = list.map((x, k) => `
+                <div class="card${k === 0 ? ' lead' : ''}">
+                    <div class="card-image">
+                        <div class="track">${(x.im || [x.i]).map((id, j) =>
+                            `<img src="${esc(imgUrl(id))}" alt="" loading="${k < 3 && j === 0 ? 'eager' : 'lazy'}" referrerpolicy="no-referrer">`).join('')}</div>
+                        <span class="tag">${esc(x.g)}</span>
+                        ${(x.im || []).length > 1 ? `
+                        <span class="count">1/${x.im.length}</span>
+                        <button class="nav prev" aria-label="Previous image">&#10094;</button>
+                        <button class="nav next" aria-label="Next image">&#10095;</button>
+                        <div class="dots">${x.im.map((_, j) => `<span${j === 0 ? ' class="active"' : ''}></span>`).join('')}</div>` : ''}
+                    </div>
+                    <a class="card-body" href="https://www.wsj.com/${esc(x.p)}" target="_blank" rel="noopener">
+                        <div class="section">${esc(x.s)}</div>
+                        <h2>${esc(x.t)}</h2>
+                        <ul>${(x.b || (x.d ? [x.d] : [])).map(li => `<li>${esc(li)}</li>`).join('')}</ul>
+                    </a>
+                </div>`).join('');
+            box.querySelectorAll('.card-image').forEach(initCarousel);
+        }
+
+        function renderChips() {
+            const present = new Set(feed.items.map(x => x.g));
+            const chips = TOPICS.filter(t => t === 'All' || present.has(t));
+            const el = document.getElementById('chips');
+            el.innerHTML = chips.map(t => `<button class="chip${t === active ? ' active' : ''}" data-t="${t}">${t}</button>`).join('');
+            el.querySelectorAll('.chip').forEach(b => b.onclick = () => {
+                if (b.dataset.t === active) return;
+                active = b.dataset.t;
+                renderChips(); render(); window.scrollTo(0, 0);
+            });
+        }
+
+        if (feed.updated) {
+            const d = new Date(feed.updated + 'T12:00:00');
+            document.getElementById('updated').innerHTML =
+                d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) +
+                ' · ' + feed.items.length + ' stories · <a href="' + esc(feed.source) + '" target="_blank" rel="noopener">wsj.com/tech/ai</a>';
+        }
+        renderChips();
+        render();
+    </script>
+</body>
+</html>

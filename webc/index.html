@@ -102,7 +102,7 @@
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
         }
 
         .card-header {
@@ -122,6 +122,7 @@
         }
 
         .card-header .subreddit {
+            cursor: pointer;
             font-size: 0.9em;
             color: #555;
             margin-right: 10px;
@@ -162,6 +163,7 @@
         /* Gallery Styles */
         .card-gallery {
             position: relative;
+            touch-action: pan-y;
             width: 100%;
             overflow: hidden;
             /* Remove fixed height to allow dynamic resizing */
@@ -180,6 +182,9 @@
             height: auto; /* Preserve aspect ratio */
             object-fit: contain; /* Ensure images fit without distortion */
         }
+
+        .gallery-slides.dragging { transition: none; }
+        .gallery-slides img { user-select: none; -webkit-user-drag: none; }
 
         .gallery-nav {
             position: absolute;
@@ -361,8 +366,22 @@
             }
         }
 
+        /* single-sub view banner */
+        .feed-bar {
+            display: none; align-items: center; justify-content: space-between;
+            margin-bottom: 14px; padding: 8px 14px; border-radius: 8px;
+            background: #16181c; box-shadow: 0 1px 0 #2f3336;
+        }
+        #feedLabel { color: #FF4500; font-weight: 600; font-size: 0.95em; }
+        #feedReset {
+            background: #2a2d31; color: #e7e9ea; border: none; border-radius: 20px;
+            padding: 5px 12px; cursor: pointer; font-size: 0.85em;
+        }
+        #feedReset:hover { background: #FF4500; color: #fff; }
+        .card-header .subreddit:hover { color: #FF4500; text-decoration: underline; }
+
         /* ---- dark mode (only mode) ---- */
-        body { background-color: #15181c; color: #e7e9ea; }
+        body { background-color: #000000; color: #e7e9ea; }
         .subreddit-input { border-color: #2f3336; background-color: #16181c; }
         .subreddit-input input { color: #e7e9ea; background: transparent; }
         .subreddit-input input::placeholder { color: #71767b; }
@@ -394,6 +413,10 @@
                 <button class="chip" data-time="all">All</button>
             </div>
         </div>
+        <div class="feed-bar" id="feedBar">
+            <span id="feedLabel"></span>
+            <button id="feedReset" title="Back to the full AI feed">✕ All subs</button>
+        </div>
         <div id="postsContainer">
             <!-- Post cards will be inserted here -->
         </div>
@@ -423,7 +446,8 @@
         // ---------------------------------------------------------------------
 
         // Configuration Constants
-        let SUBREDDIT = 'singularity+accelerate+ChatGPT+OpenAI+ClaudeAI+ClaudeCode+Anthropic+GeminiAI+LocalLLaMA+artificial+MachineLearning+StableDiffusion+aivideo+midjourney+wallstreetbets'; // Default multireddit
+        const DEFAULT_SUBREDDIT = 'singularity+accelerate+ChatGPT+OpenAI+ClaudeAI+ClaudeCode+Anthropic+GeminiAI+LocalLLaMA+artificial+MachineLearning+StableDiffusion+aivideo+midjourney+wallstreetbets'; // Default multireddit
+        let SUBREDDIT = DEFAULT_SUBREDDIT;
         let TIMEFRAME = 'day';            // Default timeframe
         const POST_LIMIT = 20;            // Number of posts to fetch per request
         const MIN_UPVOTES = 10;           // Minimum upvotes for comments
@@ -625,13 +649,18 @@
             });
 
             // Add Subreddit
+            // Tap a sub name on any card → the whole feed becomes that sub.
+            $('#postsContainer').on('click', '.subreddit', function(e) {
+                e.stopPropagation();   // don't toggle the card's comments
+                switchFeed($(this).data('sub'));
+            });
+            $('#feedReset').on('click', function() { switchFeed(DEFAULT_SUBREDDIT); });
+
             $('#addSubreddit').on('click', function() {
                 const subredditInput = $('#subredditInput').val().trim();
                 if (subredditInput !== '') {
-                    SUBREDDIT = subredditInput;
                     $('#subredditInput').val('');
-                    resetPosts();
-                    fetchTopPosts();
+                    switchFeed(subredditInput.replace(/^\/?r\//i, ''));
                 }
             });
 
@@ -642,6 +671,18 @@
                 }
             });
         });
+
+        function switchFeed(sub) {
+            sub = String(sub || '').trim();
+            if (!sub || sub.toLowerCase() === SUBREDDIT.toLowerCase()) return;
+            SUBREDDIT = sub;
+            const single = SUBREDDIT !== DEFAULT_SUBREDDIT;
+            $('#feedLabel').text('r/' + SUBREDDIT);
+            $('#feedBar').css('display', single ? 'flex' : 'none');
+            resetPosts();
+            window.scrollTo(0, 0);
+            fetchTopPosts();
+        }
 
         function resetPosts() {
             after = null;
@@ -838,7 +879,7 @@
                 <div class="card" data-post-id="${postId}">
                     <div class="card-header">
                         <h2>${escapeHtml(postTitle)}</h2>
-                        <span class="subreddit">r/${escapeHtml(subreddit)}</span>
+                        <span class="subreddit" data-sub="${escapeHtml(subreddit)}" title="Show only r/${escapeHtml(subreddit)}">r/${escapeHtml(subreddit)}</span>
                         <span class="upvotes">${upvotes}</span>
                     </div>
                     <div class="card-selftext">${parseSelfText(postSelfText)}</div>
@@ -933,41 +974,40 @@
                 updateGallery();
             });
 
-            // Swipe Functionality
-            let startX = 0;
-            let startY = 0;
-            let isSwiping = false;
-
-            slidesContainer.on('touchstart', function(e) {
-                if (e.originalEvent.touches.length === 1) { // Only handle single touch
-                    startX = e.originalEvent.touches[0].clientX;
-                    startY = e.originalEvent.touches[0].clientY;
-                    isSwiping = true;
-                }
-            });
-
-            slidesContainer.on('touchmove', function(e) {
-                if (!isSwiping) return;
-                const currentX = e.originalEvent.touches[0].clientX;
-                const currentY = e.originalEvent.touches[0].clientY;
-                const diffX = currentX - startX;
-                const diffY = currentY - startY;
-
-                // Determine if the swipe is horizontal
-                if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) { // Horizontal swipe
-                    if (diffX > 0) {
-                        goToPrev();
-                    } else {
-                        goToNext();
-                    }
-                    isSwiping = false;
-                    e.preventDefault(); // Prevent vertical scrolling
-                }
-            });
-
-            slidesContainer.on('touchend', function() {
-                isSwiping = false;
-            });
+            // Swipe: the strip follows the finger and the slide change is decided
+            // on release (>15% of width or a quick flick). The old handler flipped
+            // mid-gesture off a single touchmove, which mobile browsers often
+            // swallow once they start treating the gesture as a scroll.
+            const el = galleryElement[0];
+            const track = slidesContainer[0];
+            let x0 = 0, y0 = 0, t0 = 0, dx = 0, mode = null;
+            el.addEventListener('touchstart', function(e) {
+                if (e.touches.length !== 1) return;
+                x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+                t0 = Date.now(); dx = 0; mode = null;
+            }, { passive: true });
+            el.addEventListener('touchmove', function(e) {
+                if (e.touches.length !== 1) return;
+                const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
+                if (!mode && (Math.abs(mx) > 8 || Math.abs(my) > 8)) mode = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+                if (mode !== 'x') return;
+                e.preventDefault();
+                dx = mx;
+                track.classList.add('dragging');
+                const edge = (currentIndex === 0 && dx > 0) || (currentIndex === totalSlides - 1 && dx < 0);
+                track.style.transform = `translateX(calc(${-currentIndex * 100}% + ${edge ? dx / 3 : dx}px))`;
+            }, { passive: false });
+            function endSwipe() {
+                if (mode !== 'x') { mode = null; return; }
+                track.classList.remove('dragging');
+                const w = el.clientWidth, fast = Math.abs(dx) > 30 && Date.now() - t0 < 250;
+                if (dx < 0 && (fast || -dx > w * 0.15) && currentIndex < totalSlides - 1) currentIndex++;
+                else if (dx > 0 && (fast || dx > w * 0.15) && currentIndex > 0) currentIndex--;
+                updateGallery();
+                mode = null;
+            }
+            el.addEventListener('touchend', endSwipe);
+            el.addEventListener('touchcancel', endSwipe);
         }
 
         // Keyboard navigation for galleries

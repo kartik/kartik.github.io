@@ -7,31 +7,18 @@
     <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="white" stroke="%23999" stroke-width="2"/><text x="32" y="45" font-family="Georgia,serif" font-size="38" font-weight="bold" text-anchor="middle" fill="%23202122">W</text></svg>'>
     <style>
         :root {
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --text: #e0e0e0;
+            --bg: #000000;
+            --card-bg: #16181c;
+            --text: #e7e9ea;
             --text-muted: #999;
-            --input-bg: #2a2a2a;
-            --input-border: #444;
-            --chip-bg: #2a2a2a;
-            --chip-text: #e0e0e0;
-            --shadow: 0 2px 5px rgba(0,0,0,0.4);
-            --spinner-track: #2a2a2a;
+            --input-bg: #16181c;
+            --input-border: #2f3336;
+            --chip-bg: #2a2d31;
+            --chip-text: #e7e9ea;
+            --shadow: 0 1px 0 #2f3336;
+            --spinner-track: #2f3336;
             --accent: #FF4500;
             --link: #22aaff;
-        }
-
-        body.light {
-            --bg: #f0f0f0;
-            --card-bg: #fff;
-            --text: #333;
-            --text-muted: #555;
-            --input-bg: #fff;
-            --input-border: #ccc;
-            --chip-bg: #e0e0e0;
-            --chip-text: #333;
-            --shadow: 0 2px 5px rgba(0,0,0,0.1);
-            --spinner-track: #f3f3f3;
         }
 
         * {
@@ -187,7 +174,7 @@
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
         }
 
         .card-header {
@@ -271,7 +258,6 @@
             </div>
             <div class="time-range">
                 <button class="chip active" id="randomBtn">Random</button>
-                <button class="chip" id="themeBtn" title="Toggle theme">☾</button>
             </div>
         </div>
         <div id="postsContainer">
@@ -293,15 +279,6 @@
         const imageRegEx = /\.(jpg|jpeg|png|gif|webp)/i;
 
         $(document).ready(function() {
-            const savedTheme = localStorage.getItem('wikiTheme') || 'dark';
-            applyTheme(savedTheme);
-
-            $('#themeBtn').on('click', function() {
-                const next = $('body').hasClass('light') ? 'dark' : 'light';
-                applyTheme(next);
-                localStorage.setItem('wikiTheme', next);
-            });
-
             loadRandomPage(true);
 
             $('#randomBtn').on('click', function() {
@@ -615,16 +592,6 @@
 
         function escapeHtml(text) {
             return $('<div>').text(text).html();
-        }
-
-        function applyTheme(theme) {
-            if (theme === 'light') {
-                $('body').addClass('light');
-                $('#themeBtn').text('☼');
-            } else {
-                $('body').removeClass('light');
-                $('#themeBtn').text('☾');
-            }
         }
     </script>
 </body>
