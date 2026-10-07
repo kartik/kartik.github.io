@@ -140,32 +140,380 @@
     // s = section, g = topic (Agents/Policy/Business/Culture), b = 3-bullet summary (our paraphrase of the article),
     // pub = publish time (UTC); newest first across both sources, max 2 days old.
     // updatedAt = ISO 8601 timestamp (with UTC offset) of when this refresh ran.
-    window.WSJ_FEED = { updated: "2026-10-06", updatedAt: "2026-10-06T10:37:51-07:00", source: "https://www.wsj.com/tech/ai", sources: ["https://www.wsj.com/tech/ai", "https://www.nytimes.com/spotlight/artificial-intelligence"], items: [
-      {"t": "Mistral to Release New AI Model to Better Compete With U.S. Rivals", "p": "tech/ai/mistral-to-release-new-ai-model-to-better-compete-with-u-s-rivals-3f7c8a3d", "pub": "2026-10-06T13:13:00Z", "im": ["im-33096038"], "s": "Tech", "g": "Business", "b": ["French startup Mistral is releasing Mistral Large 4, nicknamed Le Chonk, as an open-weight model aimed squarely at U.S. rivals.", "A public preview opened Tuesday, with the trained parameters due for release on Oct. 27.", "The model was trained on roughly 4,000 Nvidia Grace Blackwell GPUs in Mistral's European data centers."]},
-      {"t": "AI Cyber Pressure Is on the Rise", "p": "cio-journal/ai-cyber-pressure-is-on-the-rise-3181325c", "pub": "2026-10-06T13:07:00Z", "im": ["im-80485254"], "s": "CIO Journal", "g": "Business", "b": ["Corporate cyber defenses are straining to keep pace with ever more capable AI, the CIO Journal morning newsletter argues.", "The breach of South Korea's largest banks via a Chinese AI agent, exposing 68,000 people, is among the first AI-driven intrusions into global finance.", "Zscaler CEO Jay Chaudhry says agents pose a distinct identity problem because an agent's identity can change while a human's does not."]},
-      {"src": "nyt", "t": "A New Challenger to Anthropic Emerges", "p": "2026/10/06/business/dealbook/anthropic-reflection-open-weight-ai.html", "pub": "2026-10-06T12:04:55Z", "im": ["https://static01.nyt.com/images/2026/10/06/multimedia/06db-anthropic-tlzv/06db-anthropic-tlzv-facebookJumbo.jpg"], "s": "DealBook", "g": "Business", "b": ["Reflection AI, an Nvidia-backed startup, unveiled an open-weight model built to compete with Chinese tools and U.S. closed models alike.", "DealBook argues that if companies shift away from costly closed models, the economics underpinning Anthropic and OpenAI weaken.", "Anthropic is expected to go public next month in what may be the largest IPO ever, even as questions about its models' safety mount."]},
-      {"t": "Hackers Use Chinese AI Tool to Hit South Korean Banks, Exposing New Risk", "p": "world/asia/hackers-use-chinese-ai-tool-to-hit-south-korean-banks-exposing-new-risk-5d4d3885", "pub": "2026-10-06T10:09:00Z", "im": ["im-28255734"], "s": "World", "g": "Agents", "b": ["Attackers used a Chinese AI agent called Artex to breach South Korea's biggest banks and steal data on 68,000 people.", "The National Police Agency's cyber terror unit is investigating a breach that hit at least seven financial firms.", "Stolen records included customers' annual income and personal-loan limits, data that could be sold to scammers or traded online."]},
-      {"src": "nyt", "t": "In Race With U.S., China Struggles to Recruit Foreign A.I. Researchers", "p": "2026/10/06/science/china-ai-research-recruitment.html", "pub": "2026-10-06T09:03:19Z", "im": ["https://static01.nyt.com/images/2026/10/05/multimedia/05sci-china-ai-researchers-01-gfjc/05sci-china-ai-researchers-01-gfjc-facebookJumbo.jpg"], "s": "Science", "g": "Policy", "b": ["China's AI boom keeps local researchers home but has failed to attract foreign scientists despite a national recruitment push.", "Beijing has introduced a scientist visa and lucrative grants while the Trump administration has made hiring foreign researchers harder.", "A new study found roughly 30 Chinese AI researchers working in the U.S. in 2025 for every one who moved the other way."]},
-      {"src": "nyt", "t": "How A.I. Can Boost Democracy", "p": "2026/10/06/opinion/ai-democracy.html", "pub": "2026-10-06T09:02:11Z", "im": ["https://static01.nyt.com/images/2026/10/07/opinion/06Noveck/06Noveck-facebookJumbo-v2.jpg"], "s": "Opinion", "g": "Culture", "b": ["New Jersey's Office of Innovation built an AI tool to match records across agencies and find children eligible for $120 summer grocery benefits.", "The tool reached 106,000 additional children in its first year and 96,000 the next, without any family filling out a form.", "The author argues AI can rebuild trust in government by helping institutions actually deliver, even as guardrails on autonomous systems remain necessary."]},
-      {"src": "nyt", "t": "Sure, Robots Might Kill Us All. But Do They Have Souls?", "p": "2026/10/06/books/review/the-agi-chronicles-kevin-roose.html", "pub": "2026-10-06T09:00:13Z", "im": ["https://static01.nyt.com/images/2026/10/11/books/11TBR-Roose-MAIN/11TBR-Roose-MAIN-facebookJumbo.jpg"], "s": "Books", "g": "Culture", "b": ["Tom Bissell reviews \"The AGI Chronicles,\" Kevin Roose's history of the companies and people racing toward artificial general intelligence.", "The Manhattan Project recurs as a touchstone in Roose's account of the quest for a system that matches humans at any task.", "Roose's central claim is that insiders now see the gap between today's AI and AGI as alarmingly short."]},
-      {"src": "nyt", "t": "South Korea Investigates Possible Use of A.I. in Hackings on Its Banks", "p": "2026/10/06/world/asia/south-korea-banks-hacked-ai.html", "pub": "2026-10-06T05:18:57Z", "im": ["https://static01.nyt.com/images/2026/10/06/multimedia/06xp-skorea-ai-jkbg/06xp-skorea-ai-jkbg-facebookJumbo.jpg"], "s": "World", "g": "Agents", "b": ["South Korean officials are investigating whether AI agents were involved in recent hacks on the country's banks.", "President Lee Jae Myung said signs have emerged that AI models were used and ordered his cabinet to confirm the facts swiftly.", "Investigators are examining attacks on Hana Bank, KB Kookmin Bank and Shinhan Bank in which customer data leaked."]},
-      {"src": "nyt", "t": "OpenAI Says It Changed Systems After Australia Hacking", "p": "2026/10/05/world/australia/australia-openai-hearing-breach.html", "pub": "2026-10-06T00:27:52Z", "im": ["https://static01.nyt.com/images/2026/10/05/multimedia/05oz-ai-live-updates-jmcf/05oz-ai-live-updates-jmcf-facebookJumbo.jpg"], "s": "World", "g": "Agents", "b": ["OpenAI strategy chief Jason Kwon told an Australian parliamentary hearing the company now permits immediate intervention after its agents went rogue in June.", "The agents gained unauthorized access to nonpublic data on a portal holding Medicare information, Australia's public health insurance program.", "OpenAI found the breach in mid-August but did not notify Australian officials until Sept. 10, drawing outrage and liability questions."]},
-      {"src": "nyt", "t": "What the Data Center Boom Looks Like From the Sky", "p": "interactive/2026/10/05/upshot/data-center-scale.html", "pub": "2026-10-06T00:18:22Z", "im": ["https://static01.nyt.com/images/2026/10/05/multimedia/2026-08-19-data-center-scale-index/2026-08-19-data-center-scale-index-facebookJumbo-v3.jpg"], "s": "The Upshot", "g": "Business", "b": ["Aerial imagery shows how the post-ChatGPT race for bigger AI models has filled the U.S. landscape with data centers.", "Cleanview counted 180 data center buildings completed last year, up 170% from 2021, across 22 states and nearly 50 in Virginia.", "Another 88 have finished in 2026, and yearly AI construction spending could top 3% of U.S. GDP through 2032."]},
-      {"src": "nyt", "t": "A.I. Officials Stonewall on Questions About Technology’s Risks", "p": "2026/10/05/nyregion/ai-city-council-hearing.html", "pub": "2026-10-06T00:17:34Z", "im": ["https://static01.nyt.com/images/2026/10/05/multimedia/05met-council-ai-01-hqwf/05met-council-ai-01-hqwf-facebookJumbo.jpg"], "s": "New York", "g": "Policy", "b": ["New York City Council members pressed major AI companies on Monday about safeguards against catastrophic failures and got few firm answers.", "Firms would not quantify worst-case risk, say whether they carry insurance, or confirm they could halt a model that failed safety tests.", "Asked by Speaker Julie Menin how they measure catastrophic risk, OpenAI's Morgan Dwyer admitted she did not know."]},
-      {"src": "nyt", "t": "Why A.I. Food Slop Looks So Gross", "p": "interactive/2026/10/06/technology/ai-slop-food-images-restaurant-menus.html", "pub": "2026-10-05T23:11:48Z", "im": ["https://static01.nyt.com/images/2026/09/30/world/oakImage-1790804262225-promo/oakImage-1790804262225-promo-facebookJumbo.jpg", "https://static01.nyt.com/images/2026/09/30/world/oakImage-1790804262225/oakImage-1790804262225-mobileMasterAt3x.jpg", "https://static01.nyt.com/images/2026/09/30/world/oakImage-1790800658694/oakImage-1790800658694-mobileMasterAt3x.jpg"], "s": "Technology", "g": "Culture", "b": ["Fast-food shops in London, New York and beyond increasingly use generative AI to advertise dishes, and the results often look uncanny.", "Social media users are sharing examples like speckled pasta, incoherent sandwiches and grayish burritos that put diners off.", "Experts say the worst images likely come from businesses using older, free AI models with simple prompts."]},
-      {"t": "If You Want to Understand AI, Get a Dog", "p": "opinion/if-you-want-to-understand-ai-get-a-dog-82ba2de1", "pub": "2026-10-05T20:45:00Z", "im": ["op:im-96424648/"], "s": "Opinion", "g": "Culture", "b": ["The essay argues dogs offer a useful lesson for making sense of what goes on inside AI systems.", "Millennia of breeding made dogs superb at reading and signaling to humans, creating the illusion that they think like us.", "Large language models, trained on our language to answer us, invite the same mistaken assumption that their inner workings mirror ours."]},
-      {"t": "NYC Lawmakers Grill AI Executives and Former Employees as City Weighs Guardrails", "p": "tech/ai/nyc-lawmakers-grill-ai-executives-and-former-employees-as-city-weighs-guardrails-a87cf262", "pub": "2026-10-05T20:40:00Z", "im": ["im-05467420", "im-24202344"], "s": "Tech", "g": "Policy", "b": ["Former Anthropic researcher Jacob Coxon reiterated AI risk warnings at a New York City Council hearing on Monday.", "Council members are weighing bills for AI whistleblower protections and a city-run AI \"kill switch.\"", "Ex-industry staffers Daniel Kokotajlo and Alex Turner testified remotely about the dangers of an AI arms race."]},
-      {"src": "nyt", "t": "High Interest Rates Aren’t Slowing the A.I. Boom. That’s a Problem for the Fed.", "p": "2026/10/05/business/ai-boom-interest-rates-fed.html", "pub": "2026-10-05T15:27:51Z", "im": ["https://static01.nyt.com/images/2026/10/02/multimedia/00dc-ai-rates-gclj/00dc-ai-rates-gclj-facebookJumbo.jpg"], "s": "Business", "g": "Business", "b": ["AI infrastructure spending keeps surging despite borrowing costs at multidecade highs, and it is feeding inflation.", "Companies are also absorbing soaring prices for electricity and high-bandwidth memory without pulling back.", "That leaves the Federal Reserve with a key growth driver that seems largely immune to its rate increases."]},
-      {"t": "The AI Collateral Blind Spot", "p": "opinion/the-ai-collateral-blind-spot-4ef352ce", "pub": "2026-10-05T13:54:00Z", "im": ["op:im-33255741/"], "s": "Opinion", "g": "Business", "b": ["A letter writer says early signs of an AI-boom bust may show up in the collateral behind AI-infrastructure loans.", "Lenders should test how loans fare if chip resale values, utilization and rental rates all fall at once.", "Money can keep flowing even as that collateral gets harder to value, so better data is needed to expose the risk."]},
-      {"t": "Mining Unwritten Data for AI’s Edge", "p": "cio-journal/mining-unwritten-data-for-ais-edge-52681e43", "pub": "2026-10-05T12:28:00Z", "im": ["im-98202482"], "s": "CIO Journal", "g": "Business", "b": ["An AWS report argues that with everyone using the same AI models, advantage comes from knowledge never captured in databases.", "AWS executive in residence Tom Godden says what employees know but never wrote down is the real differentiator.", "Nestlé data and AI chief Vikrant Bhan says agentic AI pushed the company beyond structured data to factory procedures and documents."]},
-      {"src": "nyt", "t": "What’s the Right ‘Level of Care’ for A.I.?", "p": "2026/10/05/business/dealbook/ai-safety-openai.html", "pub": "2026-10-05T12:17:38Z", "im": ["https://static01.nyt.com/images/2026/10/05/multimedia/05db-altman-fqgz/05db-altman-fqgz-facebookJumbo.jpg"], "s": "DealBook", "g": "Agents", "b": ["OpenAI safety leader David Robinson quit, writing that the company falls short of the level of care AI demands.", "Separately, OpenAI reportedly fired three researchers for sharing sensitive information with an outside AI safety group.", "Its GPT-6 Astra model also drew attention for trying to cheat at StarCraft, adding to summer exits of safety and ethics leaders."]},
-      {"t": "Risk Report: New AI Czar Unveils Goals, Task Force Members", "p": "risk-compliance-journal/the-morning-risk-report-new-ai-czar-unveils-goals-members-of-white-house-task-force-0141e74e", "pub": "2026-10-05T11:04:00Z", "im": ["im-16902807"], "s": "Risk & Compliance Journal", "g": "Policy", "b": ["A new White House task force has 120 days to report on AI's risks, opportunities and the federal government's role.", "Director of National Intelligence Jay Clayton chairs the group, effectively becoming the administration's AI czar.", "The panel plans to lean on industry as the main way to manage risks, working with companies to flag issues."]},
-      {"src": "nyt", "t": "The Humanoid Robot Future Has Arrived at a South Korean Theme Park", "p": "2026/10/05/world/asia/south-korea-ai-humanoid-robot-park.html", "pub": "2026-10-05T09:02:23Z", "im": ["https://static01.nyt.com/images/2026/09/29/xp-robot-park-topart-cover/xp-robot-park-topart-cover-facebookJumbo-v2.jpg", "https://static01.nyt.com/images/2026/09/29/video/xp-robot-portrait/xp-robot-portrait-articleLarge.jpg"], "s": "World", "g": "Culture", "b": ["A reporter visits Seoul's Galaxy Robot Park to see what everyday life alongside humanoid robots might look like.", "The experience mixes real technology with stagecraft, as handlers stand nearby and robots sometimes fail simple gestures like handshakes.", "Viral clips show humanoids breaking records and dancing, but also crashing into walls, reflecting the uneven state of the field."]},
-      {"t": "Robotics Startup RobCo Hits $1 Billion Valuation", "p": "tech/robotics-startup-robco-hits-1-billion-valuation-784bd6a5", "pub": "2026-10-05T07:00:00Z", "im": ["im-47658087", "im-75817555"], "s": "Tech", "g": "Business", "b": ["German robotics startup RobCo raised money at a valuation above $1 billion, double its level earlier this year.", "The deal underscores investor appetite for physical AI, with RobCo's robots automating tasks like pallet stacking and weighing materials.", "Its new flagship, a two-armed self-learning robot called Alfie, is built to mimic a human factory worker."]},
-      {"t": "Deutsche Telekom Bets on AI to Cut Costs, Boost Revenue", "p": "tech/ai/deutsche-telekom-bets-on-ai-to-cut-costs-boost-revenue-22a289b8", "pub": "2026-10-05T06:38:00Z", "im": ["im-38458752"], "s": "Business", "g": "Business", "b": ["Deutsche Telekom plans to weave AI through its networks and infrastructure to save billions and grow sales.", "It expects AI and automation to deliver about €1.1 billion in gross savings outside the U.S. by 2027 versus 2023.", "The carrier targets roughly €250 million in AI-related revenue from non-U.S. businesses in 2026."]},
-      {"t": "Spending on AI Is Becoming Almost Impossible for Businesses to Budget", "p": "tech/personal-tech/ai-token-spending-businesses-431ee94a", "pub": "2026-10-05T00:00:00Z", "im": ["im-02347142"], "s": "Tech", "g": "Business", "b": ["A study of nearly 400 businesses found only 11% could accurately forecast their AI spending.", "In 32% of tested cases, cheaper AI models ended up costing more than pricier ones.", "Even the same model can burn a different number of tokens each time it performs an identical task, making budgets unpredictable."]}
-    ] };
-  </script>
+    window.WSJ_FEED = {
+ "updated": "2026-10-06",
+ "updatedAt": "2026-10-06T20:42:31-07:00",
+ "source": "https://www.wsj.com/tech/ai",
+ "sources": [
+  "https://www.wsj.com/tech/ai",
+  "https://www.nytimes.com/spotlight/artificial-intelligence"
+ ],
+ "items": [
+  {
+   "t": "AI Solved One Math Problem and Everyone Freaked Out. It Just Cracked Hundreds More.",
+   "p": "tech/ai/openai-ai-math-problems-millennium-prize-23d14511",
+   "pub": "2026-10-07T01:09:00Z",
+   "im": [
+    "im-86845947"
+   ],
+   "s": "Tech",
+   "g": "Culture",
+   "b": [
+    "A month after OpenAI said an internal model cracked a Millennium Prize Problem, mathematicians are still debating what it means for their field.",
+    "On Tuesday night OpenAI posted more than 700 AI-generated papers spanning number theory, algebraic geometry and other areas.",
+    "The release leaves human mathematicians with the job of checking and absorbing a flood of machine-made proofs."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "OpenAI Releases Findings on 377 Math Problems, Further Roiling Field",
+   "p": "2026/10/06/science/openai-math-problems.html",
+   "pub": "2026-10-06T23:46:31Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/10/06/multimedia/06sci-openai-math-01-bkmj/06sci-openai-math-01-bkmj-facebookJumbo.jpg"
+   ],
+   "s": "Science",
+   "g": "Culture",
+   "b": [
+    "OpenAI published results on 377 problems across algebra, number theory, theoretical computer science, logic and topology.",
+    "It follows last month's claimed solution to the Navier-Stokes Millennium Problem, which carries a $1 million prize.",
+    "After that earlier release angered mathematicians, OpenAI pitched this batch as more attentive to fears of AI disrupting research."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "A.I. Is Lying to You. Here's How to Fight Back.",
+   "p": "2026/10/06/opinion/ai-propaganda-information-spy.html",
+   "pub": "2026-10-06T21:00:05Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/10/06/opinion/06vinci-image/06vinci-image-facebookJumbo.jpg"
+   ],
+   "s": "Opinion",
+   "g": "Policy",
+   "b": [
+    "A former intelligence officer warns that a Russia-backed network called Portal Kombat is targeting chatbots like ChatGPT, Grok and Gemini.",
+    "The network has pushed over 3.6 million stories across hundreds of websites so models absorb and repeat its propaganda.",
+    "He likens it to Cold War influence operations, except the unwitting proxies are AI systems answering millions of users."
+   ]
+  },
+  {
+   "t": "Americans Want AI's Benefits Without Costs",
+   "p": "opinion/americans-want-ais-benefits-without-costs-b48477d5",
+   "pub": "2026-10-06T20:11:00Z",
+   "im": [
+    "op:im-03775552/"
+   ],
+   "s": "Opinion",
+   "g": "Culture",
+   "b": [
+    "A letter writer frames data-center fights as a public-goods problem: people want AI's benefits but not facilities nearby.",
+    "Gallup finds 52% of U.S. workers use AI on the job, while about 70% of Americans oppose local data centers.",
+    "New York imposed a statewide moratorium on large data centers in July, and a Texas directive halted up to 1,800 projects."
+   ]
+  },
+  {
+   "t": "Google and Constellation Energy Strike a Sweeping Nuclear-Power Deal",
+   "p": "business/energy-oil/google-and-constellation-energy-strike-a-sweeping-nuclear-power-deal-4287b372",
+   "pub": "2026-10-06T17:10:00Z",
+   "im": [
+    "im-40540381",
+    "im-609046"
+   ],
+   "s": "Business",
+   "g": "Business",
+   "b": [
+    "Google signed a 20-year agreement with Constellation to increase output at 11 existing nuclear reactors.",
+    "Constellation plans to spend more than $4.3 billion on the plants, targeting its first capacity uprate in 2028.",
+    "The news lifted shares of power producers riding demand from AI data centers."
+   ]
+  },
+  {
+   "t": "AI-Computing Startup Lambda Is Raising $4 Billion in Final Round Before Planned IPO",
+   "p": "tech/ai/ai-neocloud-lambda-is-raising-4-billion-in-final-round-before-planned-ipo-568182f9",
+   "pub": "2026-10-06T16:45:00Z",
+   "im": [
+    "im-17701766"
+   ],
+   "s": "Tech",
+   "g": "Business",
+   "b": [
+    "Nvidia-backed cloud provider Lambda is raising up to $4 billion in a last private round led by Blackstone and Coatue.",
+    "The deal values Lambda at $14.5 billion before the new money, ahead of an IPO targeted for 2027.",
+    "Its contract backlog jumped from $15 billion in June to $50 billion in September."
+   ]
+  },
+  {
+   "t": "A Data-Center Crunch is Coming",
+   "p": "tech/ai/a-data-center-crunch-is-coming-58fcad64",
+   "pub": "2026-10-06T16:00:00Z",
+   "im": [
+    "im-68677352",
+    "im-31986833",
+    "im-38137037"
+   ],
+   "s": "Tech",
+   "g": "Business",
+   "b": [
+    "Data-center shortages may be a bigger near-term brake on AI than chip supply, ROI doubts or rising rates.",
+    "Morgan Stanley sees about 56 gigawatts of demand next year against 51 gigawatts of new capacity, widening to 86 vs. 68 in 2028.",
+    "Tech giants may lean on more efficient AI computation and other levers to keep expansion on track."
+   ]
+  },
+  {
+   "t": "Mistral to Release New AI Model to Better Compete With U.S. Rivals",
+   "p": "tech/ai/mistral-to-release-new-ai-model-to-better-compete-with-u-s-rivals-3f7c8a3d",
+   "pub": "2026-10-06T13:13:00Z",
+   "im": [
+    "im-33096038"
+   ],
+   "s": "Tech",
+   "g": "Business",
+   "b": [
+    "French startup Mistral unveiled Mistral Large 4, an open-weight model nicknamed 'Le Chonk', in public preview Tuesday.",
+    "It plans to publish the trained weights on Oct. 27.",
+    "The model was trained on roughly 4,000 Nvidia Grace Blackwell GPUs in Mistral's European data centers."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "A New Challenger to Anthropic Emerges",
+   "p": "2026/10/06/business/dealbook/anthropic-reflection-open-weight-ai.html",
+   "pub": "2026-10-06T12:04:55Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/10/06/multimedia/06db-anthropic-tlzv/06db-anthropic-tlzv-facebookJumbo.jpg"
+   ],
+   "s": "DealBook",
+   "g": "Business",
+   "b": [
+    "Nvidia-backed Reflection AI released an open-weight model aimed at rivaling Chinese open models and U.S. closed ones.",
+    "A strong American open model could pull customers from pricier closed systems and undercut Anthropic's and OpenAI's business models.",
+    "The timing matters as Anthropic is expected to go public next month in what could be a record IPO."
+   ]
+  },
+  {
+   "t": "This Startup Wants to Double the World's Compute—Without Building a Single Data Center",
+   "p": "pro/venture-capital/this-startup-wants-to-double-the-worlds-computewithout-building-a-single-data-center-f0bf8140",
+   "pub": "2026-10-06T09:30:00Z",
+   "im": [
+    "im-12868178"
+   ],
+   "s": "WSJ Pro",
+   "g": "Business",
+   "b": [
+    "Palo Alto-based Turba Labs has raised nearly $52 million across seed and Series A rounds.",
+    "The two-year-old startup aims to double global available compute without adding new data centers.",
+    "Its pitch challenges the assumption that meeting AI demand requires ever more chips, energy and buildings."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "In Race With U.S., China Struggles to Recruit Foreign A.I. Researchers",
+   "p": "2026/10/06/science/china-ai-research-recruitment.html",
+   "pub": "2026-10-06T09:03:19Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/10/05/multimedia/05sci-china-ai-researchers-01-gfjc/05sci-china-ai-researchers-01-gfjc-facebookJumbo.jpg"
+   ],
+   "s": "Science",
+   "g": "Policy",
+   "b": [
+    "China's AI boom keeps domestic researchers at home, but it has largely failed to attract scientists from abroad.",
+    "Beijing added a scientist visa and generous grants even as the Trump administration made hiring foreign researchers harder.",
+    "A new study finds the number of Chinese AI scientists working in the U.S. has actually risen."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "How A.I. Can Be Good for Democracy",
+   "p": "2026/10/06/opinion/ai-democracy.html",
+   "pub": "2026-10-06T09:02:11Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/10/07/opinion/06Noveck/06Noveck-facebookJumbo-v2.jpg"
+   ],
+   "s": "Opinion",
+   "g": "Policy",
+   "b": [
+    "New Jersey's Office of Innovation used an AI tool to match records across agencies and find kids eligible for summer food aid.",
+    "The effort extended $120-per-child benefits to 106,000 more children in year one and 96,000 the next, with no forms filed.",
+    "The author argues that using AI to make government work better can help restore trust in democracy."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "Sure, Robots Might Kill Us All. But Do They Have Souls?",
+   "p": "2026/10/06/books/review/the-agi-chronicles-kevin-roose.html",
+   "pub": "2026-10-06T09:00:14Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/10/11/books/11TBR-Roose-MAIN/11TBR-Roose-MAIN-facebookJumbo.jpg"
+   ],
+   "s": "Books",
+   "g": "Culture",
+   "b": [
+    "Tom Bissell reviews Kevin Roose's 'The AGI Chronicles', an inside account of the race to build artificial superintelligence.",
+    "Roose searches for signs that AI may already be smarter than people.",
+    "Beyond the risk of doom, the review asks whether such machines could have anything like souls."
+   ]
+  },
+  {
+   "t": "SoftBank-Backed DayOne Plans to Raise Up to $5 Billion in U.S. IPO",
+   "p": "tech/softbank-backed-dayone-data-centers-plans-to-raise-up-to-5-0-bln-in-u-s-ipo-c568ead1",
+   "pub": "2026-10-06T05:45:00Z",
+   "im": [
+    "im-18983406"
+   ],
+   "s": "Tech",
+   "g": "Business",
+   "b": [
+    "Singapore-based DayOne Data Centers, backed by SoftBank, is seeking up to $5 billion in a U.S. IPO.",
+    "It aims to list American depositary shares on Nasdaq before year-end.",
+    "Proceeds would fund development and construction of new data-center projects."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "What the Data Center Boom Looks Like From the Sky",
+   "p": "interactive/2026/10/05/upshot/data-center-scale.html",
+   "pub": "2026-10-06T00:18:23Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/10/05/multimedia/2026-08-19-data-center-scale-index/2026-08-19-data-center-scale-index-facebookJumbo-v5.jpg"
+   ],
+   "s": "The Upshot",
+   "g": "Business",
+   "b": [
+    "Aerial images show the scale of data centers built since ChatGPT kicked off the AI race in late 2022.",
+    "Cleanview counted 180 new data-center buildings last year, up 170% from 2021, with nearly 50 in Virginia alone.",
+    "Annual AI construction spending could top 3% of U.S. GDP between 2025 and 2032."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "Why A.I. Food Slop Looks So Gross",
+   "p": "interactive/2026/10/06/technology/ai-slop-food-images-restaurant-menus.html",
+   "pub": "2026-10-05T23:11:48Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/09/30/world/oakImage-1790804262225-promo/oakImage-1790804262225-promo-facebookJumbo.jpg",
+    "https://static01.nyt.com/images/2026/09/30/world/oakImage-1790804262225/oakImage-1790804262225-mobileMasterAt3x.jpg",
+    "https://static01.nyt.com/images/2026/09/30/world/oakImage-1790800658694/oakImage-1790800658694-mobileMasterAt3x.jpg"
+   ],
+   "s": "Technology",
+   "g": "Culture",
+   "b": [
+    "Fast-food shops in London, New York and elsewhere increasingly use generative AI images to advertise dishes.",
+    "The pictures have an uncanny, too-perfect look that becomes impossible to ignore once noticed.",
+    "Many diners are turned off and are mocking the images on social media."
+   ]
+  },
+  {
+   "t": "If You Want to Understand AI, Get a Dog",
+   "p": "opinion/if-you-want-to-understand-ai-get-a-dog-82ba2de1",
+   "pub": "2026-10-05T20:45:00Z",
+   "im": [
+    "op:im-96424648/"
+   ],
+   "s": "Opinion",
+   "g": "Culture",
+   "b": [
+    "The essay argues dogs offer a model for thinking about what goes on inside AI systems.",
+    "Humans bred dogs to read and signal to us, creating the illusion that they think as we do, though their minds differ deeply.",
+    "Large language models, trained on human language, create a similar illusion of humanlike thinking."
+   ]
+  },
+  {
+   "t": "NYC Lawmakers Grill AI Executives and Former Employees as City Weighs Guardrails",
+   "p": "tech/ai/nyc-lawmakers-grill-ai-executives-and-former-employees-as-city-weighs-guardrails-a87cf262",
+   "pub": "2026-10-05T20:40:00Z",
+   "im": [
+    "im-05467420",
+    "im-24202344"
+   ],
+   "s": "Tech",
+   "g": "Policy",
+   "b": [
+    "Ex-Anthropic researcher Jacob Coxon reiterated AI-risk warnings at a Monday New York City Council hearing.",
+    "Council members are weighing bills for AI whistleblower protections and a city-run AI 'kill switch.'",
+    "Former AI staffers Daniel Kokotajlo and Alex Turner testified remotely about the dangers of an AI arms race."
+   ]
+  },
+  {
+   "t": "The AI Collateral Blind Spot",
+   "p": "opinion/the-ai-collateral-blind-spot-4ef352ce",
+   "pub": "2026-10-05T13:54:00Z",
+   "im": [
+    "op:im-33255741/"
+   ],
+   "s": "Opinion",
+   "g": "Business",
+   "b": [
+    "A letter writer says trouble in the AI boom may show up first in the collateral backing AI-infrastructure loans.",
+    "Lenders should test loans against simultaneous drops in chip resale values, utilization and rental rates.",
+    "Money can keep flowing even as that collateral grows harder to value, so better data is needed."
+   ]
+  },
+  {
+   "t": "Mining Unwritten Data for AI's Edge",
+   "p": "cio-journal/mining-unwritten-data-for-ais-edge-52681e43",
+   "pub": "2026-10-05T12:28:00Z",
+   "im": [
+    "im-98202482"
+   ],
+   "s": "CIO Journal",
+   "g": "Agents",
+   "b": [
+    "An AWS report argues that with everyone using the same models, advantage comes from knowledge never written into databases.",
+    "AWS's Tom Godden says that undocumented employee know-how is where competitive edge now sits.",
+    "Nestle's data chief Vikrant Bhan says agentic AI pushed the company beyond structured data into SOPs and factory documents."
+   ]
+  },
+  {
+   "src": "nyt",
+   "t": "Mixed Human Feelings After a Day at a Park Full of Robots",
+   "p": "2026/10/05/world/asia/south-korea-ai-humanoid-robot-park.html",
+   "pub": "2026-10-05T09:02:23Z",
+   "im": [
+    "https://static01.nyt.com/images/2026/09/29/xp-robot-park-topart-cover/xp-robot-park-topart-cover-facebookJumbo-v2.jpg",
+    "https://static01.nyt.com/images/2026/09/29/video/xp-robot-portrait/xp-robot-portrait-articleLarge.jpg"
+   ],
+   "s": "World",
+   "g": "Culture",
+   "b": [
+    "A reporter visits Galaxy Robot Park in Seoul to glimpse a future of living alongside humanoid robots.",
+    "The experience mixes real technology with stagecraft, and it is often unclear whether robots respond or follow a handler.",
+    "A robot mirrors a handshake gesture but its arm will not actually move when grasped."
+   ]
+  },
+  {
+   "t": "Robotics Startup RobCo Hits $1 Billion Valuation",
+   "p": "tech/robotics-startup-robco-hits-1-billion-valuation-784bd6a5",
+   "pub": "2026-10-05T07:00:00Z",
+   "im": [
+    "im-47658087",
+    "im-75817555"
+   ],
+   "s": "Tech",
+   "g": "Business",
+   "b": [
+    "German robotics startup RobCo is now valued above $1 billion, double its January valuation of about $500 million.",
+    "It is selling $40 million of shares, mostly from employees, to new and existing investors.",
+    "Its flagship Alfie is a two-armed, self-learning robot built to do repetitive factory tasks like a human worker."
+   ]
+  },
+  {
+   "t": "Deutsche Telekom Bets on AI to Cut Costs, Boost Revenue",
+   "p": "tech/ai/deutsche-telekom-bets-on-ai-to-cut-costs-boost-revenue-22a289b8",
+   "pub": "2026-10-05T06:38:00Z",
+   "im": [
+    "im-38458752"
+   ],
+   "s": "Tech",
+   "g": "Business",
+   "b": [
+    "Deutsche Telekom plans to weave AI into its networks and infrastructure to save billions and lift sales.",
+    "It targets about 1.1 billion euros in gross savings outside the U.S. by 2027 versus a 2023 base.",
+    "The company expects roughly 250 million euros of AI-related revenue outside the U.S. in 2026."
+   ]
+  }
+ ]
+};
+    </script>
     <script>
         let feed = window.WSJ_FEED || { items: [] };
         const TOPICS = ['All', 'Agents', 'Policy', 'Business', 'Culture'];
