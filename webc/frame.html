@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Photo Frame</title>
+    <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%23111"/><rect x="14" y="18" width="36" height="28" rx="3" fill="none" stroke="white" stroke-width="4"/></svg>'>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; background: #000; overflow: hidden; cursor: none; }
+
+        .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.5s ease; }
+        .slide.on { opacity: 1; }
+        /* Blurred copy fills the letterbox so portrait shots don't sit in black bars */
+        .slide .bg {
+            position: absolute; inset: -40px; background-size: cover; background-position: center;
+            filter: blur(30px) brightness(0.5);
+        }
+        .slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+
+        .msg {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            color: #8b98a5; font: 16px 'Helvetica Neue', Helvetica, Arial, sans-serif; text-align: center; padding: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide" id="a"><div class="bg"></div><img alt=""></div>
+    <div class="slide" id="b"><div class="bg"></div><img alt=""></div>
+    <div class="msg" id="msg">Loading…</div>
+
+    <script>
+        const params = new URLSearchParams(location.search);
+        const INTERVAL = (+params.get('s') || 20) * 1000;   // ?s=20 seconds per photo
+        const DEMO = params.has('demo');                    // ?demo uses stock photos to test the device
+
+        let photos = [], order = [], idx = 0, front = 'a';
+
+        function shuffle(list) {
+            const a = list.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        async function loadList() {
+            if (DEMO) {
+                return Array.from({ length: 30 }, (_, i) => `https://picsum.photos/seed/frame${i}/1280/800`);
+            }
+            const res = await fetch('photos/manifest.json?t=' + Date.now(), { cache: 'no-store' });
+            const names = await res.json();
+            return names.map(n => 'photos/' + n);
+        }
+
+        function show(src) {
+            const pre = new Image();
+            pre.onload = () => {
+                const back = front === 'a' ? 'b' : 'a';
+                const el = document.getElementById(back);
+                el.querySelector('img').src = src;
+                el.querySelector('.bg').style.backgroundImage = `url("${src}")`;
+                el.classList.add('on');
+                document.getElementById(front).classList.remove('on');
+                front = back;
+            };
+            pre.onerror = next;
+            pre.src = src;
+        }
+
+        function next() {
+            if (!photos.length) return;
+            if (idx >= order.length) { order = shuffle(photos); idx = 0; }
+            show(order[idx++]);
+        }
+
+        async function refresh() {
+            try {
+                photos = await loadList();
+                order = shuffle(photos); idx = 0;
+                document.getElementById('msg').style.display = photos.length ? 'none' : 'flex';
+                document.getElementById('msg').textContent = 'No photos yet — add them to webc/photos/';
+            } catch (e) {
+                document.getElementById('msg').textContent = 'Could not load photo list';
+            }
+        }
+
+        // Ask the browser not to sleep the screen (ignored where unsupported)
+        async function keepAwake() {
+            try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch (e) {}
+        }
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) keepAwake(); });
+
+        // Fullscreen needs a user gesture: tap once after loading
+        document.addEventListener('click', () => {
+            keepAwake();
+            const el = document.documentElement;
+            (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el);
+        });
+
+        (async () => {
+            await refresh();
+            next();
+            keepAwake();
+            setInterval(next, INTERVAL);
+            setInterval(refresh, 60 * 60 * 1000);  // pick up new photos hourly
+            setTimeout(() => location.reload(), 12 * 60 * 60 * 1000);  // guard against long-running memory leaks
+        })();
+    </script>
+</body>
+</html>
