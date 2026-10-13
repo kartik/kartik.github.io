@@ -33,6 +33,21 @@
             transition: opacity 0.5s;
         }
         .fs.hidden { opacity: 0; pointer-events: none; }
+
+        .unlock {
+            position: absolute; inset: 0; z-index: 3; display: none;
+            flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+            background: #000; cursor: auto; padding: 16px;
+            font: 18px 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #e7e9ea;
+        }
+        .unlock.on { display: flex; }
+        .unlock input, .unlock button {
+            font: inherit; padding: 12px 18px; border-radius: 10px; border: 1px solid #2f3336;
+            width: 100%; max-width: 360px;
+        }
+        .unlock input { background: #16181c; color: #e7e9ea; }
+        .unlock button { background: #1d9bf0; color: #fff; border: none; cursor: pointer; }
+        .unlock .err { color: #f4212e; font-size: 15px; min-height: 1.2em; }
     </style>
 </head>
 <body>
@@ -40,6 +55,12 @@
     <div class="slide" id="b"><div class="bg"></div><img alt=""></div>
     <div class="msg" id="msg">Loading…</div>
     <button class="fs hidden" id="fs">⛶ Full screen</button>
+    <form class="unlock" id="unlock">
+        <div>Enter the passphrase to show photos</div>
+        <input type="password" id="pass" autocomplete="current-password" placeholder="Passphrase">
+        <button type="submit">Unlock</button>
+        <div class="err" id="err"></div>
+    </form>
 
     <script>
         const params = new URLSearchParams(location.search);
@@ -47,6 +68,7 @@
         const DEMO = params.has('demo');                    // ?demo uses stock photos to test the device
 
         let photos = [], order = [], idx = 0, front = 'a';
+        let key = null;   // AES-GCM key derived from the passphrase
 
         function shuffle(list) {
             const a = list.slice();
@@ -57,45 +79,111 @@
             return a;
         }
 
+        // Photos are published encrypted (see tools/frame_photos.py): each .bin file is a
+        // 12-byte IV followed by AES-GCM ciphertext, keyed by PBKDF2 of the passphrase.
+        const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+        const toB64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+
+        async function fetchDecrypted(path) {
+            const res = await fetch(path);
+            if (!res.ok) throw new Error(path + ' ' + res.status);
+            const buf = await res.arrayBuffer();
+            return crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
+        }
+
+        async function deriveKey(passphrase, meta) {
+            const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+            return crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt: fromB64(meta.salt), iterations: meta.iterations, hash: 'SHA-256' },
+                base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
+        }
+
+        function askPassphrase(error) {
+            const form = document.getElementById('unlock');
+            document.getElementById('err').textContent = error || '';
+            form.classList.add('on');
+            document.getElementById('pass').focus();
+            return new Promise(resolve => {
+                form.onsubmit = e => {
+                    e.preventDefault();
+                    document.getElementById('err').textContent = 'Unlocking…';
+                    resolve(document.getElementById('pass').value);
+                };
+            });
+        }
+
+        // Use the key remembered on this device, or ask until the passphrase opens the manifest
+        async function unlock() {
+            const meta = await (await fetch('photos/key.json', { cache: 'no-store' })).json();
+            const storeName = 'frame-key-' + meta.salt;
+            try {
+                const raw = localStorage.getItem(storeName);
+                if (raw) key = await crypto.subtle.importKey('raw', fromB64(raw), 'AES-GCM', true, ['decrypt']);
+            } catch (e) {}
+
+            let error = '';
+            for (;;) {
+                if (key) {
+                    try {
+                        const list = await loadList();
+                        try { localStorage.setItem(storeName, toB64(await crypto.subtle.exportKey('raw', key))); } catch (e) {}
+                        document.getElementById('unlock').classList.remove('on');
+                        return list;
+                    } catch (e) {
+                        key = null;
+                        try { localStorage.removeItem(storeName); } catch (e) {}
+                        error = 'Wrong passphrase';
+                    }
+                }
+                key = await deriveKey(await askPassphrase(error), meta);
+            }
+        }
+
         async function loadList() {
             if (DEMO) {
                 return Array.from({ length: 30 }, (_, i) => `https://picsum.photos/seed/frame${i}/1280/800`);
             }
-            const res = await fetch('photos/manifest.json?t=' + Date.now(), { cache: 'no-store' });
-            const names = await res.json();
-            return names.map(n => 'photos/' + n);
+            const manifest = JSON.parse(new TextDecoder().decode(await fetchDecrypted('photos/manifest.bin?t=' + Date.now())));
+            return manifest.photos.map(p => p.id);
         }
 
-        function show(src) {
+        async function show(item) {
+            let src = item;
+            if (!DEMO) {
+                const data = await fetchDecrypted('photos/' + item + '.bin');
+                src = URL.createObjectURL(new Blob([data], { type: 'image/webp' }));
+            }
             const pre = new Image();
             pre.onload = () => {
                 const back = front === 'a' ? 'b' : 'a';
                 const el = document.getElementById(back);
+                if (el.dataset.url) URL.revokeObjectURL(el.dataset.url);   // free the photo shown two slides ago
+                el.dataset.url = DEMO ? '' : src;
                 el.querySelector('img').src = src;
                 el.querySelector('.bg').style.backgroundImage = `url("${src}")`;
                 el.classList.add('on');
                 document.getElementById(front).classList.remove('on');
                 front = back;
             };
-            pre.onerror = next;
             pre.src = src;
         }
 
         function next() {
             if (!photos.length) return;
             if (idx >= order.length) { order = shuffle(photos); idx = 0; }
-            show(order[idx++]);
+            show(order[idx++]).catch(() => {});   // a failed photo just leaves the current one up
+        }
+
+        function setPhotos(list) {
+            photos = list;
+            order = shuffle(photos); idx = 0;
+            const msg = document.getElementById('msg');
+            msg.style.display = photos.length ? 'none' : 'flex';
+            msg.textContent = 'No photos yet';
         }
 
         async function refresh() {
-            try {
-                photos = await loadList();
-                order = shuffle(photos); idx = 0;
-                document.getElementById('msg').style.display = photos.length ? 'none' : 'flex';
-                document.getElementById('msg').textContent = 'No photos yet — add them to webc/photos/';
-            } catch (e) {
-                document.getElementById('msg').textContent = 'Could not load photo list';
-            }
+            try { setPhotos(await loadList()); } catch (e) {}   // keep the current list if the network blips
         }
 
         // Ask the browser not to sleep the screen (ignored where unsupported)
@@ -127,7 +215,11 @@
         showFsButton();
 
         (async () => {
-            await refresh();
+            try {
+                setPhotos(DEMO ? await loadList() : await unlock());
+            } catch (e) {
+                document.getElementById('msg').textContent = 'Could not load photos';
+            }
             next();
             keepAwake();
             setInterval(next, INTERVAL);
