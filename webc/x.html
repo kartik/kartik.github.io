@@ -371,17 +371,20 @@
         // Nitter instances are individually flaky/often-down, so we fail over
         // between them: race them on a cold start, then stick to whichever responds.
         const INSTANCES = [
-            // Verified working through rss2json with merged multi-user RSS
-            // (source: codeberg.org/mv12star/shitter/wiki/Instances, 2026-09-05).
-            // tw.eir-nya.gay also responds but serves posts from the WRONG
-            // accounts on merged queries — never add it.
+            // Verified 2026-11-02: correct merged multi-user RSS with same-day posts.
+            // mie.foundation works through both rss2json and allorigins;
+            // kareem.one through rss2json. Health list: status.d420.de.
+            'https://nitter.mie.foundation',
+            'https://nitter.kareem.one',
+            // Serve RSS directly but the proxies can't reach them right now —
+            // kept so discovery picks them up again if that changes.
+            'https://nitter.mizuki.st',
             'https://nitter.jaydenha.uk',
-            'https://x.n0g.xyz',
-            'https://shitter.thepixora.com',
-            // Historically strong, kept as fallbacks
-            'https://xcancel.com',
-            'https://nitter.net',
-            'https://nitter.tiekoetter.com'
+            'https://shitter.thepixora.com'
+            // Removed: nitter.net (shut down, "offline"), xcancel.com (451),
+            // nitter.tiekoetter.com (bot-check wall), x.n0g.xyz (unreachable).
+            // tw.eir-nya.gay serves posts from the WRONG accounts on merged
+            // queries — never add it.
         ];
         const INSTANCE_HOSTS = INSTANCES.map(u => u.replace(/^https?:\/\//, ''));
         let WORKING_INSTANCE = null;   // sticky once one proves healthy
